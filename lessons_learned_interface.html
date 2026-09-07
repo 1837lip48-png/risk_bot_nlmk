@@ -1,0 +1,1069 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>База уроков — RiskAssess Bot</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --navy-950:#0b1c3d;
+    --navy-900:#122a52;
+    --navy-800:#1b3563;
+    --accent-600:#2f6fed;
+    --accent-500:#4a83f2;
+    --accent-50:#eaf1ff;
+    --accent-100:#d7e6ff;
+    --ink-900:#111a2e;
+    --ink-700:#334066;
+    --ink-600:#4d5c85;
+    --ink-400:#8290b3;
+    --paper-0:#ffffff;
+    --canvas:#f4f6fb;
+    --canvas-alt:#eef1f8;
+    --line:#dfe4f0;
+    --line-soft:#eceff8;
+
+    --green-700:#0a6847;
+    --green-600:#12805a;
+    --green-50:#e8f7f0;
+    --amber-700:#9a5b0a;
+    --amber-600:#b8710f;
+    --amber-50:#fdf1de;
+    --red-700:#a3271f;
+    --red-600:#c2372c;
+    --red-50:#fbe9e7;
+    --purple-700:#5f3aa8;
+    --purple-50:#f0e9fb;
+    --teal-700:#0f6e78;
+    --teal-50:#e4f6f6;
+    --slate-700:#4a5570;
+    --slate-50:#eef0f6;
+    --blue-700:#2255c4;
+    --blue-50:#e7effe;
+    --olive-700:#5a6b1c;
+    --olive-50:#eef3dc;
+
+    --font-display:'Manrope', system-ui, sans-serif;
+    --font-body:'IBM Plex Sans', system-ui, sans-serif;
+    --font-mono:'IBM Plex Mono', 'SFMono-Regular', monospace;
+
+    --shadow-card: 0 1px 2px rgba(17,26,46,.04), 0 8px 24px -12px rgba(17,26,46,.10);
+    --shadow-pop: 0 12px 32px -8px rgba(17,26,46,.22);
+    --radius-card: 14px;
+    --radius-chip: 999px;
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --canvas:#0d1424;
+      --canvas-alt:#101a30;
+      --paper-0:#141d33;
+      --line:#263353;
+      --line-soft:#1c2745;
+      --ink-900:#eef1f9;
+      --ink-700:#c3cbe4;
+      --ink-600:#9aa5c8;
+      --ink-400:#6d7898;
+      --navy-950:#070f22;
+      --navy-900:#0d1a35;
+      --navy-800:#152341;
+      --accent-50:#152a4d;
+      --accent-100:#1b3563;
+      --green-50:#0f2b23;
+      --amber-50:#2e2413;
+      --red-50:#301c1d;
+      --purple-50:#241c3d;
+      --teal-50:#102a2c;
+      --slate-50:#1b2338;
+      --blue-50:#16233f;
+      --olive-50:#222a13;
+      --shadow-card: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+      --shadow-pop: 0 16px 40px -8px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --canvas:#0d1424;
+    --canvas-alt:#101a30;
+    --paper-0:#141d33;
+    --line:#263353;
+    --line-soft:#1c2745;
+    --ink-900:#eef1f9;
+    --ink-700:#c3cbe4;
+    --ink-600:#9aa5c8;
+    --ink-400:#6d7898;
+    --navy-950:#070f22;
+    --navy-900:#0d1a35;
+    --navy-800:#152341;
+    --accent-50:#152a4d;
+    --accent-100:#1b3563;
+    --green-50:#0f2b23;
+    --amber-50:#2e2413;
+    --red-50:#301c1d;
+    --purple-50:#241c3d;
+    --teal-50:#102a2c;
+    --slate-50:#1b2338;
+    --blue-50:#16233f;
+    --olive-50:#222a13;
+    --shadow-card: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+    --shadow-pop: 0 16px 40px -8px rgba(0,0,0,.6);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--canvas);
+    color:var(--ink-900);
+    font-family:var(--font-body);
+    font-size:14px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:var(--font-display); margin:0; text-wrap:balance; color:var(--ink-900);}
+  .mono{font-family:var(--font-mono); font-variant-numeric:tabular-nums;}
+  a{color:inherit;}
+  button{font-family:inherit; cursor:pointer;}
+  select, input{font-family:inherit;}
+  ::selection{background:var(--accent-100);}
+  :focus-visible{outline:2px solid var(--accent-600); outline-offset:2px; border-radius:4px;}
+
+  .app{
+    display:grid;
+    grid-template-columns:236px 1fr;
+    min-height:100vh;
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    background:var(--navy-950);
+    color:#cdd8f2;
+    display:flex;
+    flex-direction:column;
+    padding:20px 14px;
+    position:sticky;
+    top:0;
+    height:100vh;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:6px 8px 22px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    margin-bottom:14px;
+  }
+  .brand-mark{
+    width:36px;height:36px;border-radius:10px;
+    background:linear-gradient(155deg, var(--accent-500), var(--accent-600) 65%, #1c48ad);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .brand-text .name{font-family:var(--font-display); font-weight:800; font-size:14.5px; color:#fff; letter-spacing:.1px;}
+  .brand-text .tag{font-size:10.5px; color:#8ea0d4; letter-spacing:.2px;}
+
+  .nav{display:flex; flex-direction:column; gap:2px; margin-top:4px;}
+  .nav a{
+    display:flex; align-items:center; gap:11px;
+    padding:10px 12px; border-radius:9px;
+    font-size:13.5px; font-weight:600; color:#aab8dd;
+    text-decoration:none;
+  }
+  .nav a svg{flex-shrink:0; opacity:.85;}
+  .nav a:hover{background:rgba(255,255,255,.06); color:#fff;}
+  .nav a.active{background:var(--accent-600); color:#fff; box-shadow:0 6px 16px -4px rgba(47,111,237,.55);}
+  .nav a.active svg{opacity:1;}
+
+  .sidebar-spacer{flex:1;}
+
+  .user{
+    display:flex; align-items:center; gap:10px;
+    padding:10px; border-radius:10px;
+    border-top:1px solid rgba(255,255,255,.08);
+    margin-top:10px; padding-top:16px;
+  }
+  .avatar{
+    width:32px;height:32px;border-radius:50%;
+    background:var(--accent-500); color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:12.5px; font-weight:700; flex-shrink:0;
+  }
+  .user .who .n{font-size:13px; font-weight:600; color:#fff;}
+  .user .who .r{font-size:11px; color:#8ea0d4;}
+
+  /* ---------- Main ---------- */
+  .main{padding:22px 26px 60px; min-width:0;}
+
+  .topbar{
+    display:flex; align-items:flex-start; justify-content:space-between;
+    gap:20px; margin-bottom:20px;
+  }
+  .topbar h1{font-size:23px; font-weight:800;}
+  .topbar .sub{color:var(--ink-600); font-size:13px; margin-top:4px; max-width:56ch;}
+  .top-actions{display:flex; align-items:center; gap:10px; flex-shrink:0;}
+  .icon-btn{
+    width:36px;height:36px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--paper-0); border:1px solid var(--line); color:var(--ink-600);
+    position:relative;
+  }
+  .icon-btn .dot{
+    position:absolute; top:-4px; right:-4px;
+    background:var(--red-600); color:#fff; font-size:9.5px; font-weight:700;
+    min-width:16px; height:16px; border-radius:8px; display:flex;align-items:center;justify-content:center;
+    padding:0 3px; border:2px solid var(--canvas);
+  }
+
+  /* KPI strip */
+  .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px;}
+  .kpi{
+    background:var(--paper-0); border:1px solid var(--line); border-radius:var(--radius-card);
+    padding:14px 16px; box-shadow:var(--shadow-card);
+  }
+  .kpi .label{font-size:11px; color:var(--ink-600); text-transform:uppercase; letter-spacing:.5px; font-weight:600;}
+  .kpi .value{font-family:var(--font-display); font-size:24px; font-weight:800; margin-top:5px;}
+  .kpi .value.accent{color:var(--accent-600);}
+  .kpi .value.green{color:var(--green-700);}
+  .kpi .value.amber{color:var(--amber-700);}
+  .kpi .note{font-size:11.5px; color:var(--ink-400); margin-top:2px;}
+
+  /* Toolbar / search */
+  .panel{
+    background:var(--paper-0); border:1px solid var(--line); border-radius:var(--radius-card);
+    box-shadow:var(--shadow-card);
+  }
+  .search-panel{padding:16px 18px; margin-bottom:14px;}
+  .search-row{display:flex; gap:10px;}
+  .search-box{
+    flex:1; display:flex; align-items:center; gap:9px;
+    border:1.5px solid var(--line); border-radius:10px; padding:0 12px;
+    background:var(--canvas-alt);
+  }
+  .search-box svg{flex-shrink:0; color:var(--ink-400);}
+  .search-box input{
+    border:none; background:transparent; outline:none; width:100%;
+    padding:11px 0; font-size:13.5px; color:var(--ink-900);
+  }
+  .search-box input::placeholder{color:var(--ink-400);}
+  .btn{
+    display:inline-flex; align-items:center; gap:7px; white-space:nowrap;
+    border-radius:9px; padding:10px 15px; font-size:13px; font-weight:600;
+    border:1px solid var(--line); background:var(--paper-0); color:var(--ink-700);
+  }
+  .btn:hover{border-color:var(--accent-600); color:var(--accent-600);}
+  .btn-primary{background:var(--accent-600); border-color:var(--accent-600); color:#fff;}
+  .btn-primary:hover{background:var(--accent-500); color:#fff;}
+  .search-hint{font-size:11.5px; color:var(--ink-400); margin-top:8px;}
+  .search-hint b{color:var(--ink-600); font-weight:600;}
+
+  .filters-row{
+    display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end;
+    padding:14px 18px; margin-bottom:14px;
+  }
+  .field{display:flex; flex-direction:column; gap:5px;}
+  .field label{font-size:10.5px; font-weight:700; color:var(--ink-600); text-transform:uppercase; letter-spacing:.4px;}
+  .field select{
+    border:1px solid var(--line); border-radius:8px; padding:8px 30px 8px 10px;
+    font-size:12.5px; color:var(--ink-900); background:var(--paper-0) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6"><path d="M0 0l5 6 5-6z" fill="%238290b3"/></svg>') no-repeat right 10px center;
+    appearance:none; min-width:132px;
+  }
+  .filters-row .spacer{flex:1;}
+  .link-btn{
+    font-size:12.5px; font-weight:600; color:var(--accent-600); background:none; border:none;
+    display:flex; align-items:center; gap:5px; padding:8px 4px;
+  }
+
+  /* AI answer card */
+  .ai-answer{
+    display:none; padding:16px 18px; margin-bottom:14px;
+    border:1px solid var(--accent-100); background:linear-gradient(180deg, var(--accent-50), var(--paper-0) 65%);
+  }
+  .ai-answer.show{display:block;}
+  .ai-answer-head{display:flex; align-items:center; gap:9px; margin-bottom:9px;}
+  .ai-badge{
+    width:26px;height:26px;border-radius:8px; background:var(--accent-600); color:#fff;
+    display:flex;align-items:center;justify-content:center; flex-shrink:0;
+  }
+  .ai-answer-head .t{font-size:13px; font-weight:700; color:var(--ink-900);}
+  .ai-answer-head .status-pill{margin-left:auto;}
+  .ai-answer p{margin:0 0 8px; font-size:13px; color:var(--ink-700); max-width:80ch;}
+  .ai-sources{display:flex; flex-wrap:wrap; gap:7px; margin-top:6px;}
+  .src-chip{
+    display:inline-flex; align-items:center; gap:6px;
+    border:1px solid var(--line); background:var(--paper-0); border-radius:var(--radius-chip);
+    padding:5px 10px 5px 8px; font-size:11.5px; color:var(--ink-700);
+  }
+  .src-chip .id{font-family:var(--font-mono); font-weight:600; color:var(--accent-600);}
+  .ai-disclaimer{
+    display:flex; align-items:flex-start; gap:7px; margin-top:11px; padding-top:11px;
+    border-top:1px dashed var(--line); font-size:11.5px; color:var(--ink-400);
+  }
+
+  /* Table + detail layout */
+  .workspace{display:grid; grid-template-columns:1fr 392px; gap:16px; align-items:start;}
+
+  .tabs{display:flex; gap:4px; padding:10px 10px 0;}
+  .tab{
+    padding:9px 14px; font-size:12.5px; font-weight:600; color:var(--ink-600);
+    border-radius:8px 8px 0 0; border:1px solid transparent;
+  }
+  .tab.active{color:var(--accent-600); background:var(--canvas); border-color:var(--line); border-bottom-color:var(--canvas); margin-bottom:-1px;}
+  .tab .count{color:var(--ink-400); font-weight:500;}
+  .tab.active .count{color:var(--accent-600);}
+
+  .table-wrap{overflow-x:auto; border-top:1px solid var(--line);}
+  table{width:100%; border-collapse:collapse; min-width:760px;}
+  thead th{
+    text-align:left; font-size:10.5px; font-weight:700; color:var(--ink-600);
+    text-transform:uppercase; letter-spacing:.4px; padding:11px 14px;
+    border-bottom:1px solid var(--line); background:var(--canvas-alt);
+    position:sticky; top:0;
+  }
+  tbody td{padding:13px 14px; border-bottom:1px solid var(--line-soft); font-size:13px; vertical-align:top;}
+  tbody tr{cursor:pointer;}
+  tbody tr:hover{background:var(--canvas-alt);}
+  tbody tr.selected{background:var(--accent-50);}
+  tbody tr.selected td:first-child{box-shadow:inset 3px 0 0 var(--accent-600);}
+  .lesson-id{font-family:var(--font-mono); font-weight:600; color:var(--accent-600); font-size:12.5px;}
+  .lesson-title{font-weight:600; color:var(--ink-900); margin-bottom:3px;}
+  .lesson-src{font-size:11.5px; color:var(--ink-400);}
+  .col-title{max-width:290px;}
+
+  .badge{
+    display:inline-flex; align-items:center; padding:4px 9px; border-radius:var(--radius-chip);
+    font-size:11px; font-weight:700; letter-spacing:.1px; white-space:nowrap;
+  }
+  .badge-schedule{background:var(--blue-50); color:var(--blue-700);}
+  .badge-cost{background:var(--amber-50); color:var(--amber-700);}
+  .badge-hse{background:var(--purple-50); color:var(--purple-700);}
+  .badge-design{background:var(--slate-50); color:var(--slate-700);}
+  .badge-external{background:var(--teal-50); color:var(--teal-700);}
+  .badge-resource{background:var(--green-50); color:var(--green-700);}
+  .badge-contract{background:var(--blue-50); color:var(--blue-700);}
+  .badge-environmental{background:var(--olive-50); color:var(--olive-700);}
+
+  .status-pill{
+    display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:var(--radius-chip);
+    font-size:11px; font-weight:700;
+  }
+  .status-pill::before{content:''; width:6px;height:6px;border-radius:50%;}
+  .status-verified{background:var(--green-50); color:var(--green-700);}
+  .status-verified::before{background:var(--green-700);}
+  .status-review{background:var(--amber-50); color:var(--amber-700);}
+  .status-review::before{background:var(--amber-700);}
+  .status-rejected{background:var(--red-50); color:var(--red-700);}
+  .status-rejected::before{background:var(--red-700);}
+
+  .impact-cell{font-family:var(--font-mono); font-size:12.5px; color:var(--ink-700);}
+  .impact-cell .lbl{display:block; font-family:var(--font-body); font-size:10px; color:var(--ink-400); text-transform:uppercase; letter-spacing:.3px;}
+
+  tfoot td{padding:11px 14px; font-size:12px; color:var(--ink-400); border-top:1px solid var(--line);}
+
+  /* ---------- Detail panel ---------- */
+  .detail{position:sticky; top:22px; padding:0; overflow:hidden;}
+  .detail-head{
+    padding:16px 18px 14px; border-bottom:1px solid var(--line);
+    display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+  }
+  .detail-head .eyebrow{font-family:var(--font-mono); font-size:11px; color:var(--accent-600); font-weight:600; letter-spacing:.3px;}
+  .detail-head h2{font-size:16.5px; font-weight:700; margin-top:4px; line-height:1.35;}
+  .detail-badges{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;}
+  .close-x{background:none;border:none;color:var(--ink-400); padding:2px; border-radius:6px; flex-shrink:0;}
+  .close-x:hover{color:var(--ink-700); background:var(--canvas-alt);}
+
+  .detail-body{padding:16px 18px; max-height:calc(100vh - 230px); overflow-y:auto;}
+  .link-row{
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    padding:10px 12px; background:var(--canvas-alt); border:1px solid var(--line-soft); border-radius:10px;
+    font-size:12px; margin-bottom:16px;
+  }
+  .link-row .chip{display:inline-flex; align-items:center; gap:5px; color:var(--ink-700); font-weight:600;}
+  .link-row .chip .mono{color:var(--accent-600);}
+  .link-row .sep{color:var(--ink-400);}
+
+  .rec{margin-bottom:15px;}
+  .rec .k{font-size:10.5px; font-weight:700; color:var(--ink-600); text-transform:uppercase; letter-spacing:.4px; margin-bottom:4px; display:flex; align-items:center; gap:6px;}
+  .rec .k svg{opacity:.7;}
+  .rec .v{font-size:13px; color:var(--ink-900); line-height:1.55;}
+  .rec.good .k{color:var(--green-700);}
+  .rec.bad .k{color:var(--red-700);}
+
+  .divider{height:1px; background:var(--line); margin:16px 0;}
+
+  .mini-title{font-size:11.5px; font-weight:700; color:var(--ink-900); margin-bottom:10px; display:flex; align-items:center; gap:6px;}
+  .mini-title .formula{margin-left:auto; font-family:var(--font-mono); font-size:10.5px; color:var(--ink-400); font-weight:500;}
+
+  .sim-row{display:flex; align-items:center; gap:10px; margin-bottom:8px;}
+  .sim-row .name{width:118px; flex-shrink:0; font-size:11.5px; color:var(--ink-600);}
+  .sim-bar{flex:1; height:7px; border-radius:4px; background:var(--canvas-alt); overflow:hidden;}
+  .sim-bar span{display:block; height:100%; background:var(--accent-600); border-radius:4px;}
+  .sim-row .pct{width:34px; text-align:right; font-family:var(--font-mono); font-size:11.5px; font-weight:600; color:var(--ink-700);}
+  .sim-total{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-top:10px; padding-top:10px; border-top:1px dashed var(--line);
+  }
+  .sim-total .lbl{font-size:12px; font-weight:700; color:var(--ink-900);}
+  .sim-total .score{font-family:var(--font-mono); font-size:19px; font-weight:700; color:var(--accent-600);}
+
+  .stat-tiles{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;}
+  .stat-tile{background:var(--canvas-alt); border:1px solid var(--line-soft); border-radius:9px; padding:9px 11px;}
+  .stat-tile .l{font-size:10px; color:var(--ink-400); text-transform:uppercase; letter-spacing:.3px;}
+  .stat-tile .v{font-family:var(--font-mono); font-size:16px; font-weight:700; color:var(--ink-900); margin-top:2px;}
+  .stat-tile .v.small{font-size:12px; font-weight:600;}
+
+  .valid-box{
+    display:flex; gap:11px; padding:12px; border-radius:10px;
+    background:var(--green-50); border:1px solid transparent; align-items:flex-start;
+  }
+  .valid-box.pending{background:var(--amber-50);}
+  .valid-box svg{flex-shrink:0; margin-top:1px;}
+  .valid-box .t{font-size:12.5px; font-weight:700; color:var(--green-700);}
+  .valid-box.pending .t{color:var(--amber-700);}
+  .valid-box .d{font-size:11.5px; color:var(--ink-600); margin-top:3px; line-height:1.5;}
+  .valid-box .d b{color:var(--ink-900);}
+
+  .detail-foot{
+    display:flex; gap:8px; padding:14px 18px; border-top:1px solid var(--line);
+    background:var(--canvas-alt);
+  }
+  .detail-foot .btn{flex:1; justify-content:center;}
+
+  ::-webkit-scrollbar{width:9px; height:9px;}
+  ::-webkit-scrollbar-thumb{background:var(--line); border-radius:5px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+
+  @media (max-width: 1180px){
+    .workspace{grid-template-columns:1fr;}
+    .detail{position:relative; top:0;}
+    .kpis{grid-template-columns:1fr 1fr;}
+  }
+  @media (max-width: 720px){
+    .app{grid-template-columns:1fr;}
+    .sidebar{position:relative; height:auto;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M4 21V9l8-5 8 5v12" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 21v-7h6v7" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M4 21h16" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <div class="brand-text">
+        <div class="name">RiskAssess Bot</div>
+        <div class="tag">Smarter Risks. Stronger Projects.</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a href="#"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="13" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="13" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/></svg>Проекты</a>
+      <a href="#"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v16H4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M4 9h16M9 9v11" stroke="currentColor" stroke-width="1.8"/></svg>Риск-регистр</a>
+      <a href="#" class="active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 3h9l5 5v13H6z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M15 3v5h5M9 13h6M9 17h6M9 9h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Уроки на основе рисков</a>
+      <a href="#"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1.04 1.56V21a2 2 0 11-4 0v-.09A1.7 1.7 0 008.44 19a1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.7 1.7 0 004 14.56 1.7 1.7 0 002.44 13.6H2.35a2 2 0 110-4h.09A1.7 1.7 0 004 8.44a1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06A1.7 1.7 0 008.36 4c.61 0 1.16-.36 1.4-.92" stroke="currentColor" stroke-width="1.7"/></svg>Настройки</a>
+    </nav>
+    <div class="sidebar-spacer"></div>
+    <div class="user">
+      <div class="avatar">СД</div>
+      <div class="who">
+        <div class="n">Сара Джонсон</div>
+        <div class="r">Риск-менеджер</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <div class="topbar">
+      <div>
+        <h1>База уроков (Lessons Learned)</h1>
+        <div class="sub">Исторический опыт завершённых EPC-проектов как структурированное основание для оценки P/I/RRA новых рисков и подготовки Pre-mortem.</div>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" title="Справка" aria-label="Справка">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M9.5 9.3a2.5 2.5 0 114 2c-.8.6-1.5 1.1-1.5 2.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="17" r="0.9" fill="currentColor"/></svg>
+        </button>
+        <button class="icon-btn" title="Уведомления" aria-label="Уведомления">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 9a6 6 0 1112 0c0 4.2 1.2 5.7 1.8 6.4a1 1 0 01-.8 1.6H5a1 1 0 01-.8-1.6C4.8 14.7 6 13.2 6 9z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.5 19a2.5 2.5 0 005 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <span class="dot">2</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi">
+        <div class="label">Всего уроков в базе</div>
+        <div class="value" id="kpiTotal">9</div>
+        <div class="note">по 3 пилотным проектам</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Верифицировано экспертами</div>
+        <div class="value green" id="kpiVerified">6</div>
+        <div class="note">готовы к использованию в RAG</div>
+      </div>
+      <div class="kpi">
+        <div class="label">На верификации</div>
+        <div class="value amber" id="kpiReview">3</div>
+        <div class="note">ожидают решения риск-менеджера</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Проблемная категория</div>
+        <div class="value accent" style="font-size:18px;">Расписание</div>
+        <div class="note">4 из 9 уроков — задержки графика</div>
+      </div>
+    </div>
+
+    <div class="panel search-panel">
+      <div class="search-row">
+        <div class="search-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <input id="ragQuery" type="text" placeholder="Спросите базу уроков: «что делать при задержке длинноцикловых позиций на Brownfield-объекте?»">
+        </div>
+        <button class="btn btn-primary" id="askBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Спросить RAG
+        </button>
+      </div>
+      <div class="search-hint">Семантический поиск (F-19) по <b>lesson_text</b>, <b>context</b> и <b>recommendation</b> с учётом текущего профиля проекта. Источники всегда указываются.</div>
+    </div>
+
+    <div class="panel ai-answer" id="aiAnswer">
+      <div class="ai-answer-head">
+        <div class="ai-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" stroke="#fff" stroke-width="1.8"/></svg>
+        </div>
+        <div class="t">Ответ ассистента</div>
+        <span class="status-pill status-review">Черновик · требует верификации</span>
+      </div>
+      <p id="aiAnswerText"></p>
+      <div class="ai-sources" id="aiSources"></div>
+      <div class="ai-disclaimer">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px;"><path d="M12 9v4M12 17h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/></svg>
+        <span>Ответ построен только на найденных фрагментах lessons learned. Факты, расчёты и рекомендации разделены; итоговое решение принимает риск-менеджер или владелец риска.</span>
+      </div>
+    </div>
+
+    <div class="panel filters-row">
+      <div class="field">
+        <label>Категория</label>
+        <select id="fCategory">
+          <option value="">Все</option>
+          <option value="schedule">Расписание</option>
+          <option value="cost">Стоимость</option>
+          <option value="hse">HSE</option>
+          <option value="design">Проектирование</option>
+          <option value="external">Внешние факторы</option>
+          <option value="resource">Ресурсы</option>
+          <option value="contract">Контракт</option>
+          <option value="environmental">Окружающая среда</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Стадия</label>
+        <select id="fStage">
+          <option value="">Все</option>
+          <option>Проектирование</option>
+          <option>Закупки</option>
+          <option>Строительство</option>
+          <option>Ввод в эксплуатацию</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Регион</label>
+        <select id="fRegion">
+          <option value="">Все</option>
+          <option>Северо-Запад</option>
+          <option>Дальний Восток</option>
+          <option>Юг</option>
+          <option>Урал</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Контрактная модель</label>
+        <select id="fContract">
+          <option value="">Все</option>
+          <option>EPC</option>
+          <option>EPCM</option>
+          <option>Design-Build</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Статус</label>
+        <select id="fStatus">
+          <option value="">Все</option>
+          <option value="verified">Проверено</option>
+          <option value="review">На верификации</option>
+          <option value="rejected">Отклонено</option>
+        </select>
+      </div>
+      <div class="spacer"></div>
+      <button class="link-btn" id="resetBtn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 1 1 3 6.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M3 17v-5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Сбросить фильтры
+      </button>
+      <button class="btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Импорт .xlsx
+      </button>
+      <button class="btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 15V3m0 0L8 7m4-4l4 4M4 21h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Экспорт .xlsx
+      </button>
+      <button class="btn btn-primary" id="addBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        Новый урок
+      </button>
+    </div>
+
+    <div class="workspace">
+
+      <div class="panel">
+        <div class="tabs">
+          <div class="tab active" data-status="">Все <span class="count">(9)</span></div>
+          <div class="tab" data-status="verified">Проверено <span class="count">(6)</span></div>
+          <div class="tab" data-status="review">На верификации <span class="count">(2)</span></div>
+          <div class="tab" data-status="rejected">Отклонено <span class="count">(1)</span></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:88px;">ID</th>
+                <th class="col-title">Урок / источник</th>
+                <th>Категория</th>
+                <th>Стадия</th>
+                <th>Влияние факт.</th>
+                <th>Статус</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+            <tfoot>
+              <tr><td colspan="6" id="tfootNote">Показаны 9 из 9 уроков</td></tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel detail" id="detailPanel"></div>
+
+    </div>
+
+  </main>
+</div>
+
+<script>
+const CATS = {
+  schedule:      {label:'Расписание',      cls:'badge-schedule'},
+  cost:          {label:'Стоимость',       cls:'badge-cost'},
+  hse:           {label:'HSE',             cls:'badge-hse'},
+  design:        {label:'Проектирование',  cls:'badge-design'},
+  external:      {label:'Внешние факторы', cls:'badge-external'},
+  resource:      {label:'Ресурсы',         cls:'badge-resource'},
+  contract:      {label:'Контракт',        cls:'badge-contract'},
+  environmental: {label:'Окружающая среда',cls:'badge-environmental'}
+};
+
+const STATUS = {
+  verified:{label:'Проверено',      cls:'status-verified'},
+  review:  {label:'На верификации', cls:'status-review'},
+  rejected:{label:'Отклонено',      cls:'status-rejected'}
+};
+
+const LESSONS = [
+  {
+    id:'LL-014', category:'schedule', stage:'Закупки', region:'Дальний Восток', contract:'EPC', projectType:'Greenfield',
+    title:'Раннее бронирование длинноцикловых позиций сокращает срыв графика поставки',
+    project:'Greenfield LNG Plant, 2024', risk:'R-1001 · Delay in critical material delivery',
+    sourceDoc:'PMR-2024-014.pdf',
+    context:'Проект строительства СПГ-завода, длинноцикловое оборудование (криогенные теплообменники) закупалось у единственного квалифицированного поставщика с циклом изготовления 14 месяцев.',
+    whatHappened:'Заказ на теплообменники был размещён через 5 месяцев после утверждения FEED вместо предусмотренных методикой 2 месяцев, что сдвинуло поставку на критический путь графика.',
+    rootCause:'Отсутствие процедуры, обязывающей начинать закупку long-lead items параллельно с завершением FEED, а не после его полного утверждения.',
+    consequence:'Смещение контрольной даты механической готовности на 47 дней и рост затрат на ускорение логистики.',
+    successfulAction:'После обнаружения риска — переход на еженедельный трекинг статуса изготовления и экспедайтинг с выездом инженера к поставщику.',
+    unsuccessfulAction:'Попытка компенсировать отставание за счёт сокращения периода пусконаладки не удалась — потребовала отдельного пересмотра графика.',
+    recommendation:'Инициировать закупку оборудования с циклом изготовления от 9 месяцев не позднее выпуска предварительной спецификации (60% FEED), закладывать буфер логистики 15%.',
+    applicability:'Проекты Greenfield/Brownfield с единственным квалифицированным поставщиком критического оборудования и циклом изготовления свыше 9 месяцев.',
+    impactDays:47, impactCostPct:1.8, occurrences:'6 / 9',
+    validatedBy:'И. Соколова, риск-менеджер', validationDate:'12.03.2024', status:'verified',
+    sim:{type:92, region:58, contract:81, capex:74, stage:66}
+  },
+  {
+    id:'LL-015', category:'schedule', stage:'Строительство', region:'Северо-Запад', contract:'EPCM', projectType:'Brownfield',
+    title:'Не учтено ограничение производственной мощности поставщика при планировании графика',
+    project:'Offshore Platform Project, 2023', risk:'R-1001 · Delay in critical material delivery',
+    sourceDoc:'PMR-2023-091.pdf',
+    context:'Единственный поставщик трубной продукции спецификации X65 одновременно исполнял заказы для трёх других проектов отрасли.',
+    whatHappened:'Плановая дата поставки была принята «как заявлено» поставщиком без проверки его фактической загрузки производства.',
+    rootCause:'На этапе планирования не запрашивалось подтверждение резервирования производственных мощностей у поставщика.',
+    consequence:'Задержка поставки на 61 день, простой монтажной бригады.',
+    successfulAction:'—',
+    unsuccessfulAction:'Принятие заявленного поставщиком срока без независимой верификации загрузки завода-изготовителя.',
+    recommendation:'Для единственных источников критических материалов запрашивать подтверждение резервирования мощности и включать пункт о приоритетности заказа в контракт.',
+    applicability:'Проекты с монопольным поставщиком труб/металлопроката и высокой отраслевой загрузкой рынка.',
+    impactDays:61, impactCostPct:2.4, occurrences:'6 / 9',
+    validatedBy:'И. Соколова, риск-менеджер', validationDate:'02.11.2023', status:'verified',
+    sim:{type:70, region:40, contract:55, capex:60, stage:48}
+  },
+  {
+    id:'LL-009', category:'cost', stage:'Закупки', region:'Урал', contract:'EPC', projectType:'Brownfield',
+    title:'Валютная и индексная оговорка в EPC-контракте снижает риск скачка цены на сталь',
+    project:'Refinery Upgrade, 2022', risk:'R-1002 · Escalation in steel prices',
+    sourceDoc:'PMR-2022-054.pdf',
+    context:'Контракт на металлоконструкции заключался по фиксированной цене без индексации на срок изготовления 11 месяцев.',
+    whatHappened:'Рост биржевых цен на прокат на 34% за период изготовления был частично переложен подрядчиком на заказчика через претензии.',
+    rootCause:'В договоре отсутствовала формула пересмотра цены при отклонении биржевого индекса свыше согласованного порога.',
+    consequence:'Дополнительные расходы 6.1% от стоимости позиции металлоконструкций, урегулированные через переговоры.',
+    successfulAction:'Введение hedging-механизма (форвардный контракт на часть объёма) в последующих закупках снизило волатильность.',
+    unsuccessfulAction:'Отказ от индексной оговорки «для упрощения контракта» на этапе тендера.',
+    recommendation:'Включать формулу пересмотра цены (price adjustment clause) при циклах изготовления свыше 6 месяцев и рассматривать частичный hedging объёма.',
+    applicability:'Контракты на металлоёмкое оборудование/конструкции с длительным циклом изготовления в условиях волатильного рынка сырья.',
+    impactDays:0, impactCostPct:6.1, occurrences:'4 / 7',
+    validatedBy:'А. Мельник, эксперт по закупкам', validationDate:'20.08.2022', status:'verified',
+    sim:{type:64, region:35, contract:88, capex:70, stage:52}
+  },
+  {
+    id:'LL-021', category:'hse', stage:'Строительство', region:'Юг', contract:'EPC', projectType:'Greenfield',
+    title:'Ежедневный аудит СИЗ и допусков к работам снижает частоту происшествий',
+    project:'Coastal Power Plant, 2021', risk:'R-1003 · Workforce safety incident',
+    sourceDoc:'PMR-2021-118.pdf',
+    context:'Пиковая численность персонала на площадке — 640 человек, преобладание субподрядных бригад с разным уровнем культуры безопасности.',
+    whatHappened:'После двух происшествий с временной потерей трудоспособности внедрён ежедневный выборочный аудит СИЗ и нарядов-допусков перед началом смены.',
+    rootCause:'Недостаточный контроль соблюдения требований СИЗ и порядка допуска на начальном этапе мобилизации субподрядчиков.',
+    consequence:'До внедрения меры — 2 происшествия с ВПТ за 3 месяца.',
+    successfulAction:'Ежедневный аудит + еженедельный разбор инцидентов на общей планёрке снизили частоту происшествий до нуля за оставшиеся 14 месяцев.',
+    unsuccessfulAction:'Однократный вводный инструктаж без периодического контроля оказался недостаточен.',
+    recommendation:'Закладывать ежедневный аудит СИЗ/допусков и еженедельный разбор инцидентов как стандартную меру уже на этапе мобилизации, а не как реакцию на происшествие.',
+    applicability:'Площадки с высокой долей субподрядного персонала и параллельным ведением нескольких видов работ.',
+    impactDays:0, impactCostPct:0, occurrences:'2 / 8',
+    validatedBy:'Н. Гаврилов, HSE-менеджер', validationDate:'—', status:'review',
+    sim:{type:55, region:47, contract:60, capex:38, stage:70}
+  },
+  {
+    id:'LL-005', category:'design', stage:'Проектирование', region:'Дальний Восток', contract:'EPC', projectType:'Greenfield',
+    title:'Позднее вовлечение эксплуатации в проектирование увеличивает объём переделок',
+    project:'Greenfield LNG Plant, 2024', risk:'R-1004 · Design changes and rework',
+    sourceDoc:'PMR-2024-027.pdf',
+    context:'Служба эксплуатации будущего объекта была подключена к ревью проектных решений только на стадии Detail Design (после 70% готовности).',
+    whatHappened:'Замечания эксплуатации по компоновке узла факельной системы потребовали пересмотра трассировки трубопроводов, уже выпущенных в производство.',
+    rootCause:'В плане проектирования отсутствовала контрольная точка обязательного ревью с эксплуатацией на стадии FEED.',
+    consequence:'Переработка 23 чертежей, задержка выпуска IFC-документации на 18 дней.',
+    successfulAction:'Введение обязательного HAZOP/операбилити-ревью с участием эксплуатации на завершении FEED в последующих узлах устранило повторение проблемы.',
+    unsuccessfulAction:'—',
+    recommendation:'Включать представителя эксплуатации в ревью на стадии FEED как обязательную контрольную точку, а не опциональную консультацию.',
+    applicability:'Технологически сложные узлы (факельные системы, системы аварийного сброса) на проектах Greenfield.',
+    impactDays:18, impactCostPct:0.6, occurrences:'5 / 9',
+    validatedBy:'Т. Волкова, гл. инженер проекта', validationDate:'—', status:'review',
+    sim:{type:80, region:62, contract:71, capex:55, stage:44}
+  },
+  {
+    id:'LL-030', category:'external', stage:'Проектирование', region:'Северо-Запад', contract:'EPCM', projectType:'Brownfield',
+    title:'Параллельное согласование с двумя регуляторами сокращает срок получения разрешений',
+    project:'Offshore Platform Project, 2023', risk:'R-1005 · Regulatory approval delays',
+    sourceDoc:'PMR-2023-063.pdf',
+    context:'Проект требовал последовательного согласования экологической экспертизы и разрешения на строительство в морской акватории у двух independent регуляторов.',
+    whatHappened:'Первичный график предполагал последовательную подачу пакетов документов, что удлиняло путь согласования.',
+    rootCause:'Регламент проекта не предусматривал возможности параллельной подготовки пакетов для независимых регуляторов.',
+    consequence:'При последовательной схеме прогнозировалась задержка старта строительства на 2.5 месяца.',
+    successfulAction:'Параллельная подготовка и подача пакетов с назначением отдельного ответственного за каждый трек сократила совокупный срок согласования на 40%.',
+    unsuccessfulAction:'—',
+    recommendation:'На проектах с несколькими независимыми регуляторами формировать параллельные треки согласования с самого начала, а не выстраивать их последовательно.',
+    applicability:'Проекты в прибрежной/морской зоне и на территориях с пересекающейся юрисдикцией нескольких регуляторов.',
+    impactDays:0, impactCostPct:0, occurrences:'3 / 6',
+    validatedBy:'П. Крылов, юридический советник', validationDate:'14.05.2023', status:'verified',
+    sim:{type:48, region:66, contract:52, capex:40, stage:58}
+  },
+  {
+    id:'LL-011', category:'resource', stage:'Строительство', region:'Урал', contract:'EPC', projectType:'Brownfield',
+    title:'Резерв вахтового персонала компенсирует дефицит квалифицированных рабочих в регионе',
+    project:'Refinery Upgrade, 2022', risk:'R-1006 · Skilled labor shortage',
+    sourceDoc:'PMR-2022-077.pdf',
+    context:'Регион исполнения проекта имел ограниченный локальный рынок сварщиков с допуском НАКС требуемого уровня.',
+    whatHappened:'На пике потребности локальный рынок не мог обеспечить более 55% требуемой численности сварщиков.',
+    rootCause:'Кадровый план строился на прогнозе локального найма без учёта фактической ёмкости регионального рынка труда.',
+    consequence:'Риск срыва темпа сварочно-монтажных работ на критическом участке технологической эстакады.',
+    successfulAction:'Формирование вахтового резерва (20% от плановой численности) с привлечением из соседних регионов закрыло дефицит без остановки работ.',
+    unsuccessfulAction:'Повышение расценок для локального рынка на 100% привлекло незначительное количество дополнительных кадров при значительном росте бюджета.',
+    recommendation:'На старте планирования оценивать фактическую ёмкость локального рынка труда по дефицитным специальностям и закладывать вахтовый резерв 15–20%.',
+    applicability:'Проекты в регионах с ограниченным предложением квалифицированного персонала по НАКС-специальностям.',
+    impactDays:0, impactCostPct:1.1, occurrences:'5 / 8',
+    validatedBy:'Е. Орлова, HR бизнес-партнёр', validationDate:'09.09.2022', status:'verified',
+    sim:{type:59, region:73, contract:49, capex:52, stage:61}
+  },
+  {
+    id:'LL-018', category:'contract', stage:'Строительство', region:'Юг', contract:'EPC', projectType:'Greenfield',
+    title:'Отсутствие штрафных условий в договоре субподряда осложнило разрешение спора',
+    project:'Coastal Power Plant, 2021', risk:'R-1007 · Disputes with subcontractor',
+    sourceDoc:'PMR-2021-142.pdf',
+    context:'Договор субподряда на пусконаладочные работы не содержал детализированных условий по срокам устранения замечаний и штрафных санкций.',
+    whatHappened:'Субподрядчик систематически нарушал согласованные сроки устранения замечаний без договорных последствий.',
+    rootCause:'Юридическая экспертиза договора на этапе тендера не выявила отсутствие штрафных условий как существенный риск.',
+    consequence:'Спор был урегулирован только через 3 раунда переговоров, потеря 11 дней на пусконаладке.',
+    successfulAction:'—',
+    unsuccessfulAction:'Использование типового шаблона договора без адаптации раздела ответственности под специфику пусконаладочных работ.',
+    recommendation:'В договорах пусконаладки обязательно закреплять сроки устранения замечаний, штрафные санкции и порядок эскалации спора.',
+    applicability:'Договоры субподряда на пусконаладочные и гарантийные работы вне зависимости от контрактной модели.',
+    impactDays:11, impactCostPct:0.4, occurrences:'3 / 9',
+    validatedBy:'—', validationDate:'—', status:'rejected',
+    sim:{type:41, region:50, contract:77, capex:33, stage:39}
+  },
+  {
+    id:'LL-024', category:'environmental', stage:'Строительство', region:'Юг', contract:'EPC', projectType:'Greenfield',
+    title:'Сезонное окно морской логистики не заложено в график тяжеловесных грузов',
+    project:'Coastal Power Plant, 2021', risk:'R-1008 · Adverse weather impact',
+    sourceDoc:'PMR-2021-156.pdf',
+    context:'Доставка крупногабаритного генераторного оборудования планировалась морским транспортом в прибрежном регионе с выраженной штормовой сезонностью.',
+    whatHappened:'Плановая дата захода судна попала в начало сезона штормов, что привело к трёхнедельному ожиданию safe weather window.',
+    rootCause:'График логистики формировался без учёта многолетней статистики штормовой активности региона.',
+    consequence:'Задержка выгрузки на 21 день, простой такелажной бригады на площадке.',
+    successfulAction:'Перенос последующих тяжеловесных поставок за пределы штормового окна по многолетней статистике исключил повторение.',
+    unsuccessfulAction:'—',
+    recommendation:'При планировании морской логистики тяжеловесных грузов в прибрежных регионах закладывать буфер по многолетней статистике штормовых окон, а не только по контрактному сроку изготовления.',
+    applicability:'Проекты с морской доставкой негабаритного/тяжеловесного оборудования в регионах с сезонной штормовой активностью.',
+    impactDays:21, impactCostPct:0.3, occurrences:'2 / 5',
+    validatedBy:'Н. Гаврилов, HSE-менеджер', validationDate:'—', status:'review',
+    sim:{type:37, region:69, contract:44, capex:29, stage:35}
+  }
+];
+
+let currentStatus = '';
+let selectedId = LESSONS[0].id;
+let currentList = LESSONS.slice();
+
+const $ = sel => document.querySelector(sel);
+const tbody = $('#tbody');
+const tfootNote = $('#tfootNote');
+const detailPanel = $('#detailPanel');
+
+function statusPill(s){
+  const st = STATUS[s];
+  return `<span class="status-pill ${st.cls}">${st.label}</span>`;
+}
+function catBadge(c){
+  const cat = CATS[c];
+  return `<span class="badge ${cat.cls}">${cat.label}</span>`;
+}
+
+function renderTable(list){
+  tbody.innerHTML = list.map(l => `
+    <tr data-id="${l.id}" class="${l.id===selectedId ? 'selected':''}">
+      <td class="lesson-id">${l.id}</td>
+      <td class="col-title">
+        <div class="lesson-title">${l.title}</div>
+        <div class="lesson-src">${l.project} · риск ${l.risk.split(' · ')[0]}</div>
+      </td>
+      <td>${catBadge(l.category)}</td>
+      <td>${l.stage}</td>
+      <td class="impact-cell">
+        ${l.impactDays ? `${l.impactDays} дн.` : '—'}
+        <span class="lbl">${l.impactCostPct ? l.impactCostPct+'% CAPEX' : 'ущерба нет'}</span>
+      </td>
+      <td>${statusPill(l.status)}</td>
+    </tr>
+  `).join('');
+  tfootNote.textContent = `Показаны ${list.length} из ${LESSONS.length} уроков`;
+
+  tbody.querySelectorAll('tr').forEach(tr=>{
+    tr.addEventListener('click', ()=>{
+      selectedId = tr.dataset.id;
+      renderTable(currentList);
+      renderDetail(LESSONS.find(l=>l.id===selectedId));
+    });
+  });
+}
+
+function simRow(name, pct){
+  return `
+    <div class="sim-row">
+      <div class="name">${name}</div>
+      <div class="sim-bar"><span style="width:${pct}%"></span></div>
+      <div class="pct">${pct}%</div>
+    </div>`;
+}
+
+function recBlock(label, value, kind, icon){
+  return `
+    <div class="rec ${kind||''}">
+      <div class="k">${icon||''}${label}</div>
+      <div class="v">${value}</div>
+    </div>`;
+}
+
+function renderDetail(l){
+  const weights = {type:.30, region:.15, contract:.20, capex:.20, stage:.15};
+  const total = Math.round(
+    l.sim.type*weights.type + l.sim.region*weights.region + l.sim.contract*weights.contract +
+    l.sim.capex*weights.capex + l.sim.stage*weights.stage
+  );
+
+  const validBox = l.status === 'verified'
+    ? `<div class="valid-box">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 12.5l4.5 4.5L20 6" stroke="#0a6847" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div>
+          <div class="t">Верифицировано</div>
+          <div class="d"><b>${l.validatedBy}</b> · ${l.validationDate}<br>Источник: <span class="mono">${l.sourceDoc}</span></div>
+        </div>
+      </div>`
+    : l.status === 'review'
+    ? `<div class="valid-box pending">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 8v5l3 2" stroke="#b8710f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="#b8710f" stroke-width="1.8"/></svg>
+        <div>
+          <div class="t">Ожидает верификации риск-менеджера</div>
+          <div class="d">Предложено экспертом предметной области. Источник: <span class="mono">${l.sourceDoc}</span></div>
+        </div>
+      </div>`
+    : `<div class="valid-box" style="background:var(--red-50);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 8v5m0 3h.01" stroke="#c2372c" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="#c2372c" stroke-width="1.8"/></svg>
+        <div>
+          <div class="t" style="color:#c2372c;">Отклонено при верификации</div>
+          <div class="d">Недостаточно оснований для добавления в базу RAG. Источник: <span class="mono">${l.sourceDoc}</span></div>
+        </div>
+      </div>`;
+
+  const footAction = l.status === 'review'
+    ? `<button class="btn btn-primary">Принять</button><button class="btn">Уточнить</button>`
+    : l.status === 'rejected'
+    ? `<button class="btn">Вернуть на верификацию</button>`
+    : `<button class="btn btn-primary">Использовать в карточке риска</button>`;
+
+  detailPanel.innerHTML = `
+    <div class="detail-head">
+      <div>
+        <div class="eyebrow">${l.id} · lessons_learned</div>
+        <h2>${l.title}</h2>
+        <div class="detail-badges">${catBadge(l.category)}<span class="badge badge-design">${l.stage}</span><span class="badge badge-external">${l.projectType}</span></div>
+      </div>
+      <button class="close-x" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+    </div>
+    <div class="detail-body">
+
+      <div class="link-row">
+        <span class="chip">📁 ${l.project}</span>
+        <span class="sep">·</span>
+        <span class="chip">риск <span class="mono">${l.risk.split(' · ')[0]}</span></span>
+        <span class="sep">·</span>
+        <span class="chip">${l.contract} · ${l.region}</span>
+      </div>
+
+      ${recBlock('Контекст', l.context)}
+      ${recBlock('Что произошло', l.whatHappened)}
+      ${recBlock('Коренная причина', l.rootCause)}
+      ${recBlock('Последствие', l.consequence)}
+      ${recBlock('Что сработало', l.successfulAction, 'good', '✓ ')}
+      ${recBlock('Что не сработало', l.unsuccessfulAction, 'bad', '✕ ')}
+      ${recBlock('Рекомендация', l.recommendation)}
+      ${recBlock('Условия применимости', l.applicability)}
+
+      <div class="stat-tiles">
+        <div class="stat-tile"><div class="l">Влияние на срок</div><div class="v">${l.impactDays ? l.impactDays+' дн.' : '—'}</div></div>
+        <div class="stat-tile"><div class="l">Влияние на CAPEX</div><div class="v">${l.impactCostPct ? l.impactCostPct+'%' : '—'}</div></div>
+        <div class="stat-tile"><div class="l">Частота в схожих проектах</div><div class="v small">${l.occurrences}</div></div>
+        <div class="stat-tile"><div class="l">Категория риска</div><div class="v small">${CATS[l.category].label}</div></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="mini-title">Похожесть на текущий проект <span class="formula">Σ(w·s)</span></div>
+      ${simRow('Тип проекта', l.sim.type)}
+      ${simRow('Регион', l.sim.region)}
+      ${simRow('Контрактная модель', l.sim.contract)}
+      ${simRow('Диапазон CAPEX', l.sim.capex)}
+      ${simRow('Стадия', l.sim.stage)}
+      <div class="sim-total">
+        <div class="lbl">Итоговый score похожести</div>
+        <div class="score">${total}%</div>
+      </div>
+
+      <div class="divider"></div>
+      ${validBox}
+    </div>
+    <div class="detail-foot">${footAction}</div>
+  `;
+
+  detailPanel.querySelector('.close-x').addEventListener('click', ()=>{
+    selectedId = null;
+    renderTable(currentList);
+    detailPanel.innerHTML = `<div style="padding:40px 24px; text-align:center; color:var(--ink-400); font-size:13px;">Выберите урок из списка слева, чтобы увидеть полную карточку.</div>`;
+  });
+}
+
+function applyFilters(){
+  const cat = $('#fCategory').value;
+  const stage = $('#fStage').value;
+  const region = $('#fRegion').value;
+  const contract = $('#fContract').value;
+  const status = $('#fStatus').value;
+
+  currentList = LESSONS.filter(l =>
+    (!cat || l.category===cat) &&
+    (!stage || l.stage===stage) &&
+    (!region || l.region===region) &&
+    (!contract || l.contract===contract) &&
+    (!status || l.status===status) &&
+    (!currentStatus || l.status===currentStatus)
+  );
+  renderTable(currentList);
+}
+
+['fCategory','fStage','fRegion','fContract','fStatus'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', applyFilters);
+});
+
+$('#resetBtn').addEventListener('click', ()=>{
+  ['fCategory','fStage','fRegion','fContract','fStatus'].forEach(id=> document.getElementById(id).value = '');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector('.tab[data-status=""]').classList.add('active');
+  currentStatus = '';
+  $('#aiAnswer').classList.remove('show');
+  $('#ragQuery').value = '';
+  applyFilters();
+});
+
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    currentStatus = tab.dataset.status;
+    applyFilters();
+  });
+});
+
+function scoreLesson(q, l){
+  q = q.toLowerCase();
+  const terms = q.split(/\s+/).filter(t=>t.length>2);
+  const haystack = [l.title, l.context, l.whatHappened, l.recommendation, l.applicability, CATS[l.category].label, l.stage].join(' ').toLowerCase();
+  let score = 0;
+  terms.forEach(t=>{ if(haystack.includes(t)) score += 1; });
+  return score;
+}
+
+$('#askBtn').addEventListener('click', runSearch);
+$('#ragQuery').addEventListener('keydown', e=>{ if(e.key==='Enter') runSearch(); });
+
+function runSearch(){
+  const q = $('#ragQuery').value.trim();
+  if(!q){ $('#aiAnswer').classList.remove('show'); return; }
+
+  const ranked = LESSONS.map(l=>({l, s:scoreLesson(q,l)})).filter(r=>r.s>0).sort((a,b)=>b.s-a.s);
+  const top = ranked.slice(0,3);
+
+  if(top.length===0){
+    $('#aiAnswerText').textContent = 'В базе не найдено уроков, релевантных запросу. Недостаточно данных для обоснованного ответа — уточните формулировку или расширьте фильтры.';
+    $('#aiSources').innerHTML = '';
+  } else {
+    const bullets = top.map(r=> `«${r.l.recommendation}»`).join(' ');
+    $('#aiAnswerText').textContent =
+      `На основании ${top.length} релевантных уроков из завершённых проектов: ${bullets}`;
+    $('#aiSources').innerHTML = top.map(r=>`
+      <span class="src-chip"><span class="id">${r.l.id}</span> ${r.l.project}</span>
+    `).join('');
+  }
+  $('#aiAnswer').classList.add('show');
+
+  currentList = top.length ? top.map(r=>r.l) : [];
+  renderTable(currentList.length ? currentList : []);
+  if(top.length){ selectedId = top[0].l.id; renderTable(currentList); renderDetail(top[0].l); }
+}
+
+renderTable(currentList);
+renderDetail(LESSONS.find(l=>l.id===selectedId));
+</script>
+</body>
+</html>
