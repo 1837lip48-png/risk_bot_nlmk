@@ -395,6 +395,81 @@
   .overlay{position:fixed; inset:0; background:rgba(11,28,61,.45); backdrop-filter:blur(2px); display:none; align-items:flex-start; justify-content:center; z-index:60; padding:48px 20px; overflow-y:auto;}
   .overlay.show{display:flex;}
   .modal-card{background:var(--paper-0); border-radius:16px; max-width:640px; width:100%; box-shadow:var(--shadow-pop); overflow:hidden;}
+  .modal-card.wide{max-width:760px;}
+
+  /* =========================================================
+     LOGIN / PROJECT GATE
+     ========================================================= */
+  .login-gate{min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--canvas); padding:24px;}
+  .login-gate.hide{display:none;}
+  .app.hide{display:none;}
+  .login-card{width:100%; max-width:480px; background:var(--paper-0); border:1px solid var(--line); border-radius:var(--radius-card); box-shadow:var(--shadow-pop); padding:30px 28px;}
+  .login-card .brand{border-bottom:none; padding:0 0 20px; margin-bottom:20px; justify-content:center;}
+  .login-card .brand-text .name{color:var(--ink-900);}
+  .login-card .brand-text .tag{color:var(--ink-600);}
+  .login-card h2{font-size:19px; font-weight:800; margin-bottom:4px; text-align:center;}
+  .login-card .sub{font-size:12.5px; color:var(--ink-600); margin-bottom:22px; text-align:center;}
+  .login-field{display:flex; flex-direction:column; gap:5px; margin-bottom:14px;}
+  .login-field label{font-size:10.5px; font-weight:700; color:var(--ink-600); text-transform:uppercase; letter-spacing:.4px;}
+  .login-field input, .login-field select{border:1px solid var(--line); border-radius:9px; padding:10px 12px; font-size:13px; color:var(--ink-900); background:var(--paper-0); width:100%; font-family:inherit;}
+  .login-row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .login-submit{width:100%; justify-content:center; margin-top:8px; padding:12px;}
+  .login-note{font-size:11px; color:var(--ink-400); margin-top:16px; text-align:center; line-height:1.5;}
+
+  /* =========================================================
+     NOTIFICATIONS DROPDOWN
+     ========================================================= */
+  .notif-wrap{position:relative;}
+  .notif-panel{position:absolute; top:44px; right:0; width:320px; background:var(--paper-0); border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow-pop); z-index:70; display:none; overflow:hidden;}
+  .notif-panel.show{display:block;}
+  .notif-panel .nh{padding:12px 14px; border-bottom:1px solid var(--line); font-size:11.5px; font-weight:800; text-transform:uppercase; letter-spacing:.4px; color:var(--ink-700);}
+  .notif-item{display:flex; gap:10px; padding:11px 14px; border-bottom:1px solid var(--line-soft); font-size:12.5px;}
+  .notif-item .ic{font-size:15px; flex-shrink:0;}
+  .notif-item .tt{color:var(--ink-900); font-weight:600; line-height:1.35;}
+  .notif-item .tm{color:var(--ink-400); font-size:11px; margin-top:2px;}
+  .notif-foot{padding:10px 14px; font-size:11px; color:var(--ink-400);}
+
+  .status-escalated{background:var(--indigo-50); color:var(--indigo-700);}
+  .status-escalated::before{background:var(--indigo-700);}
+
+  /* =========================================================
+     RISK CARD EXTRAS: lifecycle stepper, comments, attachments, edit mode
+     ========================================================= */
+  .stepper{display:flex; flex-direction:column; gap:0;}
+  .step-item{display:flex; gap:10px; position:relative; padding-bottom:16px;}
+  .step-item:last-child{padding-bottom:0;}
+  .step-dot{width:16px;height:16px;border-radius:50%; border:2px solid var(--line); background:var(--paper-0); flex-shrink:0; margin-top:1px; position:relative; z-index:1;}
+  .step-item.done .step-dot{background:var(--green-600); border-color:var(--green-600);}
+  .step-item:not(:last-child)::before{content:''; position:absolute; left:7px; top:16px; bottom:0; width:2px; background:var(--line);}
+  .step-item.done:not(:last-child)::before{background:var(--green-600);}
+  .step-body .t{font-size:12.5px; font-weight:600; color:var(--ink-900);}
+  .step-body .m{font-size:11px; color:var(--ink-400);}
+  .step-item:not(.done) .step-body .t{color:var(--ink-400); font-weight:500;}
+
+  .comment-item{display:flex; gap:9px; margin-bottom:12px;}
+  .comment-item .av{width:28px;height:28px;border-radius:50%; background:var(--accent-50); color:var(--accent-600); font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .comment-item .body{background:var(--canvas-alt); border-radius:10px; padding:8px 10px; flex:1;}
+  .comment-item .a{font-size:11.5px; font-weight:700; color:var(--ink-900);}
+  .comment-item .d{font-size:10px; color:var(--ink-400); margin-left:6px; font-weight:500;}
+  .comment-item .t{font-size:12.5px; color:var(--ink-700); margin-top:2px;}
+  .comment-add{display:flex; gap:8px; margin-top:4px;}
+  .comment-add input{flex:1; border:1px solid var(--line); border-radius:9px; padding:8px 11px; font-size:12.5px; font-family:inherit;}
+
+  .attach-chip{display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--line); border-radius:9px; font-size:11.5px; color:var(--ink-700); background:var(--canvas-alt); margin:0 6px 6px 0;}
+
+  .tagchip{display:inline-flex; align-items:center; padding:6px 12px; border-radius:var(--radius-chip); font-size:12px; font-weight:600; border:1px solid var(--line); background:var(--paper-0); color:var(--ink-600); cursor:pointer;}
+  .tagchip.active{background:var(--accent-600); border-color:var(--accent-600); color:#fff;}
+
+  .edit-field{margin-bottom:12px;}
+  .edit-field label{display:block; font-size:10.5px; font-weight:700; color:var(--ink-600); text-transform:uppercase; letter-spacing:.4px; margin-bottom:5px;}
+  .edit-field textarea, .edit-field select, .edit-field input{width:100%; border:1px solid var(--line); border-radius:9px; padding:9px 11px; font-size:13px; color:var(--ink-900); background:var(--paper-0); font-family:inherit;}
+  .edit-field textarea{min-height:70px; resize:vertical;}
+  .edit-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+
+  .impact-icons{display:inline-flex; gap:4px; margin-left:6px;}
+  .impact-icons .ii{font-size:12px;}
+
+  .viewer-note{display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--ink-400); padding:8px 4px;}
 
   @media (max-width: 1180px){
     .workspace{grid-template-columns:1fr;}
@@ -403,6 +478,7 @@
     .dash-row{grid-template-columns:1fr;}
     .dash-row2{grid-template-columns:1fr;}
     .sev-tiles{grid-template-columns:repeat(3,1fr);}
+    .edit-grid{grid-template-columns:1fr;}
   }
   @media (max-width: 720px){
     .app{grid-template-columns:1fr;}
@@ -411,7 +487,54 @@
 </style>
 </head>
 <body>
-<div class="app">
+
+<div class="login-gate" id="loginGate">
+  <div class="login-card">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M4 21V9l8-5 8 5v12" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 21v-7h6v7" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M4 21h16" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <div class="brand-text">
+        <div class="name">RiskAssess Bot</div>
+        <div class="tag">Smarter Risks. Stronger Projects.</div>
+      </div>
+    </div>
+    <h2>Вход в систему</h2>
+    <div class="sub">Укажите себя, роль и проект — риск-регистр ведётся отдельно по каждому проекту</div>
+
+    <div class="login-field">
+      <label>ФИО</label>
+      <input type="text" id="loginName" placeholder="Иванов Пётр Сергеевич" value="Иванов Пётр Сергеевич">
+    </div>
+    <div class="login-field">
+      <label>Роль</label>
+      <select id="loginRole"></select>
+    </div>
+    <div class="login-field">
+      <label>СПП проекта</label>
+      <input type="text" id="loginSpp" placeholder="СПП-2024-0317" value="СПП-2024-0317">
+    </div>
+    <div class="login-field">
+      <label>Название проекта</label>
+      <input type="text" id="loginProjectName" placeholder="Офшорная ВЭС «Орион»" value="Офшорная ВЭС «Орион»">
+    </div>
+    <div class="login-row">
+      <div class="login-field">
+        <label>Площадка</label>
+        <select id="loginSite"></select>
+      </div>
+      <div class="login-field">
+        <label>Фаза проекта</label>
+        <select id="loginPhase"></select>
+      </div>
+    </div>
+
+    <button class="btn btn-primary login-submit" id="loginSubmit">Войти в систему</button>
+    <div class="login-note">Роль определяет доступные действия: создавать риски может любой участник проекта, редактировать реестр и верифицировать данные — риск-менеджер. Роль и проект можно сменить позже, нажав на профиль в левом меню.</div>
+  </div>
+</div>
+
+<div class="app hide" id="appRoot">
 
   <aside class="sidebar">
     <div class="brand">
@@ -427,16 +550,14 @@
       <a href="#" data-view="dashboard" class="active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="13" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="13" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/></svg>Дэшборд</a>
       <a href="#" data-view="register"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v16H4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M4 9h16M9 9v11" stroke="currentColor" stroke-width="1.8"/></svg>Риск-регистр</a>
       <a href="#" data-view="matrix"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18" stroke="currentColor" stroke-width="1.4"/></svg>Риск-матрица</a>
-      <a href="#" data-view="library"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="4" height="16" rx="1" stroke="currentColor" stroke-width="1.7"/><rect x="10" y="4" width="4" height="16" rx="1" stroke="currentColor" stroke-width="1.7"/><rect x="16" y="7" width="4" height="13" rx="1" stroke="currentColor" stroke-width="1.7"/></svg>Библиотека рисков</a>
       <a href="#" data-view="lessons"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 3h9l5 5v13H6z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M15 3v5h5M9 13h6M9 17h6M9 9h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Уроки на основе рисков</a>
-      <a href="#" data-view="settings"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1.04 1.56V21a2 2 0 11-4 0v-.09A1.7 1.7 0 008.44 19a1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.7 1.7 0 004 14.56 1.7 1.7 0 002.44 13.6H2.35a2 2 0 110-4h.09A1.7 1.7 0 004 8.44a1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06A1.7 1.7 0 008.36 4c.61 0 1.16-.36 1.4-.92" stroke="currentColor" stroke-width="1.7"/></svg>Настройки</a>
     </nav>
     <div class="sidebar-spacer"></div>
-    <div class="user">
-      <div class="avatar">СД</div>
+    <div class="user" id="userBlock" title="Сменить роль или проект" style="cursor:pointer;">
+      <div class="avatar" id="userAvatar">—</div>
       <div class="who">
-        <div class="n">Сара Джонсон</div>
-        <div class="r">Риск-менеджер</div>
+        <div class="n" id="userName">—</div>
+        <div class="r" id="userRole">—</div>
       </div>
     </div>
   </aside>
@@ -449,13 +570,23 @@
         <div class="sub" id="pageSub">Проект «Орион» · Офшорная ветроэлектростанция, 350 МВт</div>
       </div>
       <div class="top-actions">
+        <button class="icon-btn" id="themeToggle" title="Светлая/тёмная тема" aria-label="Тема">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+        </button>
         <button class="icon-btn" title="Справка" aria-label="Справка">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M9.5 9.3a2.5 2.5 0 114 2c-.8.6-1.5 1.1-1.5 2.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="17" r="0.9" fill="currentColor"/></svg>
         </button>
-        <button class="icon-btn" title="Уведомления" aria-label="Уведомления">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 9a6 6 0 1112 0c0 4.2 1.2 5.7 1.8 6.4a1 1 0 01-.8 1.6H5a1 1 0 01-.8-1.6C4.8 14.7 6 13.2 6 9z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.5 19a2.5 2.5 0 005 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-          <span class="dot">3</span>
-        </button>
+        <div class="notif-wrap">
+          <button class="icon-btn" id="notifBtn" title="Уведомления" aria-label="Уведомления">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 9a6 6 0 1112 0c0 4.2 1.2 5.7 1.8 6.4a1 1 0 01-.8 1.6H5a1 1 0 01-.8-1.6C4.8 14.7 6 13.2 6 9z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.5 19a2.5 2.5 0 005 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            <span class="dot" id="notifCount">4</span>
+          </button>
+          <div class="notif-panel" id="notifPanel">
+            <div class="nh">Уведомления</div>
+            <div id="notifList"></div>
+            <div class="notif-foot">Критичные уведомления также дублируются на email</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -465,21 +596,23 @@
       <div class="panel project-strip">
         <div class="id-block">
           <div class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 2l3 6 6 1-4.5 4.5L18 20l-6-3-6 3 1.5-6.5L3 9l6-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
-          <div><div class="name">Проект «Орион»</div><div class="desc">Офшорная ветроэлектростанция, 350 МВт</div></div>
+          <div><div class="name" id="dashProjectName">Проект</div><div class="desc" id="dashProjectSpp">СПП</div></div>
         </div>
-        <div class="field"><label>Тип проекта</label><select><option>Инфраструктура</option></select></div>
-        <div class="field"><label>Регион</label><select><option>Северная Америка</option></select></div>
-        <div class="field"><label>Стадия</label><select><option>Строительство</option></select></div>
+        <div class="field"><label>Площадка</label><select id="dashSite"></select></div>
+        <div class="field"><label>Фаза проекта</label><select id="dashPhase"></select></div>
         <div class="spacer"></div>
-        <div class="field"><label>Данные на дату</label><select id="dashDate"><option>20 мая 2024</option><option>29 апр 2024</option><option>1 апр 2024</option></select></div>
-        <button class="btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 15V3m0 0L8 7m4-4l4 4M4 21h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Экспорт</button>
+        <div class="field"><label>Данные на</label><input type="text" id="dashToday" readonly style="border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:12.5px; background:var(--canvas-alt); color:var(--ink-700); min-width:120px;"></div>
+        <button class="btn" id="exportPptBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="13" rx="1.5" stroke="currentColor" stroke-width="1.7"/><path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M7 13l3-4 3 2.5 4-5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Экспорт в PPT</button>
       </div>
+      <div class="viewer-note" id="portalNote">ℹ Интеграция с внутренним порталом компании (данные по СПП) — на следующем этапе развития продукта.</div>
+
+      <div class="kpis" id="dashKpis"></div>
 
       <div class="dash-row">
         <div class="panel">
           <div class="panel-head">
             <h3>Риск-матрица</h3>
-            <span class="hint" title="P × I, инвентарный (Inherent) риск"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 11v5m0-8h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+            <span class="hint" title="P × I, свойственный риск"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 11v5m0-8h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
             <div class="spacer"></div>
             <div class="matrix-toggle">
               <button data-mode="inherent" class="active">Свойственный</button>
@@ -496,44 +629,21 @@
         </div>
 
         <div class="panel">
-          <div class="panel-head">
-            <h3>Риск-регистр</h3>
-            <div class="spacer"></div>
-            <a href="#" class="mini-link" data-view="register">Открыть полный реестр →</a>
-          </div>
-          <div class="mini-table-wrap">
-            <table>
-              <thead><tr><th>ID</th><th>Категория</th><th>Описание</th><th>P</th><th>I</th><th>Score</th><th>Статус</th></tr></thead>
-              <tbody id="dashRegisterBody"></tbody>
-            </table>
-          </div>
-          <div class="table-foot"><span id="dashRegisterFoot"></span></div>
+          <div class="panel-head"><h3>Топ рисков по критичности</h3><span class="hint" title="Эскалированные риски — всегда наверху, далее по убыванию Score"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 11v5m0-8h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span></div>
+          <div id="top5List"></div>
         </div>
       </div>
 
-      <div class="dash-row2">
-        <div class="panel">
-          <div class="panel-head"><h3>Риски по критичности</h3></div>
-          <div class="sev-tiles" id="sevTiles"></div>
-          <div class="sev-stack" id="sevStack"></div>
+      <div class="panel">
+        <div class="panel-head"><h3>Тренд рисков по критичности</h3></div>
+        <div class="trend-legend">
+          <span class="sw"><span class="ln" style="background:var(--red-600)"></span>Критический</span>
+          <span class="sw"><span class="ln" style="background:var(--amber-600)"></span>Высокий</span>
+          <span class="sw"><span class="ln" style="background:var(--yellow-600)"></span>Средний</span>
+          <span class="sw"><span class="ln" style="background:var(--green-600)"></span>Низкий</span>
         </div>
-
-        <div class="panel">
-          <div class="panel-head"><h3>Топ-5 рисков по Score</h3></div>
-          <div id="top5List"></div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-head"><h3>Тренд рисков по критичности</h3></div>
-          <div class="trend-legend">
-            <span class="sw"><span class="ln" style="background:var(--red-600)"></span>Критический</span>
-            <span class="sw"><span class="ln" style="background:var(--amber-600)"></span>Высокий</span>
-            <span class="sw"><span class="ln" style="background:var(--yellow-600)"></span>Средний</span>
-            <span class="sw"><span class="ln" style="background:var(--green-600)"></span>Низкий</span>
-          </div>
-          <div id="trendChart" style="padding:8px 12px 0;"></div>
-          <div class="trend-note">Тренд отражает количество активных рисков по данным еженедельного обновления реестра.</div>
-        </div>
+        <div id="trendChart" style="padding:8px 12px 0;"></div>
+        <div class="trend-note">Тренд пересчитывается при каждом заполнении реестра и изменении статуса риска.</div>
       </div>
     </section>
 
@@ -542,12 +652,12 @@
       <div class="panel project-strip">
         <div class="id-block">
           <div class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 2l3 6 6 1-4.5 4.5L18 20l-6-3-6 3 1.5-6.5L3 9l6-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
-          <div><div class="name">Проект «Орион»</div><div class="desc">Офшорная ветроэлектростанция, 350 МВт</div></div>
+          <div><div class="name" id="regProjectName">Проект</div><div class="desc" id="regProjectSpp">СПП</div></div>
         </div>
         <div class="spacer"></div>
-        <button class="btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Импорт .xlsx</button>
-        <button class="btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 15V3m0 0L8 7m4-4l4 4M4 21h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Экспорт .xlsx</button>
-        <button class="btn btn-primary"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>Новый риск</button>
+        <button class="btn" id="regImportBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Импорт .xlsx</button>
+        <button class="btn" id="regExportBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 15V3m0 0L8 7m4-4l4 4M4 21h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Экспорт .xlsx</button>
+        <button class="btn btn-primary" id="newRiskBtn" onclick="openNewRiskModal(null)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>Новый риск</button>
       </div>
 
       <div class="panel filters-row">
@@ -558,7 +668,7 @@
         <div class="field"><label>Категория</label><select id="regCategory"><option value="">Все</option></select></div>
         <div class="field"><label>Стадия</label><select id="regStage"><option value="">Все</option></select></div>
         <div class="field"><label>Владелец</label><select id="regOwner"><option value="">Все</option></select></div>
-        <div class="field"><label>Статус</label><select id="regStatus"><option value="">Все</option><option value="open">Открыт</option><option value="monitoring">На контроле</option><option value="closed">Закрыт</option></select></div>
+        <div class="field"><label>Статус</label><select id="regStatus"><option value="">Все</option><option value="open">Открыт</option><option value="monitoring">На контроле</option><option value="escalated">Эскалирован</option><option value="closed">Закрыт</option></select></div>
         <button class="link-btn" id="regReset"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 1 1 3 6.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M3 17v-5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Сбросить</button>
       </div>
 
@@ -595,7 +705,7 @@
         <div class="field"><label>Категория</label><select id="mtxCategory"><option value="">Все</option></select></div>
         <div class="field"><label>Стадия</label><select id="mtxStage"><option value="">Все</option></select></div>
         <div class="field"><label>Владелец</label><select id="mtxOwner"><option value="">Все</option></select></div>
-        <div class="field"><label>Статус</label><select id="mtxStatus"><option value="">Все</option><option value="open">Открыт</option><option value="monitoring">На контроле</option><option value="closed">Закрыт</option></select></div>
+        <div class="field"><label>Статус</label><select id="mtxStatus"><option value="">Все</option><option value="open">Открыт</option><option value="monitoring">На контроле</option><option value="escalated">Эскалирован</option><option value="closed">Закрыт</option></select></div>
         <div class="spacer"></div>
         <div class="matrix-toggle">
           <button data-mode="inherent" class="active">Свойственный риск</button>
@@ -616,22 +726,6 @@
       </div>
     </section>
 
-    <!-- ============================================================ RISK LIBRARY ============================================================ -->
-    <section id="view-library" class="view">
-      <div class="panel search-panel">
-        <div class="search-row">
-          <div class="search-box">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-            <input id="libSearch" type="text" placeholder="Поиск по справочнику типовых рисков...">
-          </div>
-          <div class="field"><label>Категория</label><select id="libCategory"><option value="">Все</option></select></div>
-          <button class="link-btn" id="libReset"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 1 1 3 6.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M3 17v-5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Сбросить</button>
-        </div>
-        <div class="search-hint">Единая таксономия рисков (F-16) с исторической статистикой по портфелю пилотных проектов — базовая вероятность P_base и медианное влияние используются как основание для оценки новых рисков (п. 9.3–9.5 ТЗ).</div>
-      </div>
-      <div class="lib-grid" id="libGrid"></div>
-    </section>
-
     <!-- ============================================================ LESSONS LEARNED ============================================================ -->
     <section id="view-lessons" class="view">
 
@@ -643,6 +737,10 @@
       </div>
 
       <div class="panel search-panel">
+        <div class="chip-group" style="margin-bottom:12px;">
+          <div class="k">Быстрый подбор по тегам</div>
+          <div class="chip-list" id="tagPicker"></div>
+        </div>
         <div class="search-row">
           <div class="search-box">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -680,7 +778,8 @@
         <div class="field"><label>Статус</label><select id="fStatus"><option value="">Все</option><option value="verified">Проверено</option><option value="review">На верификации</option><option value="rejected">Отклонено</option></select></div>
         <div class="spacer"></div>
         <button class="link-btn" id="resetBtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 1 1 3 6.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M3 17v-5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Сбросить фильтры</button>
-        <button class="btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Импорт .xlsx</button>
+        <button class="btn" id="lessonsImportXlsxBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Импорт .xlsx</button>
+        <button class="btn" id="lessonsImportConfluenceBtn" title="Импорт сырых документов из Confluence"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3a9 9 0 100 18 9 9 0 000-18z" stroke="currentColor" stroke-width="1.6"/><path d="M8 12h8M12 8v8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Импорт из Confluence</button>
         <button class="btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 15V3m0 0L8 7m4-4l4 4M4 21h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Экспорт .xlsx</button>
         <button class="btn btn-primary" id="addBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>Новый урок</button>
       </div>
@@ -695,7 +794,7 @@
           </div>
           <div class="table-wrap">
             <table class="min-w">
-              <thead><tr><th style="width:88px;">ID</th><th class="col-title">Урок / источник</th><th>Категория</th><th>Стадия</th><th>Влияние факт.</th><th>Статус</th></tr></thead>
+              <thead><tr><th style="width:88px;">ID</th><th class="col-title">Урок / источник</th><th>Категория</th><th>Влияние</th><th>Стадия</th><th>Статус</th></tr></thead>
               <tbody id="lessonsTbody"></tbody>
               <tfoot><tr><td colspan="6" id="lessonsTfootNote">Показаны 9 из 9 уроков</td></tr></tfoot>
             </table>
@@ -705,19 +804,17 @@
       </div>
     </section>
 
-    <!-- ============================================================ SETTINGS (stub) ============================================================ -->
-    <section id="view-settings" class="view">
-      <div class="panel" style="padding:40px 24px; text-align:center; color:var(--ink-400); font-size:13px;">
-        Администрирование пользователей, ролей и справочников (п. 4, F-09 ТЗ) — вне рамок текущего прототипа интерфейса.
-      </div>
-    </section>
-
   </main>
 </div>
 
 <!-- Shared risk-card modal -->
 <div class="overlay" id="riskCardOverlay">
-  <div class="modal-card" id="riskCardContent"></div>
+  <div class="modal-card wide" id="riskCardContent"></div>
+</div>
+
+<!-- New-risk wizard modal (manual + RAG tag-picker) -->
+<div class="overlay" id="newRiskOverlay">
+  <div class="modal-card wide" id="newRiskContent"></div>
 </div>
 
 <script>
@@ -725,12 +822,10 @@
    NAVIGATION
    ========================================================= */
 const PAGE_META = {
-  dashboard:{t:'Дэшборд', s:'Проект «Орион» · Офшорная ветроэлектростанция, 350 МВт'},
-  register:{t:'Риск-регистр', s:'Активные риски проекта «Орион» с оценкой P/I и статусом мероприятий'},
-  matrix:{t:'Риск-матрица 5×5', s:'Визуализация вероятности и влияния активных рисков проекта'},
-  library:{t:'Библиотека рисков', s:'Справочник типовых рисков и историческая статистика по портфелю пилотных проектов'},
-  lessons:{t:'База уроков (Lessons Learned)', s:'Исторический опыт завершённых EPC-проектов как основание для оценки P/I/RRA новых рисков и подготовки Pre-mortem.'},
-  settings:{t:'Настройки', s:'Администрирование пользователей, ролей и справочников'}
+  dashboard:{t:'Дэшборд', s:()=>`${session.projectName} · ${session.spp} · ${session.site}`},
+  register:{t:'Риск-регистр', s:()=>`Активные риски проекта ${session.projectName} с оценкой P/I и статусом мероприятий`},
+  matrix:{t:'Риск-матрица 5×5', s:()=>'Визуализация вероятности и влияния активных рисков проекта'},
+  lessons:{t:'База уроков (Lessons Learned)', s:()=>'Исторический опыт завершённых EPC-проектов как основание для оценки P/I/RRA новых рисков и подготовки Pre-mortem.'}
 };
 function showView(name){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
@@ -739,12 +834,140 @@ function showView(name){
   const navLink = document.querySelector(`.nav a[data-view="${name}"]`);
   if(navLink) navLink.classList.add('active');
   document.getElementById('pageTitle').textContent = PAGE_META[name].t;
-  document.getElementById('pageSub').textContent = PAGE_META[name].s;
+  document.getElementById('pageSub').textContent = PAGE_META[name].s();
   window.scrollTo({top:0});
 }
 document.querySelectorAll('[data-view]').forEach(el=>{
   el.addEventListener('click', e=>{ e.preventDefault(); showView(el.dataset.view); });
 });
+
+/* =========================================================
+   SESSION / LOGIN / ROLES / THEME / NOTIFICATIONS
+   ========================================================= */
+const ROLES = [
+  {id:'initiator', label:'Инициатор риска'},
+  {id:'riskmanager', label:'Риск-менеджер'},
+  {id:'curator', label:'Куратор'},
+  {id:'customer', label:'Заказчик'},
+  {id:'contractor_smr', label:'Подрядчик СМР'},
+  {id:'contractor_pir', label:'Подрядчик ПИР'},
+  {id:'supplier_oto', label:'Поставщик ОТО'},
+  {id:'supplier_kvo', label:'Поставщик КВО'},
+  {id:'viewer', label:'Наблюдатель (только просмотр)'}
+];
+const ROLE_LABEL = Object.fromEntries(ROLES.map(r=>[r.id,r.label]));
+const SITES = ['Липецк','Старый Оскол','Екатеринбург'];
+const PHASES = [
+  {v:1, label:'Фаза 1 — Инициация'}, {v:2, label:'Фаза 2 — Проектирование'},
+  {v:3, label:'Фаза 3 — Закупки'}, {v:4, label:'Фаза 4 — Строительство'}, {v:5, label:'Фаза 5 — Ввод в эксплуатацию'}
+];
+
+let session = {name:'Иванов Пётр Сергеевич', role:'riskmanager', spp:'СПП-2024-0317', projectName:'Офшорная ВЭС «Орион»', site:'Липецк', phase:4};
+
+function canEdit(){ return session.role==='riskmanager'; }
+function canCreateRisk(){ return session.role!=='viewer'; }
+function canComment(){ return session.role!=='viewer'; }
+
+function initials(name){
+  const parts = name.trim().split(/\s+/);
+  return ((parts[0]?.[0]||'') + (parts[1]?.[0]||'')).toUpperCase() || '—';
+}
+function applySessionToUI(){
+  document.getElementById('userAvatar').textContent = initials(session.name);
+  document.getElementById('userName').textContent = session.name;
+  document.getElementById('userRole').textContent = ROLE_LABEL[session.role];
+  const spp = document.getElementById('dashProjectSpp'), pn = document.getElementById('dashProjectName');
+  if(pn) pn.textContent = session.projectName;
+  if(spp) spp.textContent = `${session.spp} · ${session.site}`;
+  const rpn = document.getElementById('regProjectName'), rps = document.getElementById('regProjectSpp');
+  if(rpn) rpn.textContent = session.projectName;
+  if(rps) rps.textContent = `${session.spp} · ${session.site}`;
+  const dashSite = document.getElementById('dashSite'), dashPhase = document.getElementById('dashPhase');
+  if(dashSite){ dashSite.innerHTML = SITES.map(s=>`<option ${s===session.site?'selected':''}>${s}</option>`).join(''); dashSite.disabled = !canEdit(); }
+  if(dashPhase){ dashPhase.innerHTML = PHASES.map(p=>`<option value="${p.v}" ${p.v===session.phase?'selected':''}>${p.label}</option>`).join(''); dashPhase.disabled = !canEdit(); }
+  const today = document.getElementById('dashToday');
+  if(today) today.value = new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'});
+  const newRiskBtn = document.getElementById('newRiskBtn');
+  if(newRiskBtn){ newRiskBtn.disabled = !canCreateRisk(); newRiskBtn.style.opacity = canCreateRisk() ? '1' : '.5'; newRiskBtn.title = canCreateRisk() ? '' : 'Роль «Наблюдатель» не может создавать риски'; }
+  const active = document.querySelector('.view.active');
+  if(active){ const name = active.id.replace('view-',''); if(PAGE_META[name]) document.getElementById('pageSub').textContent = PAGE_META[name].s(); }
+}
+document.getElementById('dashSite').addEventListener('change', e=>{ session.site = e.target.value; saveSession(); applySessionToUI(); });
+document.getElementById('dashPhase').addEventListener('change', e=>{ session.phase = Number(e.target.value); saveSession(); applySessionToUI(); });
+
+function saveSession(){ try{ localStorage.setItem('ra_session', JSON.stringify(session)); }catch(e){} }
+function loadSession(){ try{ const raw = localStorage.getItem('ra_session'); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
+
+function fillLoginForm(){
+  document.getElementById('loginRole').innerHTML = ROLES.map(r=>`<option value="${r.id}" ${r.id===session.role?'selected':''}>${r.label}</option>`).join('');
+  document.getElementById('loginSite').innerHTML = SITES.map(s=>`<option ${s===session.site?'selected':''}>${s}</option>`).join('');
+  document.getElementById('loginPhase').innerHTML = PHASES.map(p=>`<option value="${p.v}" ${p.v===session.phase?'selected':''}>${p.label}</option>`).join('');
+  document.getElementById('loginName').value = session.name;
+  document.getElementById('loginSpp').value = session.spp;
+  document.getElementById('loginProjectName').value = session.projectName;
+}
+function openLoginGate(){
+  fillLoginForm();
+  document.getElementById('loginGate').classList.remove('hide');
+  document.getElementById('appRoot').classList.add('hide');
+}
+function enterApp(){
+  session = {
+    name: document.getElementById('loginName').value.trim() || session.name,
+    role: document.getElementById('loginRole').value,
+    spp: document.getElementById('loginSpp').value.trim() || session.spp,
+    projectName: document.getElementById('loginProjectName').value.trim() || session.projectName,
+    site: document.getElementById('loginSite').value,
+    phase: Number(document.getElementById('loginPhase').value)
+  };
+  saveSession();
+  document.getElementById('loginGate').classList.add('hide');
+  document.getElementById('appRoot').classList.remove('hide');
+  applySessionToUI();
+  showView('dashboard');
+}
+document.getElementById('loginSubmit').addEventListener('click', enterApp);
+document.getElementById('userBlock').addEventListener('click', openLoginGate);
+
+function initTheme(){
+  let t = null;
+  try{ t = localStorage.getItem('ra_theme'); }catch(e){}
+  if(t) document.documentElement.setAttribute('data-theme', t);
+}
+document.getElementById('themeToggle').addEventListener('click', ()=>{
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur==='dark' ? 'light' : (cur==='light' ? null : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'light':'dark'));
+  if(next) document.documentElement.setAttribute('data-theme', next); else document.documentElement.removeAttribute('data-theme');
+  try{ localStorage.setItem('ra_theme', next||''); }catch(e){}
+});
+
+const NOTIFS = [
+  {icon:'🚨', title:'Риск R-006 «Крупный инцидент HSE» эскалирован на риск-комитет', time:'2 часа назад'},
+  {icon:'⏰', title:'Просрочено мероприятие по риску R-004 «Долгосрочные контракты на суда»', time:'вчера'},
+  {icon:'📘', title:'Урок LL-021 ожидает верификации риск-менеджера', time:'2 дня назад'},
+  {icon:'➕', title:'В базу добавлен новый урок LL-030', time:'3 дня назад'}
+];
+function renderNotifs(){
+  document.getElementById('notifCount').textContent = NOTIFS.length;
+  document.getElementById('notifList').innerHTML = NOTIFS.map(n=>`
+    <div class="notif-item"><span class="ic">${n.icon}</span><div><div class="tt">${n.title}</div><div class="tm">${n.time}</div></div></div>
+  `).join('');
+}
+document.getElementById('notifBtn').addEventListener('click', e=>{
+  e.stopPropagation();
+  document.getElementById('notifPanel').classList.toggle('show');
+});
+document.addEventListener('click', e=>{
+  const panel = document.getElementById('notifPanel');
+  if(panel.classList.contains('show') && !panel.contains(e.target) && e.target.id!=='notifBtn') panel.classList.remove('show');
+});
+
+function mockButtonFeedback(btn, doneLabel){
+  const original = btn.innerHTML;
+  btn.innerHTML = `✓ ${doneLabel}`;
+  btn.disabled = true;
+  setTimeout(()=>{ btn.innerHTML = original; btn.disabled = false; }, 2200);
+}
 
 /* =========================================================
    SEVERITY HELPERS (shared: dashboard / register / matrix / library)
@@ -768,31 +991,73 @@ function rCatBadge(c){ const cat = RISK_CATS[c]; return `<span class="badge ${ca
 const RSTATUS = {
   open:{label:'Открыт', cls:'status-open'},
   monitoring:{label:'На контроле', cls:'status-monitoring'},
+  escalated:{label:'Эскалирован', cls:'status-escalated'},
   closed:{label:'Закрыт', cls:'status-closed'}
 };
 function rStatusPill(s){ const st = RSTATUS[s]; return `<span class="status-pill ${st.cls}">${st.label}</span>`; }
+const STRATEGIES = ['Принятие','Снижение','Передача','Уклонение'];
 
 /* =========================================================
    RISK REGISTER DATA — project «Орион»
    ========================================================= */
 const RISKS = [
-  {id:'R-001', category:'schedule', description:'Задержка получения разрешений от регулирующих органов.', stage:'Строительство', p:5, i:4, pRes:4, iRes:4, owner:'Ирина Соколова', status:'open', actions:['Раннее взаимодействие с регуляторами','Еженедельный трекинг контрольных точек разрешений']},
-  {id:'R-002', category:'financial', description:'Рост цен на сталь, влияющий на стоимость проекта.', stage:'Закупки', p:4, i:5, pRes:3, iRes:4, owner:'Дмитрий Ли', status:'open', actions:['Фиксация цен через хеджирование','Пересмотр условий поставщиков']},
-  {id:'R-003', category:'technical', description:'Недостаточная производительность технологии ветротурбин.', stage:'Строительство', p:5, i:3, pRes:3, iRes:3, owner:'Анна Ковалёва', status:'open', actions:['Проведение испытаний производительности','Работа с OEM по мерам снижения']},
-  {id:'R-004', category:'execution', description:'Задержка офшорного монтажа из-за доступности судов.', stage:'Строительство', p:4, i:3, pRes:3, iRes:3, owner:'Максим Данилов', status:'open', actions:['Долгосрочные контракты на суда','Резервный флот подрядчиков']},
-  {id:'R-005', category:'environment', description:'Неблагоприятные погодные условия в сезон строительства.', stage:'Строительство', p:3, i:3, pRes:3, iRes:2, owner:'Лидия Нгуен', status:'monitoring', actions:['Усиленный мониторинг погоды','Корректировка последовательности работ']},
-  {id:'R-006', category:'hse', description:'Крупный инцидент HSE при офшорных операциях.', stage:'Строительство', p:3, i:4, pRes:2, iRes:4, owner:'Павел Петров', status:'open', actions:['Усиление культуры безопасности','Регулярные учения HSE']},
-  {id:'R-007', category:'supplychain', description:'Задержка поставки критических компонентов.', stage:'Закупки', p:4, i:2, pRes:3, iRes:2, owner:'Мария Гонсалес', status:'monitoring', actions:['Дублирующие источники поставок','Трекинг статуса поставщиков']},
-  {id:'R-008', category:'financial', description:'Рост процентных ставок, влияющий на финансирование проекта.', stage:'Инициация', p:2, i:4, pRes:2, iRes:3, owner:'Дмитрий Ли', status:'monitoring', actions:['Пересмотр условий финансирования','Рассмотрение rate cap']},
-  {id:'R-009', category:'supplychain', description:'Дефицит специализированных судов для офшорного монтажа.', stage:'Закупки', p:3, i:2, pRes:2, iRes:2, owner:'Мария Гонсалес', status:'monitoring', actions:['Раннее бронирование судов','Альтернативные подрядчики']},
-  {id:'R-010', category:'technical', description:'Задержка подключения к сети на береговой подстанции.', stage:'Ввод в эксплуатацию', p:2, i:2, pRes:2, iRes:2, owner:'Анна Ковалёва', status:'monitoring', actions:['Согласование графика с сетевой компанией']},
-  {id:'R-011', category:'execution', description:'Задержка установки фундаментов из-за состояния морского дна.', stage:'Строительство', p:2, i:3, pRes:2, iRes:2, owner:'Максим Данилов', status:'open', actions:['Дополнительные геотехнические изыскания']},
-  {id:'R-012', category:'environment', description:'Незначительное воздействие на морскую фауну при строительстве.', stage:'Строительство', p:1, i:1, pRes:1, iRes:1, owner:'Лидия Нгуен', status:'closed', actions:['Экологический мониторинг по графику']},
-  {id:'R-013', category:'hse', description:'Незначительные предпосылки безопасности в штормовую погоду.', stage:'Строительство', p:1, i:2, pRes:1, iRes:1, owner:'Павел Петров', status:'monitoring', actions:['Усиленный инструктаж перед штормовым сезоном']}
+  {id:'R-001', category:'schedule', description:'Задержка получения разрешений от регулирующих органов.', stage:'Строительство', p:5, i:4, pRes:4, iRes:4, owner:'Ирина Соколова', status:'open', strategy:'Снижение', finImpact:'≈1.2% CAPEX (экспедайтинг)', qualImpact:'Высокое — критический путь графика', overdue:false,
+    actions:['Раннее взаимодействие с регуляторами','Еженедельный трекинг контрольных точек разрешений'],
+    comments:[{author:'Ирина Соколова', text:'Согласовали еженедельный трекинг с регулятором, статус штатный.'}],
+    attachments:[{name:'Permit_tracking_R-001.xlsx', type:'xlsx'},{name:'Regulator_letter.pdf', type:'pdf'}]},
+  {id:'R-002', category:'financial', description:'Рост цен на сталь, влияющий на стоимость проекта.', stage:'Закупки', p:4, i:5, pRes:3, iRes:4, owner:'Дмитрий Ли', status:'open', strategy:'Снижение', finImpact:'≈4.8% CAPEX (рост цены стали)', qualImpact:'Высокое — стоимость EPC-контракта', overdue:false,
+    actions:['Фиксация цен через хеджирование','Пересмотр условий поставщиков'],
+    comments:[{author:'Дмитрий Ли', text:'Запросили у двух поставщиков индексную оговорку — ждём ответа до конца недели.'}],
+    attachments:[{name:'Steel_price_hedge.pdf', type:'pdf'}]},
+  {id:'R-003', category:'technical', description:'Недостаточная производительность технологии ветротурбин.', stage:'Строительство', p:5, i:3, pRes:3, iRes:3, owner:'Анна Ковалёва', status:'open', strategy:'Снижение', finImpact:'≈0.6% CAPEX (доп. испытания)', qualImpact:'Высокое — репутация технологии', overdue:false,
+    actions:['Проведение испытаний производительности','Работа с OEM по мерам снижения'], comments:[], attachments:[]},
+  {id:'R-004', category:'execution', description:'Задержка офшорного монтажа из-за доступности судов.', stage:'Строительство', p:4, i:3, pRes:3, iRes:3, owner:'Максим Данилов', status:'open', strategy:'Передача', finImpact:'≈0.9% CAPEX (простой техники)', qualImpact:'Среднее — темп монтажа', overdue:true,
+    actions:['Долгосрочные контракты на суда','Резервный флот подрядчиков'], comments:[], attachments:[]},
+  {id:'R-005', category:'environment', description:'Неблагоприятные погодные условия в сезон строительства.', stage:'Строительство', p:3, i:3, pRes:3, iRes:2, owner:'Лидия Нгуен', status:'monitoring', strategy:'Принятие', finImpact:'—', qualImpact:'Среднее — сезонные окна работ', overdue:false,
+    actions:['Усиленный мониторинг погоды','Корректировка последовательности работ'], comments:[], attachments:[]},
+  {id:'R-006', category:'hse', description:'Крупный инцидент HSE при офшорных операциях.', stage:'Строительство', p:3, i:4, pRes:2, iRes:4, owner:'Павел Петров', status:'escalated', strategy:'Снижение', finImpact:'—', qualImpact:'Критическое — жизнь и здоровье персонала', overdue:false,
+    actions:['Усиление культуры безопасности','Регулярные учения HSE'],
+    comments:[{author:'Павел Петров', text:'Инцидент зафиксирован, пострадавший стабилен. Материалы переданы риск-комитету.'},{author:'Ирина Соколова', text:'Эскалировано на риск-комитет 09.05 — ожидаем решение по дополнительным мерам.'}],
+    attachments:[{name:'HSE_incident_report_R-006.pdf', type:'pdf'}]},
+  {id:'R-007', category:'supplychain', description:'Задержка поставки критических компонентов.', stage:'Закупки', p:4, i:2, pRes:3, iRes:2, owner:'Мария Гонсалес', status:'monitoring', strategy:'Снижение', finImpact:'≈0.4% CAPEX', qualImpact:'Среднее — простой монтажной бригады', overdue:false,
+    actions:['Дублирующие источники поставок','Трекинг статуса поставщиков'], comments:[], attachments:[]},
+  {id:'R-008', category:'financial', description:'Рост процентных ставок, влияющий на финансирование проекта.', stage:'Инициация', p:2, i:4, pRes:2, iRes:3, owner:'Дмитрий Ли', status:'monitoring', strategy:'Передача', finImpact:'≈0.3% CAPEX (стоимость фондирования)', qualImpact:'Низкое', overdue:false,
+    actions:['Пересмотр условий финансирования','Рассмотрение rate cap'], comments:[], attachments:[]},
+  {id:'R-009', category:'supplychain', description:'Дефицит специализированных судов для офшорного монтажа.', stage:'Закупки', p:3, i:2, pRes:2, iRes:2, owner:'Мария Гонсалес', status:'monitoring', strategy:'Снижение', finImpact:'≈0.2% CAPEX', qualImpact:'Низкое', overdue:true,
+    actions:['Раннее бронирование судов','Альтернативные подрядчики'], comments:[], attachments:[]},
+  {id:'R-010', category:'technical', description:'Задержка подключения к сети на береговой подстанции.', stage:'Ввод в эксплуатацию', p:2, i:2, pRes:2, iRes:2, owner:'Анна Ковалёва', status:'monitoring', strategy:'Принятие', finImpact:'—', qualImpact:'Среднее — срок ввода в эксплуатацию', overdue:false,
+    actions:['Согласование графика с сетевой компанией'], comments:[], attachments:[]},
+  {id:'R-011', category:'execution', description:'Задержка установки фундаментов из-за состояния морского дна.', stage:'Строительство', p:2, i:3, pRes:2, iRes:2, owner:'Максим Данилов', status:'open', strategy:'Снижение', finImpact:'≈0.3% CAPEX', qualImpact:'Среднее', overdue:false,
+    actions:['Дополнительные геотехнические изыскания'], comments:[], attachments:[]},
+  {id:'R-012', category:'environment', description:'Незначительное воздействие на морскую фауну при строительстве.', stage:'Строительство', p:1, i:1, pRes:1, iRes:1, owner:'Лидия Нгуен', status:'closed', strategy:'Принятие', finImpact:'—', qualImpact:'Низкое — экологический мониторинг', overdue:false,
+    actions:['Экологический мониторинг по графику'], comments:[], attachments:[]},
+  {id:'R-013', category:'hse', description:'Незначительные предпосылки безопасности в штормовую погоду.', stage:'Строительство', p:1, i:2, pRes:1, iRes:1, owner:'Павел Петров', status:'monitoring', strategy:'Принятие', finImpact:'—', qualImpact:'Низкое', overdue:false,
+    actions:['Усиленный инструктаж перед штормовым сезоном'], comments:[], attachments:[]}
 ];
-RISKS.forEach(r=>{ r.score = r.p*r.i; r.scoreRes = r.pRes*r.iRes; });
+RISKS.forEach((r,idx)=>{ r.score = r.p*r.i; r.scoreRes = r.pRes*r.iRes; r.seq = idx; });
+let nextRiskSeq = RISKS.length;
 
 const RISK_TO_LESSON_CAT = {schedule:'schedule', financial:'cost', technical:'design', execution:'external', environment:'environmental', hse:'hse', supplychain:'resource'};
+const LESSON_TO_RISK_CAT = {};
+Object.entries(RISK_TO_LESSON_CAT).forEach(([rk,lk])=>{ if(!(lk in LESSON_TO_RISK_CAT)) LESSON_TO_RISK_CAT[lk]=rk; });
+
+function fmtDate(d){ return d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+function buildLifecycle(r){
+  const base = new Date(2024,0,15 + r.seq*4);
+  const d = offset => fmtDate(new Date(base.getTime()+offset*86400000));
+  const confirmed = r.status!=='open';
+  const verified = r.status==='monitoring' || r.status==='closed' || r.status==='escalated';
+  const steps = [
+    {label:'Инициирован', who:'Инициатор проекта', date:d(0), done:true},
+    {label:'Назначен владелец', who:r.owner, date:d(1), done:true},
+    {label:'Подтверждён владельцем', who:r.owner, date: confirmed?d(4):null, done:confirmed},
+    {label:'Верифицирован риск-менеджером', who:'Ирина Соколова', date: verified?d(7):null, done:verified}
+  ];
+  if(r.status==='escalated') steps.push({label:'Эскалирован на риск-комитет', who:'Ирина Соколова', date:d(10), done:true});
+  if(r.status==='closed') steps.push({label:'Закрыт', who:'Ирина Соколова', date:d(12), done:true});
+  return steps;
+}
+function actionSource(idx){ return idx%2===0 ? {icon:'✍️', label:'вручную'} : {icon:'🤖', label:'из базы уроков'}; }
 
 /* =========================================================
    DASHBOARD
@@ -847,47 +1112,25 @@ document.querySelectorAll('.matrix-toggle button').forEach(b=>{
   b.addEventListener('click', ()=>{ matrixMode = b.dataset.mode; renderMatrices(); });
 });
 
-function renderDashRegister(){
-  const rows = RISKS.slice(0,8);
-  document.getElementById('dashRegisterBody').innerHTML = rows.map(r=>`
-    <tr class="clickable" onclick="openRiskCard('${r.id}')">
-      <td class="mono" style="color:var(--accent-600); font-weight:700;">${r.id}</td>
-      <td>${rCatBadge(r.category)}</td>
-      <td class="risk-desc" style="max-width:220px;">${r.description}</td>
-      <td class="mono">${r.p}</td>
-      <td class="mono">${r.i}</td>
-      <td>${scorePillHTML(r.score)}</td>
-      <td>${rStatusPill(r.status)}</td>
-    </tr>`).join('');
-  document.getElementById('dashRegisterFoot').textContent = `1–8 из ${RISKS.length} рисков`;
-}
-
-function renderSeverityTiles(){
-  const buckets = {extreme:0, high:0, medium:0, low:0};
-  RISKS.forEach(r=> buckets[severityOf(r.score)]++);
-  const total = RISKS.length;
-  const pct = n => Math.round(n/total*100);
-  document.getElementById('sevTiles').innerHTML = `
-    <div class="sev-tile e"><div class="n">${buckets.extreme}</div><div class="l">Критич.</div><div class="p">${pct(buckets.extreme)}%</div></div>
-    <div class="sev-tile h"><div class="n">${buckets.high}</div><div class="l">Высокий</div><div class="p">${pct(buckets.high)}%</div></div>
-    <div class="sev-tile m"><div class="n">${buckets.medium}</div><div class="l">Средний</div><div class="p">${pct(buckets.medium)}%</div></div>
-    <div class="sev-tile l"><div class="n">${buckets.low}</div><div class="l">Низкий</div><div class="p">${pct(buckets.low)}%</div></div>
-    <div class="sev-tile total"><div class="n">${total}</div><div class="l">Всего</div><div class="p">100%</div></div>
-  `;
-  document.getElementById('sevStack').innerHTML = `
-    <span style="background:var(--red-600); width:${pct(buckets.extreme)}%">${pct(buckets.extreme)}%</span>
-    <span style="background:var(--amber-600); width:${pct(buckets.high)}%">${pct(buckets.high)}%</span>
-    <span style="background:var(--yellow-600); width:${pct(buckets.medium)}%">${pct(buckets.medium)}%</span>
-    <span style="background:var(--green-600); width:${pct(buckets.low)}%">${pct(buckets.low)}%</span>
+function renderDashKpis(){
+  const active = RISKS.filter(r=>r.status!=='closed').length;
+  const critical = RISKS.filter(r=>severityOf(r.status==='closed'?r.scoreRes:r.score)==='extreme').length;
+  const escalated = RISKS.filter(r=>r.status==='escalated').length;
+  const overdue = RISKS.filter(r=>r.overdue).length;
+  document.getElementById('dashKpis').innerHTML = `
+    <div class="kpi"><div class="label">Активных рисков</div><div class="value">${active}</div><div class="note">из ${RISKS.length} в реестре</div></div>
+    <div class="kpi"><div class="label">Критических (16–25)</div><div class="value" style="color:var(--red-600);">${critical}</div><div class="note">по свойственному risk score</div></div>
+    <div class="kpi"><div class="label">Эскалировано</div><div class="value accent">${escalated}</div><div class="note">на риск-комитете</div></div>
+    <div class="kpi"><div class="label">Просрочено мероприятий</div><div class="value amber">${overdue}</div><div class="note">требуют реакции владельца</div></div>
   `;
 }
 
 function renderTop5(){
-  const top = RISKS.slice().sort((a,b)=> b.score-a.score || a.id.localeCompare(b.id)).slice(0,5);
+  const top = RISKS.slice().sort((a,b)=> (b.status==='escalated')-(a.status==='escalated') || b.score-a.score || a.id.localeCompare(b.id)).slice(0,5);
   document.getElementById('top5List').innerHTML = top.map((r,idx)=>`
-    <div class="top5-row">
+    <div class="top5-row clickable" onclick="openRiskCard('${r.id}')">
       <div class="top5-rank">${idx+1}</div>
-      <div><div class="top5-id">${r.id}</div><div class="top5-desc">${r.description}</div></div>
+      <div><div class="top5-id">${r.id} ${r.status==='escalated'?'🚨':''}</div><div class="top5-desc">${r.description}</div></div>
       ${scorePillHTML(r.score)}
     </div>`).join('');
 }
@@ -989,7 +1232,7 @@ function renderRegister(){
       <td>${scorePillHTML(r.score)}</td>
       <td>${r.owner}</td>
       <td>${rStatusPill(r.status)}</td>
-      <td class="risk-actions-cell"><ul>${r.actions.map(a=>`<li>${a}</li>`).join('')}</ul></td>
+      <td class="risk-actions-cell"><ul>${r.actions.map((a,i)=>`<li>${actionSource(i).icon} ${a}</li>`).join('')}</ul></td>
     </tr>`).join('') || `<tr><td colspan="10" style="text-align:center; color:var(--ink-400); padding:30px;">Риски не найдены</td></tr>`;
 
   document.getElementById('registerFoot').textContent = total ? `${startIdx+1}–${Math.min(startIdx+regPageSize,total)} из ${total} рисков` : '0 рисков';
@@ -1031,17 +1274,41 @@ document.getElementById('regReset').addEventListener('click', ()=>{
 /* =========================================================
    RISK CARD MODAL (dashboard / register / matrix)
    ========================================================= */
-function openRiskCard(id){
-  const r = RISKS.find(x=>x.id===id);
-  if(!r) return;
+let riskCardEditing = false;
+
+function migrationMiniSVG(r){
+  const cell = 15, gap = 2, pad = 3;
+  const size = pad*2 + cell*5 + gap*4;
+  const pt = (p,i) => ({ x: pad + (i-1)*(cell+gap) + cell/2, y: pad + (5-p)*(cell+gap) + cell/2 });
+  let cells = '';
+  for(let row=5; row>=1; row--){
+    for(let col=1; col<=5; col++){
+      const sev = severityOf(row*col);
+      const c = pt(row,col);
+      cells += `<rect x="${c.x-cell/2}" y="${c.y-cell/2}" width="${cell}" height="${cell}" rx="2" fill="var(--${sev==='low'?'green':sev==='medium'?'yellow':sev==='high'?'amber':'red'}-50)"/>`;
+    }
+  }
+  const from = pt(r.p, r.i), to = pt(r.pRes, r.iRes);
+  const moved = (r.p!==r.pRes || r.i!==r.iRes);
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    ${cells}
+    ${moved ? `<defs><marker id="mig-arrow" markerWidth="6" markerHeight="6" refX="4" refY="2" orient="auto"><path d="M0,0 L4,2 L0,4 Z" fill="var(--accent-600)"/></marker></defs>
+    <line x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" stroke="var(--accent-600)" stroke-width="1.6" stroke-dasharray="2 2" marker-end="url(#mig-arrow)"/>` : ''}
+    <circle cx="${from.x}" cy="${from.y}" r="4" fill="none" stroke="var(--ink-700)" stroke-width="1.6"/>
+    <circle cx="${to.x}" cy="${to.y}" r="3.5" fill="var(--accent-600)"/>
+  </svg>`;
+}
+
+function riskCardReadView(r){
   const lessonCat = RISK_TO_LESSON_CAT[r.category];
   const related = LESSONS.filter(l=>l.category===lessonCat).slice(0,2);
-  document.getElementById('riskCardContent').innerHTML = `
+  const lifecycle = buildLifecycle(r);
+  return `
     <div class="detail-head">
       <div>
         <div class="eyebrow">${r.id} · risks</div>
         <h2>${r.description}</h2>
-        <div class="detail-badges">${rCatBadge(r.category)}<span class="badge badge-design">${r.stage}</span>${rStatusPill(r.status)}</div>
+        <div class="detail-badges">${rCatBadge(r.category)}<span class="badge badge-design">${r.stage}</span>${rStatusPill(r.status)}<span class="badge badge-external">${r.strategy}</span>${r.overdue?'<span class="badge" style="background:var(--red-50); color:var(--red-700);">⏰ Просрочено</span>':''}</div>
       </div>
       <button class="close-x" onclick="closeRiskCard()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
     </div>
@@ -1051,7 +1318,47 @@ function openRiskCard(id){
         <span class="chip2">Свойственный: P${r.p} × I${r.i} = ${scorePillHTML(r.score)}</span><span class="sep">·</span>
         <span class="chip2">Остаточный: P${r.pRes} × I${r.iRes} = ${scorePillHTML(r.scoreRes)}</span>
       </div>
-      <div class="rec"><div class="k">Рекомендуемые действия</div><div class="v"><ul style="margin:4px 0 0; padding-left:18px;">${r.actions.map(a=>`<li>${a}</li>`).join('')}</ul></div></div>
+
+      <div class="edit-grid">
+        <div class="rec"><div class="k">Финансовая оценка</div><div class="v">${r.finImpact}</div></div>
+        <div class="rec"><div class="k">Качественная оценка</div><div class="v">${r.qualImpact}</div></div>
+      </div>
+
+      <div class="rec"><div class="k">Рекомендуемые действия <span style="font-weight:500; text-transform:none; letter-spacing:0; color:var(--ink-400);">(вручную и из базы уроков)</span></div>
+        <div class="v"><ul style="margin:4px 0 0; padding-left:4px; list-style:none;">${r.actions.map((a,i)=>`<li style="margin-bottom:3px;">${actionSource(i).icon} ${a} <span style="color:var(--ink-400); font-size:11px;">— ${actionSource(i).label}</span></li>`).join('')}</ul></div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="mini-title">Миграция риска при мерах реагирования</div>
+      <div style="display:flex; align-items:center; gap:14px;">
+        ${migrationMiniSVG(r)}
+        <div style="font-size:11.5px; color:var(--ink-600); line-height:1.6;">
+          <span style="display:inline-flex; align-items:center; gap:5px;"><svg width="9" height="9"><circle cx="4.5" cy="4.5" r="3.5" fill="none" stroke="var(--ink-700)" stroke-width="1.4"/></svg> свойственный (P${r.p}×I${r.i})</span><br>
+          <span style="display:inline-flex; align-items:center; gap:5px;"><svg width="9" height="9"><circle cx="4.5" cy="4.5" r="4" fill="var(--accent-600)"/></svg> остаточный (P${r.pRes}×I${r.iRes})</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="mini-title">Жизненный цикл и согласование</div>
+      <div class="stepper">
+        ${lifecycle.map(s=>`
+          <div class="step-item ${s.done?'done':''}">
+            <div class="step-dot"></div>
+            <div class="step-body"><div class="t">${s.label}</div><div class="m">${s.done ? `${s.who} · ${s.date}` : 'ожидает'}</div></div>
+          </div>`).join('')}
+      </div>
+
+      <div class="divider"></div>
+      <div class="mini-title">Комментарии команды</div>
+      <div id="riskComments">${r.comments.map(c=>`
+        <div class="comment-item"><div class="av">${initials(c.author)}</div><div class="body"><span class="a">${c.author}</span><div class="t">${c.text}</div></div></div>
+      `).join('') || `<div style="font-size:12px; color:var(--ink-400); margin-bottom:10px;">Комментариев пока нет.</div>`}</div>
+      ${canComment() ? `<div class="comment-add"><input id="newCommentInput" type="text" placeholder="Добавить комментарий..."><button class="btn btn-sm" onclick="addRiskComment('${r.id}')">Отправить</button></div>` : ''}
+
+      <div class="divider"></div>
+      <div class="mini-title">Вложения</div>
+      <div>${r.attachments.map(a=>`<span class="attach-chip">📎 ${a.name}</span>`).join('') || `<span style="font-size:12px; color:var(--ink-400);">Файлы не прикреплены.</span>`}</div>
+
       ${related.length ? `
       <div class="divider"></div>
       <div class="mini-title">Похожие уроки в базе (${SEV_LABEL[severityOf(r.score)]} риск, категория «${RISK_CATS[r.category].label}»)</div>
@@ -1059,15 +1366,94 @@ function openRiskCard(id){
       ` : ''}
     </div>
     <div class="detail-foot">
+      ${canEdit()
+        ? `<button class="btn" onclick="toggleRiskEdit('${r.id}', true)">Редактировать</button>`
+        : `<span class="viewer-note">Только просмотр — редактирует риск-менеджер проекта</span>`}
       <button class="btn" onclick="closeRiskCard(); showView('register');">Открыть в реестре</button>
       <button class="btn btn-primary" onclick="closeRiskCard()">Закрыть</button>
     </div>
   `;
+}
+
+function riskCardEditView(r){
+  return `
+    <div class="detail-head">
+      <div>
+        <div class="eyebrow">${r.id} · редактирование</div>
+        <h2>Правка риска</h2>
+      </div>
+      <button class="close-x" onclick="closeRiskCard()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+    </div>
+    <div class="detail-body">
+      <div class="edit-field"><label>Описание риска</label><textarea id="editDesc">${r.description}</textarea></div>
+      <div class="edit-grid">
+        <div class="edit-field"><label>Категория</label><select id="editCategory">${Object.keys(RISK_CATS).map(k=>`<option value="${k}" ${k===r.category?'selected':''}>${RISK_CATS[k].label}</option>`).join('')}</select></div>
+        <div class="edit-field"><label>Стадия</label><input id="editStage" value="${r.stage}"></div>
+        <div class="edit-field"><label>Владелец</label><input id="editOwner" value="${r.owner}"></div>
+        <div class="edit-field"><label>Статус</label><select id="editStatus">${Object.keys(RSTATUS).map(k=>`<option value="${k}" ${k===r.status?'selected':''}>${RSTATUS[k].label}</option>`).join('')}</select></div>
+        <div class="edit-field"><label>Вероятность P (свойственная)</label><select id="editP">${[1,2,3,4,5].map(v=>`<option value="${v}" ${v===r.p?'selected':''}>${v}</option>`).join('')}</select></div>
+        <div class="edit-field"><label>Влияние I (свойственное)</label><select id="editI">${[1,2,3,4,5].map(v=>`<option value="${v}" ${v===r.i?'selected':''}>${v}</option>`).join('')}</select></div>
+        <div class="edit-field"><label>Вероятность P (остаточная)</label><select id="editPRes">${[1,2,3,4,5].map(v=>`<option value="${v}" ${v===r.pRes?'selected':''}>${v}</option>`).join('')}</select></div>
+        <div class="edit-field"><label>Влияние I (остаточное)</label><select id="editIRes">${[1,2,3,4,5].map(v=>`<option value="${v}" ${v===r.iRes?'selected':''}>${v}</option>`).join('')}</select></div>
+        <div class="edit-field"><label>Стратегия реагирования</label><select id="editStrategy">${STRATEGIES.map(s=>`<option ${s===r.strategy?'selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="edit-field"><label>Просрочено мероприятие</label><select id="editOverdue"><option value="false" ${!r.overdue?'selected':''}>Нет</option><option value="true" ${r.overdue?'selected':''}>Да</option></select></div>
+      </div>
+      <div class="edit-field"><label>Финансовая оценка</label><input id="editFin" value="${r.finImpact}"></div>
+      <div class="edit-field"><label>Качественная оценка</label><input id="editQual" value="${r.qualImpact}"></div>
+    </div>
+    <div class="detail-foot">
+      <button class="btn" onclick="toggleRiskEdit('${r.id}', false)">Отмена</button>
+      <button class="btn btn-primary" onclick="saveRiskEdit('${r.id}')">Сохранить</button>
+    </div>
+  `;
+}
+
+function openRiskCard(id){
+  riskCardEditing = false;
+  const r = RISKS.find(x=>x.id===id);
+  if(!r) return;
+  document.getElementById('riskCardContent').innerHTML = riskCardReadView(r);
   document.getElementById('riskCardOverlay').classList.add('show');
+}
+function toggleRiskEdit(id, editing){
+  riskCardEditing = editing;
+  const r = RISKS.find(x=>x.id===id);
+  document.getElementById('riskCardContent').innerHTML = editing ? riskCardEditView(r) : riskCardReadView(r);
+}
+function saveRiskEdit(id){
+  const r = RISKS.find(x=>x.id===id);
+  r.description = document.getElementById('editDesc').value.trim() || r.description;
+  r.category = document.getElementById('editCategory').value;
+  r.stage = document.getElementById('editStage').value.trim() || r.stage;
+  r.owner = document.getElementById('editOwner').value.trim() || r.owner;
+  r.status = document.getElementById('editStatus').value;
+  r.p = Number(document.getElementById('editP').value);
+  r.i = Number(document.getElementById('editI').value);
+  r.pRes = Number(document.getElementById('editPRes').value);
+  r.iRes = Number(document.getElementById('editIRes').value);
+  r.strategy = document.getElementById('editStrategy').value;
+  r.overdue = document.getElementById('editOverdue').value==='true';
+  r.finImpact = document.getElementById('editFin').value.trim() || '—';
+  r.qualImpact = document.getElementById('editQual').value.trim() || '—';
+  r.score = r.p*r.i; r.scoreRes = r.pRes*r.iRes;
+  riskCardEditing = false;
+  document.getElementById('riskCardContent').innerHTML = riskCardReadView(r);
+  renderRegister(); renderMatrices(); renderDashKpis(); renderTop5();
+}
+function addRiskComment(id){
+  const input = document.getElementById('newCommentInput');
+  const text = input.value.trim();
+  if(!text) return;
+  const r = RISKS.find(x=>x.id===id);
+  r.comments.push({author: session.name, text});
+  document.getElementById('riskComments').innerHTML = r.comments.map(c=>`
+    <div class="comment-item"><div class="av">${initials(c.author)}</div><div class="body"><span class="a">${c.author}</span><div class="t">${c.text}</div></div></div>
+  `).join('');
+  input.value = '';
 }
 function closeRiskCard(){ document.getElementById('riskCardOverlay').classList.remove('show'); }
 document.getElementById('riskCardOverlay').addEventListener('click', e=>{ if(e.target.id==='riskCardOverlay') closeRiskCard(); });
-document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeRiskCard(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeRiskCard(); closeNewRiskModal(); } });
 function openLessonFromRisk(lessonId){
   closeRiskCard();
   showView('lessons');
@@ -1078,60 +1464,96 @@ function openLessonFromRisk(lessonId){
 }
 
 /* =========================================================
-   RISK LIBRARY
+   NEW RISK WIZARD — manual entry or RAG tag-based suggestion from lessons
    ========================================================= */
-const LIBRARY = [
-  {id:'LIB-01', category:'schedule', title:'Задержка поставки длинноцикловых позиций', desc:'Единственный квалифицированный поставщик критического оборудования с циклом изготовления свыше 9 месяцев.', causes:['Единственный поставщик','Позднее размещение заказа'], measures:['Раннее бронирование','Еженедельный экспедайтинг'], pBase:67, impact:'45 дн. (медиана)', freq:'6 из 9 проектов'},
-  {id:'LIB-02', category:'financial', title:'Скачок цен на металл и сталь', desc:'Волатильность биржевых цен на металлопрокат в период изготовления металлоконструкций.', causes:['Волатильность биржевых индексов','Отсутствие индексной оговорки'], measures:['Индексная оговорка в контракте','Частичный hedging объёма'], pBase:44, impact:'5.8% CAPEX (медиана)', freq:'4 из 7 проектов'},
-  {id:'LIB-03', category:'technical', title:'Недостижение технических характеристик оборудования', desc:'Новая или недостаточно апробированная технология не подтверждает заявленные параметры на объекте.', causes:['Неапробированная технология','Недостаточные испытания OEM'], measures:['Performance testing перед поставкой','Гарантийные KPI в контракте'], pBase:38, impact:'30 дн. (медиана)', freq:'3 из 8 проектов'},
-  {id:'LIB-04', category:'execution', title:'Срыв темпа монтажа из-за логистики техники', desc:'Ограниченная доступность специализированной техники и судов для монтажных операций.', causes:['Ограниченный рынок техники','Сезонность работ'], measures:['Долгосрочные чартерные контракты','Резервирование мощностей'], pBase:52, impact:'25 дн. (медиана)', freq:'5 из 9 проектов'},
-  {id:'LIB-05', category:'environment', title:'Неблагоприятные погодные окна', desc:'Сезонная штормовая или ветровая активность ограничивает критичные операции на площадке.', causes:['Сезонная штормовая активность','Отсутствие метеобуфера в графике'], measures:['Буфер по многолетней статистике','Усиленный weather-мониторинг'], pBase:61, impact:'18 дн. (медиана)', freq:'6 из 10 проектов'},
-  {id:'LIB-06', category:'hse', title:'Происшествие с потерей трудоспособности', desc:'Нарушение требований СИЗ и порядка допуска к работам при высокой доле субподряда.', causes:['Высокая доля субподряда','Слабый контроль СИЗ/допусков'], measures:['Ежедневный аудит СИЗ','Еженедельный разбор инцидентов'], pBase:25, impact:'0 дн. (при своевременных мерах)', freq:'2 из 8 проектов'},
-  {id:'LIB-07', category:'supplychain', title:'Срыв поставки критических компонентов', desc:'Единственный источник поставки критического компонента без резервирования мощности.', causes:['Монопольный поставщик','Нет резервирования мощности'], measures:['Двойные источники поставки','Подтверждение резервирования мощности'], pBase:48, impact:'35 дн. (медиана)', freq:'4 из 9 проектов'},
-  {id:'LIB-08', category:'financial', title:'Рост стоимости проектного финансирования', desc:'Изменение ключевой ставки в течение длительного периода строительства.', causes:['Изменение ключевой ставки','Длительный срок строительства'], measures:['Rate cap / хеджирование ставки','Пересмотр структуры финансирования'], pBase:30, impact:'2.1% CAPEX (медиана)', freq:'2 из 6 проектов'},
-  {id:'LIB-09', category:'schedule', title:'Задержка разрешительной документации', desc:'Последовательное согласование с несколькими независимыми регуляторами удлиняет путь получения разрешений.', causes:['Несколько независимых регуляторов','Последовательная схема согласования'], measures:['Параллельные треки согласования','Ранний диалог с регулятором'], pBase:56, impact:'40 дн. (медиана)', freq:'5 из 9 проектов'},
-  {id:'LIB-10', category:'execution', title:'Осложнения устройства фундаментов', desc:'Фактические грунтовые/донные условия отличаются от принятых на стадии проектирования.', causes:['Недостаточные геотехнические изыскания','Неоднородность грунта'], measures:['Дополнительные изыскания на стадии FEED','Гибкий тип фундамента'], pBase:34, impact:'20 дн. (медиана)', freq:'3 из 9 проектов'}
-];
-let libFilters = {q:'', category:''};
-function populateLibraryFilterOptions(){
-  const sel = document.getElementById('libCategory');
-  Object.keys(RISK_CATS).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=RISK_CATS[k].label; sel.appendChild(o); });
-}
-function renderLibrary(){
-  const list = LIBRARY.filter(l=>
-    (!libFilters.q || (l.title+' '+l.desc).toLowerCase().includes(libFilters.q.toLowerCase())) &&
-    (!libFilters.category || l.category===libFilters.category)
-  );
-  document.getElementById('libGrid').innerHTML = list.map(l=>`
-    <div class="panel lib-card">
+function openNewRiskModal(fromLessonId){
+  const lesson = fromLessonId ? LESSONS.find(l=>l.id===fromLessonId) : null;
+  const prefill = lesson ? {
+    description: lesson.recommendation,
+    category: LESSON_TO_RISK_CAT[lesson.category] || 'schedule',
+    stage: lesson.stage,
+    sourceNote: `Сформировано на основе урока ${lesson.id} «${lesson.title}»`
+  } : null;
+
+  document.getElementById('newRiskContent').innerHTML = `
+    <div class="detail-head">
       <div>
-        ${rCatBadge(l.category)}
-        <div class="lib-title" style="margin-top:8px;">${l.title}</div>
-        <div class="lib-desc">${l.desc}</div>
+        <div class="eyebrow">Новый риск · ${session.projectName}</div>
+        <h2>${prefill ? 'Риск на основе урока' : 'Добавить риск в реестр'}</h2>
       </div>
-      <div class="chip-group"><div class="k">Типичные причины</div><div class="chip-list">${l.causes.map(c=>`<span class="chip">${c}</span>`).join('')}</div></div>
-      <div class="chip-group"><div class="k">Типичные меры</div><div class="chip-list">${l.measures.map(c=>`<span class="chip">${c}</span>`).join('')}</div></div>
-      <div class="lib-stats">
-        <div class="lib-stat"><div class="l">P_base</div><div class="v">${l.pBase}%</div></div>
-        <div class="lib-stat"><div class="l">Влияние</div><div class="v" style="font-size:11.5px;">${l.impact}</div></div>
-        <div class="lib-stat"><div class="l">Частота</div><div class="v" style="font-size:11.5px;">${l.freq}</div></div>
+      <button class="close-x" onclick="closeNewRiskModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+    </div>
+    <div class="detail-body">
+      ${prefill ? `<div class="link-row"><span class="chip2">📘 ${prefill.sourceNote}</span></div>` : `
+      <div class="chip-group" style="margin-bottom:14px;">
+        <div class="k">Или подобрать похожий урок по тегам</div>
+        <div class="chip-list" id="newRiskTagPicker"></div>
+        <div id="newRiskSuggestions" style="margin-top:10px;"></div>
+      </div>`}
+      <div class="edit-field"><label>Описание риска</label><textarea id="nrDesc">${prefill ? prefill.description : ''}</textarea></div>
+      <div class="edit-grid">
+        <div class="edit-field"><label>Категория</label><select id="nrCategory">${Object.keys(RISK_CATS).map(k=>`<option value="${k}" ${prefill && prefill.category===k?'selected':''}>${RISK_CATS[k].label}</option>`).join('')}</select></div>
+        <div class="edit-field"><label>Стадия</label><input id="nrStage" value="${prefill ? prefill.stage : 'Строительство'}"></div>
+        <div class="edit-field"><label>Владелец</label><input id="nrOwner" value="" placeholder="Не назначен"></div>
+        <div class="edit-field"><label>Стратегия реагирования</label><select id="nrStrategy">${STRATEGIES.map(s=>`<option>${s}</option>`).join('')}</select></div>
+        <div class="edit-field"><label>Вероятность P</label><select id="nrP">${[1,2,3,4,5].map(v=>`<option value="${v}" ${v===3?'selected':''}>${v}</option>`).join('')}</select></div>
+        <div class="edit-field"><label>Влияние I</label><select id="nrI">${[1,2,3,4,5].map(v=>`<option value="${v}" ${v===3?'selected':''}>${v}</option>`).join('')}</select></div>
       </div>
-      <div class="lib-foot">
-        <button class="btn btn-sm btn-primary" onclick="addToRegister(this)">+ Добавить в реестр</button>
+      <div class="ai-disclaimer" style="margin-top:2px; padding-top:0; border-top:none;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px;"><path d="M12 9v4M12 17h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/></svg>
+        <span>Риск попадает в реестр как черновик и требует верификации риск-менеджером.</span>
       </div>
-    </div>`).join('') || `<div class="panel" style="padding:30px; text-align:center; color:var(--ink-400);">Ничего не найдено</div>`;
+    </div>
+    <div class="detail-foot">
+      <button class="btn" onclick="closeNewRiskModal()">Отмена</button>
+      <button class="btn btn-primary" onclick="submitNewRisk()">Добавить в реестр</button>
+    </div>
+  `;
+  document.getElementById('newRiskOverlay').classList.add('show');
+  if(!prefill) renderNewRiskTagPicker();
 }
-function addToRegister(btn){
-  btn.textContent = '✓ Добавлено в пул рисков';
-  btn.disabled = true;
-  btn.style.opacity = '.7';
+function renderNewRiskTagPicker(){
+  document.getElementById('newRiskTagPicker').innerHTML = TAGS.map(t=>`<span class="tagchip" onclick="suggestLessonsForNewRisk('${t.cat}', this)">${t.icon} ${t.label}</span>`).join('');
 }
-document.getElementById('libSearch').addEventListener('input', e=>{ libFilters.q=e.target.value; renderLibrary(); });
-document.getElementById('libCategory').addEventListener('change', e=>{ libFilters.category=e.target.value; renderLibrary(); });
-document.getElementById('libReset').addEventListener('click', ()=>{
-  libFilters={q:'',category:''}; document.getElementById('libSearch').value=''; document.getElementById('libCategory').value='';
-  renderLibrary();
-});
+function suggestLessonsForNewRisk(cat, el){
+  document.querySelectorAll('#newRiskTagPicker .tagchip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  const matches = LESSONS.filter(l=>l.category===cat).slice(0,3);
+  document.getElementById('newRiskSuggestions').innerHTML = matches.length ? matches.map(l=>`
+    <div class="src-chip" style="cursor:pointer; display:block; margin-bottom:6px; width:100%;" onclick="applyLessonSuggestion('${l.id}')">
+      <span class="id">${l.id}</span> ${l.title} — <b>использовать</b>
+    </div>`).join('') : `<div style="font-size:12px; color:var(--ink-400);">Уроков по этому тегу пока нет.</div>`;
+}
+function applyLessonSuggestion(lessonId){
+  const l = LESSONS.find(x=>x.id===lessonId);
+  document.getElementById('nrDesc').value = l.recommendation;
+  document.getElementById('nrCategory').value = LESSON_TO_RISK_CAT[l.category] || 'schedule';
+  document.getElementById('nrStage').value = l.stage;
+}
+function closeNewRiskModal(){ document.getElementById('newRiskOverlay').classList.remove('show'); }
+document.getElementById('newRiskOverlay').addEventListener('click', e=>{ if(e.target.id==='newRiskOverlay') closeNewRiskModal(); });
+function submitNewRisk(){
+  const desc = document.getElementById('nrDesc').value.trim();
+  if(!desc){ document.getElementById('nrDesc').focus(); return; }
+  const num = RISKS.length + 1;
+  const id = 'R-' + String(num).padStart(3,'0');
+  const p = Number(document.getElementById('nrP').value), i = Number(document.getElementById('nrI').value);
+  const r = {
+    id, category: document.getElementById('nrCategory').value, description: desc,
+    stage: document.getElementById('nrStage').value.trim() || 'Строительство',
+    p, i, pRes:p, iRes:i, owner: document.getElementById('nrOwner').value.trim() || 'Не назначен',
+    status:'open', strategy: document.getElementById('nrStrategy').value,
+    finImpact:'—', qualImpact:'Оценивается', overdue:false,
+    actions:['Требует уточнения владельцем'], comments:[], attachments:[], seq: nextRiskSeq++
+  };
+  r.score = r.p*r.i; r.scoreRes = r.pRes*r.iRes;
+  RISKS.push(r);
+  closeNewRiskModal();
+  showView('register');
+  regFilters = {q:'', category:'', stage:'', owner:'', status:''};
+  regPage = Math.ceil(RISKS.length/regPageSize);
+  renderRegister();
+}
 
 /* =========================================================
    LESSONS LEARNED (existing module — ids scoped with "lesson" prefix)
@@ -1145,6 +1567,29 @@ const CATS = {
 const STATUS = {
   verified:{label:'Проверено', cls:'status-verified'}, review:{label:'На верификации', cls:'status-review'}, rejected:{label:'Отклонено', cls:'status-rejected'}
 };
+const TAGS = [
+  {icon:'📅', label:'Расписание', cat:'schedule'}, {icon:'💰', label:'Стоимость', cat:'cost'},
+  {icon:'⛑️', label:'HSE', cat:'hse'}, {icon:'📐', label:'Проектирование', cat:'design'},
+  {icon:'🌍', label:'Внешние факторы', cat:'external'}, {icon:'👷', label:'Ресурсы', cat:'resource'},
+  {icon:'📄', label:'Контракт', cat:'contract'}, {icon:'🌦️', label:'Окружающая среда', cat:'environmental'}
+];
+function impactIconsHTML(l){
+  let out = '';
+  if(l.impactDays) out += `<span class="ii" title="Влияние на срок: ${l.impactDays} дн.">⏱️</span>`;
+  if(l.impactCostPct) out += `<span class="ii" title="Влияние на бюджет: ${l.impactCostPct}% CAPEX">💰</span>`;
+  if(l.category==='design' || l.category==='hse' || l.category==='cost') out += `<span class="ii" title="Технический/операционный эффект">⚙️</span>`;
+  return out ? `<span class="impact-icons">${out}</span>` : '<span style="color:var(--ink-400); font-size:11px;">—</span>';
+}
+function renderTagPicker(){
+  document.getElementById('tagPicker').innerHTML = TAGS.map(t=>`<span class="tagchip" data-cat="${t.cat}" onclick="toggleTagFilter('${t.cat}', this)">${t.icon} ${t.label}</span>`).join('');
+}
+function toggleTagFilter(cat, el){
+  const already = el.classList.contains('active');
+  document.querySelectorAll('#tagPicker .tagchip').forEach(c=>c.classList.remove('active'));
+  document.getElementById('fCategory').value = already ? '' : cat;
+  if(!already) el.classList.add('active');
+  applyLessonFilters();
+}
 const LESSONS = [
   {id:'LL-014', category:'schedule', stage:'Закупки', region:'Дальний Восток', contract:'EPC', projectType:'Greenfield',
     title:'Раннее бронирование длинноцикловых позиций сокращает срыв графика поставки',
@@ -1282,8 +1727,8 @@ function renderLessonsTable(list){
       <td class="lesson-id">${l.id}</td>
       <td class="col-title"><div class="lesson-title">${l.title}</div><div class="lesson-src">${l.project} · риск ${l.risk.split(' · ')[0]}</div></td>
       <td>${catBadge(l.category)}</td>
+      <td>${impactIconsHTML(l)}</td>
       <td>${l.stage}</td>
-      <td class="impact-cell">${l.impactDays ? `${l.impactDays} дн.` : '—'}<span class="lbl">${l.impactCostPct ? l.impactCostPct+'% CAPEX' : 'ущерба нет'}</span></td>
       <td>${statusPill(l.status)}</td>
     </tr>`).join('');
   lessonsTfootNote.textContent = `Показаны ${list.length} из ${LESSONS.length} уроков`;
@@ -1310,7 +1755,7 @@ function renderLessonsDetail(l){
     ? `<button class="btn btn-primary">Принять</button><button class="btn">Уточнить</button>`
     : l.status === 'rejected'
     ? `<button class="btn">Вернуть на верификацию</button>`
-    : `<button class="btn btn-primary">Использовать в карточке риска</button>`;
+    : `<button class="btn btn-primary" onclick="openNewRiskModal('${l.id}')">Использовать как основание для риска</button>`;
 
   lessonsDetailPanel.innerHTML = `
     <div class="detail-head">
@@ -1405,20 +1850,37 @@ function runLessonSearch(){
   if(top.length){ lessonSelectedId = top[0].l.id; renderLessonsTable(lessonCurrentList); renderLessonsDetail(top[0].l); }
 }
 
+document.getElementById('lessonsImportXlsxBtn').addEventListener('click', e=> mockButtonFeedback(e.currentTarget, 'Импортировано'));
+document.getElementById('lessonsImportConfluenceBtn').addEventListener('click', e=> mockButtonFeedback(e.currentTarget, 'Запрошено из Confluence'));
+document.getElementById('regImportBtn').addEventListener('click', e=> mockButtonFeedback(e.currentTarget, 'Импортировано'));
+document.getElementById('regExportBtn').addEventListener('click', e=> mockButtonFeedback(e.currentTarget, 'Экспортировано'));
+document.getElementById('exportPptBtn').addEventListener('click', e=> mockButtonFeedback(e.currentTarget, 'Готово'));
+
 /* =========================================================
    INIT
    ========================================================= */
+initTheme();
 populateRegisterFilterOptions();
-populateLibraryFilterOptions();
 renderMatrices();
-renderDashRegister();
-renderSeverityTiles();
+renderDashKpis();
 renderTop5();
 renderTrend();
 renderRegister();
-renderLibrary();
+renderTagPicker();
+renderNotifs();
 renderLessonsTable(lessonCurrentList);
 renderLessonsDetail(LESSONS.find(l=>l.id===lessonSelectedId));
+
+const savedSession = loadSession();
+if(savedSession){
+  session = savedSession;
+  document.getElementById('loginGate').classList.add('hide');
+  document.getElementById('appRoot').classList.remove('hide');
+  applySessionToUI();
+  showView('dashboard');
+} else {
+  openLoginGate();
+}
 </script>
 </body>
 </html>
