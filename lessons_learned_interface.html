@@ -151,14 +151,15 @@
   .badge-contract{background:var(--green-50); color:var(--green-700);}
   .badge-environmental{background:var(--violet-50); color:var(--violet-700);}
 
-  /* risk-taxonomy badges (register/matrix) — distinct namespace from lesson badges above */
-  .rbadge-schedule{background:var(--accent-50); color:var(--accent-600);}
-  .rbadge-financial{background:var(--navycat-50); color:var(--navycat-700);}
-  .rbadge-technical{background:var(--mint-50); color:var(--mint-700);}
-  .rbadge-execution{background:var(--slate-50); color:var(--slate-700);}
-  .rbadge-environment{background:var(--violet-50); color:var(--violet-700);}
-  .rbadge-hse{background:var(--red-50); color:var(--red-700);}
-  .rbadge-supplychain{background:var(--cyan-50); color:var(--cyan-700);}
+  /* risk-taxonomy badges (register/matrix) — 8 real categories per "Методика оценки рисков для мегапроектов" v2.2 */
+  .rbadge-tech{background:var(--accent-50); color:var(--accent-600);}
+  .rbadge-economic{background:var(--navycat-50); color:var(--navycat-700);}
+  .rbadge-pir{background:var(--mint-50); color:var(--mint-700);}
+  .rbadge-techn{background:var(--slate-50); color:var(--slate-700);}
+  .rbadge-process{background:var(--violet-50); color:var(--violet-700);}
+  .rbadge-smr{background:var(--red-50); color:var(--red-700);}
+  .rbadge-supply{background:var(--cyan-50); color:var(--cyan-700);}
+  .rbadge-regulatory{background:var(--gold-50); color:var(--gold-700);}
 
   .status-pill{display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:var(--radius-chip); font-size:11px; font-weight:700;}
   .status-pill::before{content:''; width:6px;height:6px;border-radius:50%;}
@@ -168,19 +169,19 @@
   .status-review::before{background:var(--amber-700);}
   .status-rejected{background:var(--red-50); color:var(--red-700);}
   .status-rejected::before{background:var(--red-700);}
-  .status-open{background:var(--canvas-alt); color:var(--ink-700); border:1px solid var(--line);}
-  .status-open::before{background:var(--ink-600);}
+  .status-identification{background:var(--canvas-alt); color:var(--ink-700); border:1px solid var(--line);}
+  .status-identification::before{background:var(--ink-600);}
   .status-monitoring{background:var(--accent-50); color:var(--accent-600);}
   .status-monitoring::before{background:var(--accent-600);}
-  .status-closed{background:var(--green-50); color:var(--green-700);}
-  .status-closed::before{background:var(--green-700);}
+  .status-unset{background:var(--canvas-alt); color:var(--ink-400); border:1px dashed var(--line);}
+  .status-unset::before{background:var(--ink-400);}
+  .status-response{background:var(--amber-50); color:var(--amber-700);}
+  .status-response::before{background:var(--amber-700);}
 
   .score-pill{display:inline-flex; align-items:center; justify-content:center; min-width:36px; height:26px; padding:0 6px; border-radius:8px; font-family:var(--font-mono); font-weight:700; font-size:13px; color:#fff;}
-  .sev-extreme{background:var(--red-600);}
   .sev-high{background:var(--amber-600);}
   .sev-medium{background:var(--gold-600); color:var(--ink-900);}
   .sev-low{background:var(--green-600);}
-  .sev-tint-extreme{background:var(--red-50); color:var(--red-700);}
   .sev-tint-high{background:var(--amber-50); color:var(--amber-700);}
   .sev-tint-medium{background:var(--gold-50); color:var(--gold-700);}
   .sev-tint-low{background:var(--green-50); color:var(--green-700);}
@@ -207,7 +208,7 @@
   .matrix-toggle button.active{background:var(--accent-600); color:#fff;}
 
   .matrix-wrap{padding:16px 18px;}
-  .matrix-grid{display:grid; grid-template-columns:26px 58px repeat(5, 1fr); grid-template-rows:repeat(5, 1fr) 32px 16px; gap:4px;}
+  .matrix-grid{display:grid; grid-template-columns:26px 68px repeat(3, 1fr); grid-template-rows:repeat(3, 1fr) 32px 16px; gap:4px;}
   .matrix-axis-label{writing-mode:vertical-rl; transform:rotate(180deg); font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--ink-400); display:flex; align-items:center; justify-content:center; text-align:center;}
   .matrix-yhead{display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:10px; color:var(--ink-600); font-weight:600; line-height:1.2; text-align:center; padding:2px;}
   .matrix-yhead b{font-family:var(--font-mono); font-size:12px; color:var(--ink-900);}
@@ -280,9 +281,9 @@
   /* =========================================================
      MATRIX (full)
      ========================================================= */
-  .matrix-full-grid{display:grid; grid-template-columns:32px 84px repeat(5, 1fr); grid-template-rows:repeat(5, 96px) 40px 20px; gap:6px;}
-  .matrix-full-grid .matrix-cell{border-radius:8px; min-height:96px; gap:5px;}
-  .matrix-full-grid .matrix-bubble{width:44px; height:44px; font-size:10.5px;}
+  .matrix-full-grid{display:grid; grid-template-columns:32px 104px repeat(3, 1fr); grid-template-rows:repeat(3, 160px) 40px 20px; gap:6px;}
+  .matrix-full-grid .matrix-cell{border-radius:8px; min-height:160px; gap:6px;}
+  .matrix-full-grid .matrix-bubble{width:48px; height:48px; font-size:10.5px;}
 
   /* =========================================================
      LIBRARY
@@ -452,8 +453,8 @@
   .notif-item .tm{color:var(--ink-400); font-size:11px; margin-top:2px;}
   .notif-foot{padding:10px 14px; font-size:11px; color:var(--ink-400);}
 
-  .status-escalated{background:var(--violet-50); color:var(--violet-700);}
-  .status-escalated::before{background:var(--violet-700);}
+  .status-analysis{background:var(--violet-50); color:var(--violet-700);}
+  .status-analysis::before{background:var(--violet-700);}
 
   /* =========================================================
      RISK CARD EXTRAS: lifecycle stepper, comments, attachments, edit mode
@@ -539,7 +540,7 @@
     </div>
     <div class="login-field">
       <label>Название проекта</label>
-      <input type="text" id="loginProjectName" placeholder="Офшорная ВЭС «Орион»" value="Офшорная ВЭС «Орион»">
+      <input type="text" id="loginProjectName" placeholder="Программа ЦГП-2 (Стан 1700)" value="Программа ЦГП-2 (Стан 1700)">
     </div>
     <div class="login-row">
       <div class="login-field">
@@ -590,7 +591,7 @@
     <div class="topbar">
       <div>
         <h1 id="pageTitle">Дэшборд</h1>
-        <div class="sub" id="pageSub">Проект «Орион» · Офшорная ветроэлектростанция, 350 МВт</div>
+        <div class="sub" id="pageSub">Программа ЦГП-2 · Стан горячей прокатки 1700, 4 млн т/год</div>
       </div>
       <div class="top-actions">
         <button class="icon-btn" id="themeToggle" title="Светлая/тёмная тема" aria-label="Тема">
@@ -644,15 +645,14 @@
           </div>
           <div class="matrix-wrap" id="dashMatrixWrap"></div>
           <div class="matrix-legend">
-            <span class="sw"><span class="dot" style="background:var(--green-600)"></span>Низкий 1–3</span>
-            <span class="sw"><span class="dot" style="background:var(--gold-600)"></span>Средний 4–7</span>
-            <span class="sw"><span class="dot" style="background:var(--amber-600)"></span>Высокий 8–15</span>
-            <span class="sw"><span class="dot" style="background:var(--red-600)"></span>Критический 16–25</span>
+            <span class="sw"><span class="dot" style="background:var(--green-600)"></span>L — низкий (RRA 1–2)</span>
+            <span class="sw"><span class="dot" style="background:var(--gold-600)"></span>M — средний (RRA 3–4)</span>
+            <span class="sw"><span class="dot" style="background:var(--amber-600)"></span>H — высокий (RRA 6–9)</span>
           </div>
         </div>
 
         <div class="panel">
-          <div class="panel-head"><h3>Топ рисков по критичности</h3><span class="hint" title="Эскалированные риски — всегда наверху, далее по убыванию Score"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 11v5m0-8h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span></div>
+          <div class="panel-head"><h3>Топ рисков по критичности</h3><span class="hint" title="Сортировка по убыванию RRA (P × I)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 11v5m0-8h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span></div>
           <div id="top5List"></div>
         </div>
       </div>
@@ -660,10 +660,9 @@
       <div class="panel">
         <div class="panel-head"><h3>Тренд рисков по критичности</h3></div>
         <div class="trend-legend">
-          <span class="sw"><span class="ln" style="background:var(--red-600)"></span>Критический</span>
-          <span class="sw"><span class="ln" style="background:var(--amber-600)"></span>Высокий</span>
-          <span class="sw"><span class="ln" style="background:var(--gold-600)"></span>Средний</span>
-          <span class="sw"><span class="ln" style="background:var(--green-600)"></span>Низкий</span>
+          <span class="sw"><span class="ln" style="background:var(--amber-600)"></span>Высокий (H)</span>
+          <span class="sw"><span class="ln" style="background:var(--gold-600)"></span>Средний (M)</span>
+          <span class="sw"><span class="ln" style="background:var(--green-600)"></span>Низкий (L)</span>
         </div>
         <div id="trendChart" style="padding:8px 12px 0;"></div>
         <div class="trend-note">Тренд пересчитывается при каждом заполнении реестра и изменении статуса риска.</div>
@@ -691,7 +690,7 @@
         <div class="field"><label>Категория</label><select id="regCategory"><option value="">Все</option></select></div>
         <div class="field"><label>Стадия</label><select id="regStage"><option value="">Все</option></select></div>
         <div class="field"><label>Владелец</label><select id="regOwner"><option value="">Все</option></select></div>
-        <div class="field"><label>Статус</label><select id="regStatus"><option value="">Все</option><option value="open">Открыт</option><option value="monitoring">На контроле</option><option value="escalated">Эскалирован</option><option value="closed">Закрыт</option></select></div>
+        <div class="field"><label>Статус</label><select id="regStatus"><option value="">Все</option><option value="identification">Идентификация</option><option value="analysis">Анализ и оценка</option><option value="response">Реагирование</option><option value="monitoring">Мониторинг и контроль</option><option value="unset">Статус не определён</option></select></div>
         <button class="link-btn" id="regReset"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 1 1 3 6.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M3 17v-5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Сбросить</button>
       </div>
 
@@ -728,7 +727,7 @@
         <div class="field"><label>Категория</label><select id="mtxCategory"><option value="">Все</option></select></div>
         <div class="field"><label>Стадия</label><select id="mtxStage"><option value="">Все</option></select></div>
         <div class="field"><label>Владелец</label><select id="mtxOwner"><option value="">Все</option></select></div>
-        <div class="field"><label>Статус</label><select id="mtxStatus"><option value="">Все</option><option value="open">Открыт</option><option value="monitoring">На контроле</option><option value="escalated">Эскалирован</option><option value="closed">Закрыт</option></select></div>
+        <div class="field"><label>Статус</label><select id="mtxStatus"><option value="">Все</option><option value="identification">Идентификация</option><option value="analysis">Анализ и оценка</option><option value="response">Реагирование</option><option value="monitoring">Мониторинг и контроль</option><option value="unset">Статус не определён</option></select></div>
         <div class="spacer"></div>
         <div class="matrix-toggle">
           <button data-mode="inherent" class="active">Свойственный риск</button>
@@ -737,13 +736,12 @@
       </div>
 
       <div class="panel">
-        <div class="panel-head"><h3>Риск-матрица 5×5 — вероятность × влияние</h3></div>
+        <div class="panel-head"><h3>Риск-матрица 3×3 (RRA = P × I) — вероятность × материальность</h3></div>
         <div class="matrix-wrap" id="fullMatrixWrap" style="padding:22px 24px;"></div>
         <div class="matrix-legend">
-          <span class="sw"><span class="dot" style="background:var(--green-600)"></span>Низкий (1–3)</span>
-          <span class="sw"><span class="dot" style="background:var(--gold-600)"></span>Средний (4–7)</span>
-          <span class="sw"><span class="dot" style="background:var(--amber-600)"></span>Высокий (8–15)</span>
-          <span class="sw"><span class="dot" style="background:var(--red-600)"></span>Критический (16–25)</span>
+          <span class="sw"><span class="dot" style="background:var(--green-600)"></span>L — низкий (RRA 1–2)</span>
+          <span class="sw"><span class="dot" style="background:var(--gold-600)"></span>M — средний (RRA 3–4)</span>
+          <span class="sw"><span class="dot" style="background:var(--amber-600)"></span>H — высокий (RRA 6–9)</span>
           <span style="margin-left:auto; color:var(--ink-400);">Нажмите на риск, чтобы открыть карточку</span>
         </div>
       </div>
@@ -832,8 +830,8 @@
    ========================================================= */
 const PAGE_META = {
   dashboard:{t:'Дэшборд', s:()=>`${session.projectName} · ${session.spp} · ${session.site}`},
-  register:{t:'Риск-регистр', s:()=>`Активные риски проекта ${session.projectName} с оценкой P/I и статусом мероприятий`},
-  matrix:{t:'Риск-матрица 5×5', s:()=>'Визуализация вероятности и влияния активных рисков проекта'},
+  register:{t:'Риск-регистр', s:()=>`Топ-15 из 92 рисков программы ${session.projectName} с оценкой P/I по методике и статусом мероприятий`},
+  matrix:{t:'Риск-матрица 3×3', s:()=>'RRA = P × I по «Методике оценки рисков для мегапроектов» v2.2 — вероятность × материальность'},
   lessons:{t:'Извлечённые уроки', s:()=>'База проблем и извлечённых уроков по проектам НЛМК — сессии с Центрами компетенций по завершении Фазы-2 и Фазы-4, источник данных для оценки новых рисков.'}
 };
 function showView(name){
@@ -871,7 +869,7 @@ const PHASES = [
   {v:3, label:'Фаза 3 — Закупки'}, {v:4, label:'Фаза 4 — Строительство'}, {v:5, label:'Фаза 5 — Ввод в эксплуатацию'}
 ];
 
-let session = {name:'Иванов Пётр Сергеевич', role:'riskmanager', spp:'СПП-2024-0317', projectName:'Офшорная ВЭС «Орион»', site:'Липецк', phase:4};
+let session = {name:'Иванов Пётр Сергеевич', role:'riskmanager', spp:'СПП-2024-0317', projectName:'Программа ЦГП-2 (Стан 1700)', site:'Липецк', phase:1};
 
 function canEdit(){ return session.role==='riskmanager'; }
 function canCreateRisk(){ return session.role!=='viewer'; }
@@ -981,96 +979,215 @@ function mockButtonFeedback(btn, doneLabel){
 /* =========================================================
    SEVERITY HELPERS (shared: dashboard / register / matrix / library)
    ========================================================= */
-function severityOf(score){ if(score>=16) return 'extreme'; if(score>=8) return 'high'; if(score>=4) return 'medium'; return 'low'; }
-const SEV_LABEL = {extreme:'Критический', high:'Высокий', medium:'Средний', low:'Низкий'};
+/* Матрица RRA 3×3 (P × I, P,I ∈ {1,2,3}) — «Методика оценки рисков для мегапроектов», версия 2.2:
+   L = LOW (RRA 1–2), M = MODERATE (RRA 3–4), H = HIGH (RRA 6–9). */
+const MATRIX_SIZE = 3;
+function severityOf(score){ if(score>=6) return 'high'; if(score>=3) return 'medium'; return 'low'; }
+const SEV_LABEL = {high:'Высокий', medium:'Средний', low:'Низкий'};
 
 function scorePillHTML(score){ return `<span class="score-pill sev-${severityOf(score)}">${score}</span>`; }
 
+/* 8 категорий рисков по «Методике оценки рисков для мегапроектов» v2.2 (стр. 2), с владельцем по методике */
 const RISK_CATS = {
-  schedule:{label:'Расписание', cls:'rbadge-schedule'},
-  financial:{label:'Финансы', cls:'rbadge-financial'},
-  technical:{label:'Технические', cls:'rbadge-technical'},
-  execution:{label:'Исполнение', cls:'rbadge-execution'},
-  environment:{label:'Окружающая среда', cls:'rbadge-environment'},
-  hse:{label:'HSE', cls:'rbadge-hse'},
-  supplychain:{label:'Цепочка поставок', cls:'rbadge-supplychain'}
+  tech:{label:'Технологические (ТХР)', cls:'rbadge-tech', owner:'Отв. за технологию'},
+  pir:{label:'ПИР', cls:'rbadge-pir', owner:'Отв. за ПИР'},
+  techn:{label:'Технические', cls:'rbadge-techn', owner:'Отв. за технологию'},
+  supply:{label:'Снабжение', cls:'rbadge-supply', owner:'Отв. за снабжение'},
+  smr:{label:'СМР/ПНР', cls:'rbadge-smr', owner:'Отв. за СМР'},
+  process:{label:'Процессные', cls:'rbadge-process', owner:'Менеджер'},
+  regulatory:{label:'Регуляторные', cls:'rbadge-regulatory', owner:'Менеджер'},
+  economic:{label:'Экономические', cls:'rbadge-economic', owner:'Менеджер'}
 };
 function rCatBadge(c){ const cat = RISK_CATS[c]; return `<span class="badge ${cat.cls}">${cat.label}</span>`; }
 
+/* 5 статусов процесса управления риском (тепловая карта Программы ЦГП-2, стр. 1) */
 const RSTATUS = {
-  open:{label:'Открыт', cls:'status-open'},
-  monitoring:{label:'На контроле', cls:'status-monitoring'},
-  escalated:{label:'Эскалирован', cls:'status-escalated'},
-  closed:{label:'Закрыт', cls:'status-closed'}
+  identification:{label:'Идентификация', cls:'status-identification'},
+  analysis:{label:'Анализ и оценка', cls:'status-analysis'},
+  response:{label:'Реагирование', cls:'status-response'},
+  monitoring:{label:'Мониторинг и контроль', cls:'status-monitoring'},
+  unset:{label:'Статус не определён', cls:'status-unset'}
 };
 function rStatusPill(s){ const st = RSTATUS[s]; return `<span class="status-pill ${st.cls}">${st.label}</span>`; }
 const STRATEGIES = ['Принятие','Снижение','Передача','Уклонение'];
 
+/* Статусы мероприятий реагирования (паспорт риска) */
+const ACTION_STATUSES = ['Планируется','В работе','Выполнено','Отклонено'];
+const ACTION_TYPES = ['Причина','Следствие','Запасной план','Существующая процедура'];
+const ACTION_STATUS_CLS = {'Планируется':'status-identification', 'В работе':'status-monitoring', 'Выполнено':'status-verified', 'Отклонено':'status-rejected'};
+
+/* Остаточная оценка риска — не ручной выбор, а автоматический расчёт по 3 вопросам о статусе
+   мероприятий (методика, стр. 9): 0–1 «Да» → без изменений; 2 «Да» → на уровень ниже (H→M, M→L);
+   3 «Да» → L. Т.к. Q3 («мероприятия подтверждённо митигируют риск») не автоматизируема без
+   экспертной проверки, консервативно принимается равным Q2 (все мероприятия выполнены). */
+function residualAnswers(r){
+  const acts = r.actions || [];
+  if(!acts.length) return [false,false,false];
+  const activeActs = acts; // все мероприятия, включая «Запасной план»
+  const q1 = activeActs.every(a=> a.status==='В работе' || a.status==='Выполнено');
+  const q2 = activeActs.every(a=> a.status==='Выполнено');
+  const q3 = q2;
+  return [q1,q2,q3];
+}
+function residualLevelOf(r){
+  const orig = severityOf(r.score);
+  const daCount = residualAnswers(r).filter(Boolean).length;
+  if(daCount>=3) return 'low';
+  if(daCount===2) return orig==='high' ? 'medium' : 'low';
+  return orig;
+}
+/* Подбирает представительную пару (P,I) для уровня остаточного риска — понижение начинается
+   с вероятности P, т.к. большинство мероприятий реестра направлены на причину риска. */
+function pickPI(level, p, i){
+  const targets = {low:[1,2], medium:[3,4], high:[6,9]};
+  const [lo,hi] = targets[level];
+  if(p*i>=lo && p*i<=hi) return [p,i];
+  for(let np=p; np>=1; np--){ for(let ni=i; ni>=1; ni--){ const s=np*ni; if(s>=lo&&s<=hi) return [np,ni]; } }
+  return [1,1];
+}
+function applyResidual(r){
+  const level = residualLevelOf(r);
+  const [pRes,iRes] = pickPI(level, r.p, r.i);
+  r.pRes = pRes; r.iRes = iRes; r.scoreRes = pRes*iRes;
+}
+
 /* =========================================================
-   RISK REGISTER DATA — project «Орион»
-   ========================================================= */
+   RISK REGISTER DATA — Программа ЦГП-2 (Стан 1700), Топ-15 из 92 рисков программы
+   Источник: реестр УК №8 «ЦГП-2. Завершение Фазы-1» и «Методика оценки рисков для
+   мегапроектов» v2.2. Из 92 рисков программы паспортами детально описаны 15 — только они
+   и представлены как отдельные записи реестра (без вымышленных заполнителей на оставшиеся ~77).
+   ID сохраняют реальную нумерацию программы (не последовательны — R-002…R-099).
+   overdue вычислен из плановых сроков реальных мероприятий относительно текущей даты сессии. */
 const RISKS = [
-  {id:'R-001', category:'schedule', description:'Задержка получения разрешений от регулирующих органов.', stage:'Строительство', p:5, i:4, pRes:4, iRes:4, owner:'Ирина Соколова', status:'open', strategy:'Снижение', finImpact:'≈1.2% CAPEX (экспедайтинг)', qualImpact:'Высокое — критический путь графика', overdue:false,
-    actions:['Раннее взаимодействие с регуляторами','Еженедельный трекинг контрольных точек разрешений'],
-    comments:[{author:'Ирина Соколова', text:'Согласовали еженедельный трекинг с регулятором, статус штатный.'}],
-    attachments:[{name:'Permit_tracking_R-001.xlsx', type:'xlsx'},{name:'Regulator_letter.pdf', type:'pdf'}]},
-  {id:'R-002', category:'financial', description:'Рост цен на сталь, влияющий на стоимость проекта.', stage:'Закупки', p:4, i:5, pRes:3, iRes:4, owner:'Дмитрий Ли', status:'open', strategy:'Снижение', finImpact:'≈4.8% CAPEX (рост цены стали)', qualImpact:'Высокое — стоимость EPC-контракта', overdue:false,
-    actions:['Фиксация цен через хеджирование','Пересмотр условий поставщиков'],
-    comments:[{author:'Дмитрий Ли', text:'Запросили у двух поставщиков индексную оговорку — ждём ответа до конца недели.'}],
-    attachments:[{name:'Steel_price_hedge.pdf', type:'pdf'}]},
-  {id:'R-003', category:'technical', description:'Недостаточная производительность технологии ветротурбин.', stage:'Строительство', p:5, i:3, pRes:3, iRes:3, owner:'Анна Ковалёва', status:'open', strategy:'Снижение', finImpact:'≈0.6% CAPEX (доп. испытания)', qualImpact:'Высокое — репутация технологии', overdue:false,
-    actions:['Проведение испытаний производительности','Работа с OEM по мерам снижения'], comments:[], attachments:[]},
-  {id:'R-004', category:'execution', description:'Задержка офшорного монтажа из-за доступности судов.', stage:'Строительство', p:4, i:3, pRes:3, iRes:3, owner:'Максим Данилов', status:'open', strategy:'Передача', finImpact:'≈0.9% CAPEX (простой техники)', qualImpact:'Среднее — темп монтажа', overdue:true,
-    actions:['Долгосрочные контракты на суда','Резервный флот подрядчиков'], comments:[], attachments:[]},
-  {id:'R-005', category:'environment', description:'Неблагоприятные погодные условия в сезон строительства.', stage:'Строительство', p:3, i:3, pRes:3, iRes:2, owner:'Лидия Нгуен', status:'monitoring', strategy:'Принятие', finImpact:'—', qualImpact:'Среднее — сезонные окна работ', overdue:false,
-    actions:['Усиленный мониторинг погоды','Корректировка последовательности работ'], comments:[], attachments:[]},
-  {id:'R-006', category:'hse', description:'Крупный инцидент HSE при офшорных операциях.', stage:'Строительство', p:3, i:4, pRes:2, iRes:4, owner:'Павел Петров', status:'escalated', strategy:'Снижение', finImpact:'—', qualImpact:'Критическое — жизнь и здоровье персонала', overdue:false,
-    actions:['Усиление культуры безопасности','Регулярные учения HSE'],
-    comments:[{author:'Павел Петров', text:'Инцидент зафиксирован, пострадавший стабилен. Материалы переданы риск-комитету.'},{author:'Ирина Соколова', text:'Эскалировано на риск-комитет 09.05 — ожидаем решение по дополнительным мерам.'}],
-    attachments:[{name:'HSE_incident_report_R-006.pdf', type:'pdf'}]},
-  {id:'R-007', category:'supplychain', description:'Задержка поставки критических компонентов.', stage:'Закупки', p:4, i:2, pRes:3, iRes:2, owner:'Мария Гонсалес', status:'monitoring', strategy:'Снижение', finImpact:'≈0.4% CAPEX', qualImpact:'Среднее — простой монтажной бригады', overdue:false,
-    actions:['Дублирующие источники поставок','Трекинг статуса поставщиков'], comments:[], attachments:[]},
-  {id:'R-008', category:'financial', description:'Рост процентных ставок, влияющий на финансирование проекта.', stage:'Инициация', p:2, i:4, pRes:2, iRes:3, owner:'Дмитрий Ли', status:'monitoring', strategy:'Передача', finImpact:'≈0.3% CAPEX (стоимость фондирования)', qualImpact:'Низкое', overdue:false,
-    actions:['Пересмотр условий финансирования','Рассмотрение rate cap'], comments:[], attachments:[]},
-  {id:'R-009', category:'supplychain', description:'Дефицит специализированных судов для офшорного монтажа.', stage:'Закупки', p:3, i:2, pRes:2, iRes:2, owner:'Мария Гонсалес', status:'monitoring', strategy:'Снижение', finImpact:'≈0.2% CAPEX', qualImpact:'Низкое', overdue:true,
-    actions:['Раннее бронирование судов','Альтернативные подрядчики'], comments:[], attachments:[]},
-  {id:'R-010', category:'technical', description:'Задержка подключения к сети на береговой подстанции.', stage:'Ввод в эксплуатацию', p:2, i:2, pRes:2, iRes:2, owner:'Анна Ковалёва', status:'monitoring', strategy:'Принятие', finImpact:'—', qualImpact:'Среднее — срок ввода в эксплуатацию', overdue:false,
-    actions:['Согласование графика с сетевой компанией'], comments:[], attachments:[]},
-  {id:'R-011', category:'execution', description:'Задержка установки фундаментов из-за состояния морского дна.', stage:'Строительство', p:2, i:3, pRes:2, iRes:2, owner:'Максим Данилов', status:'open', strategy:'Снижение', finImpact:'≈0.3% CAPEX', qualImpact:'Среднее', overdue:false,
-    actions:['Дополнительные геотехнические изыскания'], comments:[], attachments:[]},
-  {id:'R-012', category:'environment', description:'Незначительное воздействие на морскую фауну при строительстве.', stage:'Строительство', p:1, i:1, pRes:1, iRes:1, owner:'Лидия Нгуен', status:'closed', strategy:'Принятие', finImpact:'—', qualImpact:'Низкое — экологический мониторинг', overdue:false,
-    actions:['Экологический мониторинг по графику'], comments:[], attachments:[]},
-  {id:'R-013', category:'hse', description:'Незначительные предпосылки безопасности в штормовую погоду.', stage:'Строительство', p:1, i:2, pRes:1, iRes:1, owner:'Павел Петров', status:'monitoring', strategy:'Принятие', finImpact:'—', qualImpact:'Низкое', overdue:false,
-    actions:['Усиленный инструктаж перед штормовым сезоном'], comments:[], attachments:[]}
+  {id:'R-090', category:'tech', description:'Недостижение требуемого качества г/к проката при выборе типа контроллера SIMATIC S7-1500 (Siemens) для построения АСУ ТП черновой, чистовой групп клетей и моталок ввиду отсутствия достоверных референций.', cause:'Контроллеры SIMATIC S7-1500 — новая линейка Siemens без подтверждённых референций применения для НШСГП у Интеграторов; отсутствие собственного опыта эксплуатации на НЛМК.', consequence:'Появление брака конечного продукта, недостижение целевой производительности 4 млн т/год технологических процессов прокатки.', stage:'Фаза-1 (завершение)', p:2, i:3, owner:'Якубов Е.В.', status:'monitoring', strategy:'Снижение', finImpact:'—', overdue:true,
+    actions:[
+      {text:'Проверка референций применения контроллеров SIMATIC S7-1500 (Siemens) для НШСГП', type:'Причина', responsible:'Мордовкин Д.С.', dueDate:'июн.26', cost:'tbd', status:'В работе'},
+      {text:'Создание испытательного полигона на базе SIMATIC S7-1500 (Siemens) для проверки и опробования технических решений по замене SIMATIC TDC (Siemens) на SIMATIC S7-1500 (Siemens)', type:'Причина', responsible:'Диденко Е.Е.', dueDate:'июн.26', cost:'7 млн руб.', status:'В работе'}
+    ], comments:[], attachments:[]},
+  {id:'R-092', category:'tech', description:'Недостижение свойств ВПС (высокопроницаемой стали) второго поколения в конечном продукте в случае неточного определения требований к процессу из-за недоступности референций.', cause:'Ограниченный доступ к референсным данным и технологическим решениям ключевых Интеграторов вследствие режима коммерческой тайны, что препятствует бенчмаркингу и валидации параметров.', consequence:'Выход негодного продукта при формальном соблюдении проектных параметров; невозможность реализации по целевой стоимости высокомаржинального продукта.', stage:'Фаза-1 (завершение)', p:3, i:1, owner:'Кузюк М.В.', status:'monitoring', strategy:'Снижение / Принятие', finImpact:'—', overdue:true,
+    actions:[
+      {text:'Подтверждение оптимальности выбранной конфигурации стана 1700 через референс-визиты на предприятия по производству ВПС в Китае', type:'Причина', responsible:'Мордовкин Д.С., Сараев Д.В.', dueDate:'май.26', cost:'tbd', status:'В работе'},
+      {text:'Математическое моделирование всех возможных вариантов конфигураций для подтверждения оптимальных температурных режимов', type:'Причина', responsible:'Мощенко М.Г., Долгов А.В.', dueDate:'мар.26', cost:'Не требуется', status:'Выполнено'},
+      {text:'Приобретение и переработка экспериментального подката других производителей для подтверждения степени влияния горячекатаного проката на качество конечной продукции', type:'Причина', responsible:'Мощенко М.Г.', dueDate:'май.26', cost:'tbd', status:'В работе'},
+      {text:'Отработка технологии холодного передела до получения положительного результата; при необходимости — реконструкция/модернизация агрегатов или строительство новой линии', type:'Запасной план', responsible:'Мощенко М.Г.', dueDate:'2030', cost:'tbd', status:'Планируется', trigger:'Непрохождение аттестации готовой продукции ВПС'}
+    ], comments:[], attachments:[]},
+  {id:'R-036', category:'techn', description:'Недостижение целевой производительности стана 4 млн т/год из-за низкой скорости передачи слябов рольганг-тележки ОНРС КЦ-2.', cause:'Удлинение пути движения рольганг-тележки; низкая скорость позиционирования и движения существующей рольганг-тележки.', consequence:'Нарушение внутренней логистики КЦ-2; недостижение целевой производительности 4 млн т/год стана.', stage:'Фаза-1 (завершение)', p:3, i:2, owner:'Мордовкин Д.С.', status:'monitoring', strategy:'Снижение / Передача / Уклонение', finImpact:'—', overdue:true,
+    actions:[
+      {text:'Проведение имитационного моделирования склада слябов', type:'Причина', responsible:'Кулигин М.А.', dueDate:'июл.25', cost:'2,7 млн руб.', status:'Выполнено'},
+      {text:'Разработка мероприятий по повышению скорости перемещения тележки за счёт модернизации АСУ ТП, электропривода, механической части рольганг-тележки', type:'Причина', responsible:'Раздорских Д.А.', dueDate:'дек.26', cost:'tbd', status:'Планируется'},
+      {text:'Рассмотреть возможность передачи слябов по рольгангу МНЛЗ-9 на склад слябов ЦГП-2', type:'Причина', responsible:'Раздорских Д.А.', dueDate:'июн.26', cost:'tbd', status:'В работе'},
+      {text:'Привлечение Интегратора (CISDI) для оценки альтернативных способов передачи слябов на склад слябов ЦГП-2', type:'Причина', responsible:'Кулигин М.А.', dueDate:'июн.26', cost:'tbd', status:'В работе'},
+      {text:'Проработка альтернативных способов передачи слябов на стан 1700, исключая строительство склада слябов ЦГП-2', type:'Причина', responsible:'Раздорских Д.А.', dueDate:'июн.26', cost:'tbd', status:'В работе'}
+    ], comments:[], attachments:[]},
+  {id:'R-032', category:'economic', description:'Недостижение экономических КПЭ Программы из-за изменения конъюнктуры рынка слябов (в т.ч. продление квоты на поставку слябов в Европу после 2028 г.).', cause:'Продление квоты на поставку слябов в Европу после 2028 г.; публикация решений ответственных органов Евросоюза с отменой или увеличением квот на поставку слябов.', consequence:'Изменение IRR Программы ЦГП-2: разнонаправленное влияние сохранения/снижения поставок слябов и г/к проката на разные рынки сбыта.', stage:'Фаза-1 (завершение)', p:2, i:3, owner:'Аршакуни К.В., Гущин И.В., Хорн С.О.', status:'monitoring', strategy:'Принятие / Снижение', finImpact:'—', overdue:false,
+    actions:[
+      {text:'Поиск возможностей поставок г/к проката совместно с поставкой слябов в Европу', type:'Следствие', responsible:'Поляков Д., Кожевников А.В.', dueDate:'2028', cost:'tbd', status:'Планируется'},
+      {text:'Дальнейшее развитие downstream через M&A в РФ или собственное строительство мощностей (трубное производство, ЦХПП)', type:'Следствие', responsible:'Долгов М.В., Кожевников А.В.', dueDate:'2028', cost:'tbd', status:'Планируется'},
+      {text:'Дальнейшее развитие downstream через M&A в MENAT', type:'Следствие', responsible:'Кожевников А.В., Поляков Д.', dueDate:'2028', cost:'tbd', status:'Планируется'},
+      {text:'Мониторинг ввода импортных квот на поставку слябов в Европу после 2028 г.', type:'Причина', responsible:'Кожевников А.В., Поляков Д.', dueDate:'2028', cost:'tbd', status:'Планируется'}
+    ], comments:[], attachments:[]},
+  {id:'R-086', category:'economic', description:'Недостижение уровня продаж в объёме 3,2–3,5 млн т/год из-за изменения конъюнктуры рынка / отсутствия спроса на г/к прокат.', cause:'Изменение конъюнктуры рынка относительно прогнозных сценариев по г/к прокату.', consequence:'Отсутствие перспективного спроса/продаж ниже целевого объёма; вынужденное снижение объёмов производства стана, снижение EBITDA.', stage:'Фаза-1 (завершение)', p:3, i:3, owner:'Аршакуни К.В., Гущин И.В., Хорн С.О.', status:'monitoring', strategy:'Снижение', finImpact:'—', overdue:false,
+    actions:[
+      {text:'Дальнейшее развитие downstream через M&A в РФ или собственное строительство мощностей (трубное производство, ЦХПП)', type:'Причина', responsible:'Долгов М.В., Кожевников А.В.', dueDate:'2030', cost:'tbd', status:'Планируется'},
+      {text:'Дальнейшее развитие downstream через M&A в MENAT и ЮВА', type:'Причина', responsible:'Кожевников А.В., Поляков Д.', dueDate:'2030', cost:'tbd', status:'Планируется'}
+    ], comments:[], attachments:[]},
+  {id:'R-026', category:'pir', description:'Увеличение сроков проектирования и строительства из-за нехватки ресурсов генпроектировщика.', cause:'Нехватка человеческих ресурсов генпроектировщика для необходимого объёма проектных работ и обеспечения качества ПД и РД; неэффективное управление документооборотом.', consequence:'Задержка выдачи проектной и рабочей документации по критическим объектам и этапам строительства, смещение плановых сроков начала и завершения СМР.', stage:'Фаза-1 (завершение)', p:2, i:2, owner:'Тимошкин А.В.', status:'monitoring', strategy:'Снижение', finImpact:'—', overdue:true,
+    actions:[
+      {text:'Подготовка ресурсных планов генпроектировщика при переходе Программы на Фазу-3 с учётом плановой загрузки по другим приоритетным проектам (в т.ч. с мероприятиями по привлечению внешних ресурсов)', type:'Причина', responsible:'Терешкова Ю.В., Раздорских Д.А.', dueDate:'июл.26', cost:'Не требуется', status:'В работе'},
+      {text:'Передача разработки отдельных разделов ПД/РД специализированным субподрядным проектным организациям для распределения загрузки генпроектировщика и привлечения узкопрофильных экспертов', type:'Причина', responsible:'Раздорских Д.А.', dueDate:'Фазы 3, 4', cost:'tbd', status:'Планируется'},
+      {text:'Включение в договор с генпроектировщиком требования о 100% занятости ключевых специалистов (ГИП, технолог, ведущие инженеры) на Программе ЦГП-2', type:'Причина', responsible:'Тимошкин А.В.', dueDate:'Фазы 3, 4', cost:'Не требуется', status:'Планируется'}
+    ], comments:[], attachments:[]},
+  {id:'R-078', category:'pir', description:'Увеличение CAPEX в связи с уточнением требований ГГЭ в части огнезащиты строительных конструкций ЦГП-2.', cause:'Увеличение объёмов работ по огнезащите строительных конструкций относительно разработанных проектных решений на этапе ОПР из-за требований регулятора.', consequence:'Заключение ГГЭ по отнесению зданий ЦГП-2 к категории В3 по пожарной опасности; увеличение CAPEX, снижение эффективности проекта.', stage:'Фаза-1 (завершение)', p:3, i:3, owner:'Мордовкин Д.С.', status:'monitoring', strategy:'Снижение', finImpact:'—', overdue:false,
+    actions:[
+      {text:'Разработка специальных ТУ с привлечением специализированных организаций', type:'Причина', responsible:'Раздорских Д.А.', dueDate:'сен.26', cost:'Не требуется', status:'В работе'},
+      {text:'Разработка проектных решений по созданию пожаробезопасных зон внутри цеха', type:'Причина', responsible:'Раздорских Д.А.', dueDate:'сен.26', cost:'Не требуется', status:'В работе'},
+      {text:'Разработка проектных решений по созданию пожаростойких строительных конструкций', type:'Причина', responsible:'Раздорских Д.А.', dueDate:'сен.26', cost:'Не требуется', status:'В работе'}
+    ], comments:[], attachments:[]},
+  {id:'R-015', category:'supply', description:'Недостижение целевых показателей по срокам поставки и монтажа ОТО, КВО и ВО из-за смещения сроков разработки базисного и детального инжиниринга (БИ, ДИ).', cause:'Дефицит квалифицированных инженеров-проектировщиков у подрядчика по разработке инжиниринга в соответствии с нормами и правилами РФ.', consequence:'Систематическое отклонение БИ и ДИ от требований нормативной базы РФ; критическое смещение сроков выдачи БИ и ДИ для производства ОТО, закупки КВО и ВО; смещение сроков начала СМР по разделам ОТО, КВО и ВО.', stage:'Фаза-1 (завершение)', p:2, i:3, owner:'Азимов Х.А.', status:'monitoring', strategy:'Снижение', finImpact:'—', overdue:false,
+    actions:[
+      {text:'Предусмотреть резерв в графике реализации проекта на мобилизацию ресурсов генпроектировщика по месту пребывания поставщика БИ', type:'Причина', responsible:'Азимов Х.А., Шабельников А.В.', dueDate:'сен.26', cost:'Не требуется', status:'Планируется'},
+      {text:'Предусмотреть возможность совместного проектирования с привлечением квалифицированных специалистов генпроектировщика по месту пребывания Интегратора', type:'Причина', responsible:'Азимов Х.А., Шабельников А.В.', dueDate:'мар.27', cost:'tbd', status:'Планируется'},
+      {text:'Разработка и внедрение процедур по EXPD для своевременного выявления отклонений в БИ и ДИ от нормативной базы РФ', type:'Причина', responsible:'Азимов Х.А., Шабельников А.В.', dueDate:'мар.27', cost:'tbd', status:'Планируется'},
+      {text:'Внедрение в договор на поставку ОТО процедур MDR (Main Document Register) и VDR (Vendor Document Register)', type:'Причина', responsible:'Азимов Х.А., Шабельников А.В.', dueDate:'сен.26', cost:'tbd', status:'Планируется'}
+    ], comments:[], attachments:[]},
+  {id:'R-017', category:'supply', description:'Недостижение целевых объёмов производства 4 млн т/год из-за несоответствия качества изготовления технологического оборудования (ОТО и КВО).', cause:'Нарушение параметров и технических характеристик ОТО и КВО, указанных в договоре на поставку (работоспособность, надёжность, производительность и др.).', consequence:'Выход из строя отдельных узлов, снижение срока работоспособности оборудования на этапе ХПНР/ГПНР; претензионная работа по ремонту и замене; смещение графика реализации.', stage:'Фаза-1 (завершение)', p:2, i:2, owner:'Азимов Х.А.', status:'monitoring', strategy:'Снижение', finImpact:'—', overdue:false,
+    actions:[
+      {text:'Разработка и внедрение процедур по EXPD', type:'Причина', responsible:'Азимов Х.А., Шабельников А.В.', dueDate:'янв.28', cost:'tbd', status:'Планируется'},
+      {text:'Привлечение специализированных компаний для проведения процесса EXPD (инспекционный контроль качества изготовления на всём технологическом процессе)', type:'Существующая процедура', responsible:'Азимов Х.А., Шабельников А.В.', dueDate:'янв.28', cost:'tbd', status:'Планируется'},
+      {text:'Организация приёмо-сдаточных испытаний ключевых узлов ОТО и КВО на заводе-изготовителе силами профильных специалистов НЛМК для проверки соответствия техническим характеристикам договора до отгрузки', type:'Существующая процедура', responsible:'Азимов Х.А., Шабельников А.В.', dueDate:'июн.28', cost:'tbd', status:'Планируется'},
+      {text:'Проведение осмотра (вскрытие упаковки) оборудования (Open package inspection) до начала монтажных работ с участием поставщика на площадке Покупателя', type:'Существующая процедура', responsible:'Азимов Х.А., Шабельников А.В., Мордовкин Д.С.', dueDate:'янв.29', cost:'Не требуется', status:'Планируется'}
+    ], comments:[], attachments:[]},
+  {id:'R-089', category:'supply', description:'Недостижение целевой производительности 4 млн т/год при выборе типа контроллера SIMATIC TDC (Siemens) ввиду невозможности будущих поставок ЗиП.', cause:'Контроллеры TDC сняты с производства в окт.25; поставки ЗиП планируются Siemens до 2033 г., далее — невозможность будущих поставок.', consequence:'Аварийная остановка стана 1700; невозможность восстановления работоспособности АСУ ТП стана, снижение производительности вплоть до полной остановки.', stage:'Фаза-1 (завершение)', p:2, i:3, owner:'Азимов Х.А.', status:'monitoring', strategy:'Уклонение / Снижение', finImpact:'—', overdue:true,
+    actions:[
+      {text:'Переход на другую линейку контроллеров (SIMATIC S7-1500)', type:'Причина', responsible:'Диденко Е.Е.', dueDate:'июн.26', cost:'Не требуется', status:'В работе'},
+      {text:'Организация поставки новой линейки в соответствии с потребностью НЛМК', type:'Причина', responsible:'Азимов Х.А., Шабельников А.В.', dueDate:'мар.28', cost:'Не требуется', status:'В работе'},
+      {text:'Предусмотреть возможность поставки собственными силами в случае невозможности поставки от Интегратора', type:'Причина', responsible:'Азимов Х.А., Шабельников А.В.', dueDate:'июн.26', cost:'Не требуется', status:'В работе'}
+    ], comments:[], attachments:[]},
+  {id:'R-002', category:'smr', description:'Увеличение сроков и бюджета земляных работ из-за высокого уровня грунтовых вод на участке строительства ЦГП-2.', cause:'Недостаточность стандартных мероприятий по водопонижению в зоне проведения СМР, предусмотренных ранее стандартными строительными практиками.', consequence:'Получение отчёта о невозможности водопонижения стандартными практиками; повторная разработка мероприятий для обеспечения темпов СМР по всей линии стана на весь период строительства.', stage:'Фаза-1 (завершение)', p:3, i:3, owner:'Мордовкин Д.С.', status:'monitoring', strategy:'Снижение', finImpact:'—', overdue:true,
+    actions:[
+      {text:'Выполнение в 2026 г. (подготовительный период) объёма работ по созданию системы водопонижения мощностью до 1000 м³/час (1 этап) для начала понижения уровня грунтовых вод и обеспечения темпа СМР основного периода в 1–2 кв. 2028 г.', type:'Причина', responsible:'Волков П.А.', dueDate:'дек.26', cost:'tbd', status:'В работе'},
+      {text:'Привлечение специализированной организации для проработки альтернативных вариантов водопонижения на период СМР для обеспечения выполнения темпов СМР по всей линии стана и исполнения СМР согласно графику', type:'Причина', responsible:'Раздорских Д.А.', dueDate:'май.26', cost:'tbd', status:'В работе'},
+      {text:'Повторное проведение разработки мероприятий по водопонижению с возможным изменением технологической и конструктивной части проектируемого объекта ЦГП-2', type:'Запасной план', responsible:'Раздорских Д.А.', dueDate:'май.26', cost:'tbd', status:'Планируется', trigger:'Получение неудовлетворительного результата оценки мероприятий водопонижения на период строительства (необеспечение уровня водопонижения для сохранения темпа СМР)'}
+    ], comments:[], attachments:[]},
+  {id:'R-006', category:'smr', description:'Увеличение сроков и стоимости СМР из-за недостаточного опыта генподрядчиков РФ при строительстве уникального сооружения — циклонного отстойника.', cause:'Недостаточный опыт генподрядчиков РФ при строительстве аналогичных объектов первичной механической очистки шламовой воды.', consequence:'Отказ перспективных генеральных подрядных организаций РФ от реализации строительства циклонного отстойника «под ключ»; переход на отдельные виды работ разными подрядными организациями, ручное управление процессом СМР силами заказчика.', stage:'Фаза-1 (завершение)', p:3, i:3, owner:'Мордовкин Д.С.', status:'monitoring', strategy:'Снижение / Передача', finImpact:'—', overdue:true,
+    actions:[
+      {text:'Проверка референций среди доступных Интеграторов КНР на предмет заключения договора по выполнению комплексного строительства циклонного отстойника в полном объёме работ без диверсификации возведения конструктивных элементов и технологических систем разными ПО', type:'Причина', responsible:'Сунцова Н.А., Мордовкин Д.С.', dueDate:'июн.26', cost:'tbd', status:'В работе'},
+      {text:'Выполнить запрос КП о стоимости и возможности строительства циклонного отстойника силами Интегратора', type:'Причина', responsible:'Мордовкин Д.С.', dueDate:'май.26', cost:'Не требуется', status:'В работе'},
+      {text:'Использовать гибридную схему привлечения китайского подрядчика на СМР как фактического исполнителя работ по строительству циклонного отстойника во главе с генподрядчиком РФ', type:'Запасной план', responsible:'Сунцова Н.А., Мордовкин Д.С.', dueDate:'июн.26', cost:'tbd', status:'Планируется', trigger:'Референции подтвердили отсутствие доступных китайских Интеграторов, способных выполнить строительство циклонного отстойника «под ключ» без привлечения субподрядчиков'},
+      {text:'Определить технологию отдельного выполнения нулевого цикла по возведению циклонного отстойника; оценить доступные в РФ наименее затратные технологии на выполнение комплекса СМР; оценить способы строительства разными российскими ПО по оптимальной стоимости и срокам; управление комплексом СМР силами КУП Заказчика', type:'Запасной план', responsible:'Сунцова Н.А., Мордовкин Д.С.', dueDate:'ноя.26', cost:'tbd', status:'В работе', trigger:'Отказ потенциального китайского Интегратора от контрактации в качестве субподрядчика по строительству циклонного отстойника под генеральным подрядчиком РФ'}
+    ], comments:[], attachments:[]},
+  {id:'R-009', category:'smr', description:'Увеличение сроков СМР по причине недостаточной мобилизации ресурсов строительных подрядных организаций.', cause:'Недостаточный объём квалифицированных человеческих ресурсов, имеющихся у подрядных организаций и привлекаемых на постоянной основе для выполнения СМР.', consequence:'Невыполнение плана мобилизации человеческих ресурсов согласно договору; снижение темпов СМР и срыв графика ключевых событий согласно условиям договора с подрядными организациями.', stage:'Фаза-1 (завершение)', p:3, i:3, owner:'Мордовкин Д.С.', status:'monitoring', strategy:'Снижение', finImpact:'—', overdue:true,
+    actions:[
+      {text:'Сформировать оптимальную контрактную стратегию с учётом объёмов работ и графика строительства для обеспечения реализации проекта в заявленные сроки', type:'Причина', responsible:'Сунцова Н.А.', dueDate:'июн.26', cost:'Не требуется', status:'Планируется'},
+      {text:'Оценка референций потенциальных подрядных организаций (в т.ч. реализуемых в настоящее время проектах)', type:'Причина', responsible:'Мордовкин Д.С.', dueDate:'ноя.26', cost:'tbd', status:'Планируется'},
+      {text:'Привлечь строительно-монтажные организации, имеющие опыт строительства аналогичных объектов с сопоставимыми объёмами работ и сроками, в т.ч. иностранные компании', type:'Причина', responsible:'Сунцова Н.А., Хебнев А.В.', dueDate:'апр.27', cost:'tbd', status:'Планируется'},
+      {text:'Проработать вопрос с гос. органами о доступных объёмах квот и особенностях привлечения рабочей силы из иностранных государств', type:'Причина', responsible:'Мордовкин Д.С.', dueDate:'ноя.26', cost:'tbd', status:'Планируется'},
+      {text:'Развитие СМТ НЛМК и его привлечение для выполнения СМР', type:'Причина', responsible:'Хебнев А.В.', dueDate:'апр.27', cost:'tbd', status:'Планируется'}
+    ], comments:[], attachments:[]},
+  {id:'R-097', category:'smr', description:'Увеличение сроков СМР по причине ограничения по утилизации откачанных грунтовых вод из системы строительного водопонижения.', cause:'Ограниченность мощности для приёма и транспортировки грунтовой воды (инфраструктурная, экологическая, внутренний водный баланс НЛМК) не позволяет обеспечить требуемый максимальный объём ~3000 м³/час.', consequence:'Отсутствие возможности проведения СМР в обводнённых грунтах, снижение темпов выполнения СМР.', stage:'Фаза-1 (завершение)', p:3, i:3, owner:'Гуськов Е.В.', status:'monitoring', strategy:'Снижение', finImpact:'—', overdue:true,
+    actions:[
+      {text:'Привлечение специализированной организации для подтверждения возможности приёма воды в объёме 1000 м³/час в оборотный цикл комбината на период СМР', type:'Причина', responsible:'Харин А.Н.', dueDate:'авг.26', cost:'tbd', status:'Отклонено'},
+      {text:'Разработка и диверсификация альтернативных вариантов сброса и очистки воды (дренажный водоём и реверс воды на МУП ЛиСА) для увеличения темпа сброса (откачки)', type:'Причина', responsible:'Харин А.Н.', dueDate:'авг.26', cost:'tbd', status:'В работе'},
+      {text:'Разработка технических решений по обеспечению герметизации котлованов (буросекущие сваи, изменение коэф. фильтрации грунтов) для сокращения водопритока в самый заглублённый котлован', type:'Причина', responsible:'Волков П.А.', dueDate:'дек.26', cost:'tbd', status:'В работе'},
+      {text:'Пересмотр очерёдности строительства с учётом возможного объёма утилизации (сброса) грунтовых вод в объёме 1000–1500 м³/час', type:'Следствие', responsible:'Волков П.А.', dueDate:'апр.26', cost:'Не требуется', status:'В работе'},
+      {text:'Разработка технических решений по строительству 1 очереди системы водопонижения и транспортировки воды с целью сброса в объёме до 1000 м³', type:'Причина', responsible:'Волков П.А.', dueDate:'июн.26', cost:'tbd', status:'В работе'}
+    ], comments:[], attachments:[]},
+  {id:'R-099', category:'regulatory', description:'Увеличение CAPEX Программы из-за отнесения объектов ЦГП-2 к 3 категории критической информационной инфраструктуры (КИИ).', cause:'Ужесточение требований регулятора к объектам КИИ; необходимость полной локализации и сертификации российского оборудования и ПО. Отнесение объектов ЦГП-2 к 3 категории значимости.', consequence:'Необходимость включения сертифицированного оборудования и ПО российского производства в проектные решения; значимый рост CAPEX ≈2,5 млрд руб. относительно текущей сметы.', stage:'Фаза-1 (завершение)', p:3, i:3, owner:'Якубов Е.В.', status:'monitoring', strategy:'Снижение', finImpact:'Рост CAPEX ≈2,5 млрд руб. (до ≈0,9 млрд руб. при отнесении к незначимой категории КИИ)', overdue:false,
+    actions:[
+      {text:'Проработать возможность отнесения объектов ЦГП-2 к незначимой категории КИИ (снижение доп. CAPEX на КИИ до ≈900 млн руб.) — окончательное решение за регулятором (председатель — УД)', type:'Причина', responsible:'Комиссия по кат. объектов КИИ', dueDate:'2026', cost:'Не требуется', status:'В работе'},
+      {text:'Проработать предложения поставщиков для актуализации стоимости оборудования и ПО', type:'Причина', responsible:'Шабельников А.В.', dueDate:'мар.26', cost:'tbd', status:'Выполнено'},
+      {text:'Проработка вариантов реализации (по сайзингу ЦГП) для оптимизации количества оборудования с целью снижения CAPEX', type:'Причина', responsible:'Кожевников Д.Б.', dueDate:'апр.26', cost:'tbd', status:'Выполнено'}
+    ], comments:[], attachments:[]}
 ];
-RISKS.forEach((r,idx)=>{ r.score = r.p*r.i; r.scoreRes = r.pRes*r.iRes; r.seq = idx; });
+RISKS.forEach((r,idx)=>{ r.score = r.p*r.i; r.seq = idx; applyResidual(r); });
 let nextRiskSeq = RISKS.length;
 
-/* Реальных Центров компетенций из базы уроков нет для HSE и экологии — там связка сознательно не строится, а не подменяется случайным тегом. */
-const RISK_TO_LESSON_CAT = {schedule:'Предпроектная проработка', financial:'Закупка услуг', technical:'ПИР', execution:'СМР', environment:null, hse:null, supplychain:'Закупка оборудования'};
+/* Реальных Центров компетенций из базы уроков нет для части категорий методики — там связка
+   сознательно не строится (null), а не подменяется случайным тегом. */
+const RISK_TO_LESSON_CAT = {tech:null, pir:'ПИР', techn:null, supply:'Закупка оборудования', smr:'СМР', process:null, regulatory:null, economic:null};
 const LESSON_TO_RISK_CAT = {
-  'Предпроектная проработка':'schedule', 'Закупка услуг':'financial', 'ПИР':'technical', 'СМР':'execution',
-  'Закупка оборудования':'supplychain', 'Управление по развитию':'schedule', 'НЛМК-Инжиниринг':'technical',
-  'ПНР':'execution', 'HR':'execution', '':'schedule'
+  'Предпроектная проработка':'process', 'Закупка услуг':'supply', 'ПИР':'pir', 'СМР':'smr',
+  'Закупка оборудования':'supply', 'Управление по развитию':'process', 'НЛМК-Инжиниринг':'techn',
+  'ПНР':'smr', 'HR':'process', '':'process'
 };
 
 function fmtDate(d){ return d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+/* Стадии соответствуют реальному процессу управления рисками Программы ЦГП-2 (тепловая карта,
+   стр.1 УК№8): Идентификация → Анализ и оценка → Реагирование → Мониторинг и контроль. */
 function buildLifecycle(r){
-  const base = new Date(2024,0,15 + r.seq*4);
+  const order = ['identification','analysis','response','monitoring'];
+  const activeIdx = order.indexOf(r.status);
+  const base = new Date(2025,8,1 + r.seq*5);
   const d = offset => fmtDate(new Date(base.getTime()+offset*86400000));
-  const confirmed = r.status!=='open';
-  const verified = r.status==='monitoring' || r.status==='closed' || r.status==='escalated';
-  const steps = [
-    {label:'Инициирован', who:'Инициатор проекта', date:d(0), done:true},
-    {label:'Назначен владелец', who:r.owner, date:d(1), done:true},
-    {label:'Подтверждён владельцем', who:r.owner, date: confirmed?d(4):null, done:confirmed},
-    {label:'Верифицирован риск-менеджером', who:'Ирина Соколова', date: verified?d(7):null, done:verified}
+  const stageDefs = [
+    {label:'Идентификация — риск выявлен РГ, заявлен владельцем', who:r.owner},
+    {label:'Анализ и оценка — определены корневые причины и риск-событие, проведена оценка по уровню критичности', who:r.owner},
+    {label:'Реагирование — определена стратегия управления риском, разработаны мероприятия', who:r.owner},
+    {label:'Мониторинг и контроль — периодический мониторинг внешних факторов и выполнения мероприятий', who:session.name}
   ];
-  if(r.status==='escalated') steps.push({label:'Эскалирован на риск-комитет', who:'Ирина Соколова', date:d(10), done:true});
-  if(r.status==='closed') steps.push({label:'Закрыт', who:'Ирина Соколова', date:d(12), done:true});
+  const steps = stageDefs.map((s,i)=>({ label:s.label, who:s.who, date: i<=activeIdx?d(i*7):null, done: i<=activeIdx }));
   return steps;
 }
-function actionSource(idx){ return idx%2===0 ? {icon:'✍️', label:'вручную'} : {icon:'🤖', label:'из базы уроков'}; }
 
 /* =========================================================
    DASHBOARD
@@ -1079,14 +1196,14 @@ let matrixMode = 'inherent';
 
 function buildMatrixHTML(size){
   const gridClass = size==='full' ? 'matrix-full-grid' : 'matrix-grid';
-  const rowLabels = {5:'Почти наверняка',4:'Вероятно',3:'Возможно',2:'Маловероятно',1:'Редко'};
-  const colLabels = {1:'Незначительное',2:'Минимальное',3:'Умеренное',4:'Значительное',5:'Серьёзное'};
+  const rowLabels = {3:'Высокая',2:'Средняя',1:'Низкая'};
+  const colLabels = {1:'Низкое',2:'Среднее',3:'Высокое'};
   let html = `<div class="${gridClass}">`;
-  html += `<div class="matrix-axis-label" style="grid-column:1; grid-row:1/6;">Вероятность</div>`;
-  for(let row=5; row>=1; row--){
-    const rowTrack = 6-row; /* row5 -> track1 ... row1 -> track5 */
+  html += `<div class="matrix-axis-label" style="grid-column:1; grid-row:1/${MATRIX_SIZE+1};">Вероятность</div>`;
+  for(let row=MATRIX_SIZE; row>=1; row--){
+    const rowTrack = MATRIX_SIZE+1-row; /* row=MATRIX_SIZE -> track1 ... row=1 -> track MATRIX_SIZE */
     html += `<div class="matrix-yhead" style="grid-column:2; grid-row:${rowTrack};"><b>${row}</b>${rowLabels[row]}</div>`;
-    for(let col=1; col<=5; col++){
+    for(let col=1; col<=MATRIX_SIZE; col++){
       const cellScore = row*col;
       const sev = severityOf(cellScore);
       const bubbles = RISKS.filter(r=>{
@@ -1101,10 +1218,10 @@ function buildMatrixHTML(size){
       html += `</div>`;
     }
   }
-  for(let col=1; col<=5; col++){
-    html += `<div class="matrix-xfoot" style="grid-column:${col+2}; grid-row:6;"><b>${col}</b>${colLabels[col]}</div>`;
+  for(let col=1; col<=MATRIX_SIZE; col++){
+    html += `<div class="matrix-xfoot" style="grid-column:${col+2}; grid-row:${MATRIX_SIZE+1};"><b>${col}</b>${colLabels[col]}</div>`;
   }
-  html += `<div class="matrix-xaxis-label" style="grid-column:3/8; grid-row:7;">Влияние</div>`;
+  html += `<div class="matrix-xaxis-label" style="grid-column:3/${MATRIX_SIZE+3}; grid-row:${MATRIX_SIZE+2};">Материальность (влияние на КПЭ)</div>`;
   html += `</div>`;
   return html;
 }
@@ -1126,45 +1243,46 @@ document.querySelectorAll('.matrix-toggle button').forEach(b=>{
 });
 
 function renderDashKpis(){
-  const active = RISKS.filter(r=>r.status!=='closed').length;
-  const critical = RISKS.filter(r=>severityOf(r.status==='closed'?r.scoreRes:r.score)==='extreme').length;
-  const escalated = RISKS.filter(r=>r.status==='escalated').length;
+  const PROGRAM_TOTAL_RISKS = 92; /* Тепловая карта Программы ЦГП-2, стр.1 УК№8 */
+  const high = RISKS.filter(r=>severityOf(r.score)==='high').length;
+  const top = RISKS.length; /* все 15 записей реестра — «ТОП-риски», по факту наличия паспорта */
   const overdue = RISKS.filter(r=>r.overdue).length;
   document.getElementById('dashKpis').innerHTML = `
-    <div class="kpi"><div class="label">Активных рисков</div><div class="value">${active}</div><div class="note">из ${RISKS.length} в реестре</div></div>
-    <div class="kpi"><div class="label">Критических (16–25)</div><div class="value" style="color:var(--red-600);">${critical}</div><div class="note">по свойственному risk score</div></div>
-    <div class="kpi"><div class="label">Эскалировано</div><div class="value accent">${escalated}</div><div class="note">на риск-комитете</div></div>
-    <div class="kpi"><div class="label">Просрочено мероприятий</div><div class="value amber">${overdue}</div><div class="note">требуют реакции владельца</div></div>
+    <div class="kpi"><div class="label">Рисков в Программе</div><div class="value">${PROGRAM_TOTAL_RISKS}</div><div class="note">в реестре — топ-${RISKS.length} с паспортами</div></div>
+    <div class="kpi"><div class="label">Высокий уровень критичности (H)</div><div class="value" style="color:var(--amber-600);">${high}</div><div class="note">RRA 6–9 по свойственной оценке</div></div>
+    <div class="kpi"><div class="label">ТОП-риски (эскалация на УК)</div><div class="value accent">${top}</div><div class="note">требуют внимания/решения УК</div></div>
+    <div class="kpi"><div class="label">Просрочено мероприятий</div><div class="value amber">${overdue}</div><div class="note">плановый срок реализации мероприятия прошёл</div></div>
   `;
 }
 
 function renderTop5(){
-  const top = RISKS.slice().sort((a,b)=> (b.status==='escalated')-(a.status==='escalated') || b.score-a.score || a.id.localeCompare(b.id)).slice(0,5);
+  const top = RISKS.slice().sort((a,b)=> b.score-a.score || a.id.localeCompare(b.id)).slice(0,5);
   document.getElementById('top5List').innerHTML = top.map((r,idx)=>`
     <div class="top5-row clickable" onclick="openRiskCard('${r.id}')">
       <div class="top5-rank">${idx+1}</div>
-      <div><div class="top5-id">${r.id} ${r.status==='escalated'?'🚨':''}</div><div class="top5-desc">${r.description}</div></div>
+      <div><div class="top5-id">${r.id} ${severityOf(r.score)==='high'?'🚨':''}</div><div class="top5-desc">${r.description}</div></div>
       ${scorePillHTML(r.score)}
     </div>`).join('');
 }
 
-const TREND_MONTHS = ['Дек 2023','Янв 2024','Фев 2024','Мар 2024','Апр 2024','Май 2024'];
+/* Иллюстративная динамика 6 месяцев, сходящаяся к текущему реальному распределению по 15
+   паспортизированным рискам Программы ЦГП-2 (H=12, M=3, L=0 на дату среза УК№8). */
+const TREND_MONTHS = ['Апр 2026','Май 2026','Июн 2026','Июл 2026','Авг 2026','Сен 2026'];
 const TREND_DATA = {
-  extreme:[3,3,3,2,2,2],
-  high:[8,7,7,7,6,6],
-  medium:[5,5,4,4,4,3],
-  low:[2,2,2,2,2,2]
+  high:[9,10,10,11,11,12],
+  medium:[6,5,5,4,4,3],
+  low:[1,1,1,0,0,0]
 };
 function renderTrend(){
   const w=520, h=190, padL=26, padR=10, padT=10, padB=26;
-  const maxV = 10;
+  const maxV = 14;
   const n = TREND_MONTHS.length;
   const x = idx => padL + (w-padL-padR) * idx/(n-1);
   const y = v => padT + (h-padT-padB) * (1 - v/maxV);
-  const colors = {extreme:'var(--red-600)', high:'var(--amber-600)', medium:'var(--gold-600)', low:'var(--green-600)'};
+  const colors = {high:'var(--amber-600)', medium:'var(--gold-600)', low:'var(--green-600)'};
 
   let grid = '';
-  [0,2,4,6,8,10].forEach(v=>{
+  [0,2,4,6,8,10,12,14].forEach(v=>{
     grid += `<line x1="${padL}" y1="${y(v)}" x2="${w-padR}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/>`;
     grid += `<text x="${padL-6}" y="${y(v)+3}" text-anchor="end" font-size="9" fill="var(--ink-400)" font-family="var(--font-mono)">${v}</text>`;
   });
@@ -1245,7 +1363,7 @@ function renderRegister(){
       <td>${scorePillHTML(r.score)}</td>
       <td>${r.owner}</td>
       <td>${rStatusPill(r.status)}</td>
-      <td class="risk-actions-cell"><ul>${r.actions.map((a,i)=>`<li>${actionSource(i).icon} ${a}</li>`).join('')}</ul></td>
+      <td class="risk-actions-cell"><ul>${r.actions.map(a=>`<li><span class="status-pill ${ACTION_STATUS_CLS[a.status]||'status-unset'}" style="margin-right:5px;">${a.status}</span>${a.text}</li>`).join('')}</ul></td>
     </tr>`).join('') || `<tr><td colspan="10" style="text-align:center; color:var(--ink-400); padding:30px;">Риски не найдены</td></tr>`;
 
   document.getElementById('registerFoot').textContent = total ? `${startIdx+1}–${Math.min(startIdx+regPageSize,total)} из ${total} рисков` : '0 рисков';
@@ -1290,15 +1408,15 @@ document.getElementById('regReset').addEventListener('click', ()=>{
 let riskCardEditing = false;
 
 function migrationMiniSVG(r){
-  const cell = 15, gap = 2, pad = 3;
-  const size = pad*2 + cell*5 + gap*4;
-  const pt = (p,i) => ({ x: pad + (i-1)*(cell+gap) + cell/2, y: pad + (5-p)*(cell+gap) + cell/2 });
+  const cell = 22, gap = 3, pad = 3;
+  const size = pad*2 + cell*MATRIX_SIZE + gap*(MATRIX_SIZE-1);
+  const pt = (p,i) => ({ x: pad + (i-1)*(cell+gap) + cell/2, y: pad + (MATRIX_SIZE-p)*(cell+gap) + cell/2 });
   let cells = '';
-  for(let row=5; row>=1; row--){
-    for(let col=1; col<=5; col++){
+  for(let row=MATRIX_SIZE; row>=1; row--){
+    for(let col=1; col<=MATRIX_SIZE; col++){
       const sev = severityOf(row*col);
       const c = pt(row,col);
-      cells += `<rect x="${c.x-cell/2}" y="${c.y-cell/2}" width="${cell}" height="${cell}" rx="2" fill="var(--${sev==='low'?'green':sev==='medium'?'gold':sev==='high'?'amber':'red'}-50)"/>`;
+      cells += `<rect x="${c.x-cell/2}" y="${c.y-cell/2}" width="${cell}" height="${cell}" rx="2" fill="var(--${sev==='low'?'green':sev==='medium'?'gold':'amber'}-50)"/>`;
     }
   }
   const from = pt(r.p, r.i), to = pt(r.pRes, r.iRes);
@@ -1333,12 +1451,17 @@ function riskCardReadView(r){
       </div>
 
       <div class="edit-grid">
-        <div class="rec"><div class="k">Финансовая оценка</div><div class="v">${r.finImpact}</div></div>
-        <div class="rec"><div class="k">Качественная оценка</div><div class="v">${r.qualImpact}</div></div>
+        <div class="rec"><div class="k">Причина</div><div class="v">${r.cause || '—'}</div></div>
+        <div class="rec"><div class="k">Прямое следствие</div><div class="v">${r.consequence || '—'}</div></div>
       </div>
+      ${r.finImpact && r.finImpact!=='—' ? `<div class="rec"><div class="k">Финансовое влияние</div><div class="v">${r.finImpact}</div></div>` : ''}
 
-      <div class="rec"><div class="k">Рекомендуемые действия <span style="font-weight:500; text-transform:none; letter-spacing:0; color:var(--ink-400);">(вручную и из базы уроков)</span></div>
-        <div class="v"><ul style="margin:4px 0 0; padding-left:4px; list-style:none;">${r.actions.map((a,i)=>`<li style="margin-bottom:3px;">${actionSource(i).icon} ${a} <span style="color:var(--ink-400); font-size:11px;">— ${actionSource(i).label}</span></li>`).join('')}</ul></div>
+      <div class="rec"><div class="k">Мероприятия реагирования</div>
+        <div class="v"><ul style="margin:4px 0 0; padding-left:4px; list-style:none;">${r.actions.map(a=>`<li style="margin-bottom:6px;">
+          <span class="status-pill ${ACTION_STATUS_CLS[a.status]||'status-unset'}" style="margin-right:6px;">${a.status}</span>${a.text}
+          <span style="color:var(--ink-400); font-size:11px;"> — ${a.type} · ${a.responsible} · срок ${a.dueDate}${a.cost && a.cost!=='—' ? ' · '+a.cost : ''}</span>
+          ${a.trigger ? `<div style="color:var(--ink-400); font-size:11px; margin-top:1px;">Триггер: ${a.trigger}</div>` : ''}
+        </li>`).join('')}</ul></div>
       </div>
 
       <div class="divider"></div>
@@ -1404,15 +1527,18 @@ function riskCardEditView(r){
         <div class="edit-field"><label>Стадия</label><input id="editStage" value="${r.stage}"></div>
         <div class="edit-field"><label>Владелец</label><input id="editOwner" value="${r.owner}"></div>
         <div class="edit-field"><label>Статус</label><select id="editStatus">${Object.keys(RSTATUS).map(k=>`<option value="${k}" ${k===r.status?'selected':''}>${RSTATUS[k].label}</option>`).join('')}</select></div>
-        <div class="edit-field"><label>Вероятность P (свойственная)</label><select id="editP">${[1,2,3,4,5].map(v=>`<option value="${v}" ${v===r.p?'selected':''}>${v}</option>`).join('')}</select></div>
-        <div class="edit-field"><label>Влияние I (свойственное)</label><select id="editI">${[1,2,3,4,5].map(v=>`<option value="${v}" ${v===r.i?'selected':''}>${v}</option>`).join('')}</select></div>
-        <div class="edit-field"><label>Вероятность P (остаточная)</label><select id="editPRes">${[1,2,3,4,5].map(v=>`<option value="${v}" ${v===r.pRes?'selected':''}>${v}</option>`).join('')}</select></div>
-        <div class="edit-field"><label>Влияние I (остаточное)</label><select id="editIRes">${[1,2,3,4,5].map(v=>`<option value="${v}" ${v===r.iRes?'selected':''}>${v}</option>`).join('')}</select></div>
+        <div class="edit-field"><label>Вероятность P (1–3, по чек-листу методики)</label><select id="editP">${[1,2,3].map(v=>`<option value="${v}" ${v===r.p?'selected':''}>${v}</option>`).join('')}</select></div>
+        <div class="edit-field"><label>Материальность I (1–3, по отклонению КПЭ)</label><select id="editI">${[1,2,3].map(v=>`<option value="${v}" ${v===r.i?'selected':''}>${v}</option>`).join('')}</select></div>
         <div class="edit-field"><label>Стратегия реагирования</label><select id="editStrategy">${STRATEGIES.map(s=>`<option ${s===r.strategy?'selected':''}>${s}</option>`).join('')}</select></div>
         <div class="edit-field"><label>Просрочено мероприятие</label><select id="editOverdue"><option value="false" ${!r.overdue?'selected':''}>Нет</option><option value="true" ${r.overdue?'selected':''}>Да</option></select></div>
       </div>
-      <div class="edit-field"><label>Финансовая оценка</label><input id="editFin" value="${r.finImpact}"></div>
-      <div class="edit-field"><label>Качественная оценка</label><input id="editQual" value="${r.qualImpact}"></div>
+      <div class="edit-field"><label>Причина</label><textarea id="editCause">${r.cause||''}</textarea></div>
+      <div class="edit-field"><label>Прямое следствие</label><textarea id="editConsequence">${r.consequence||''}</textarea></div>
+      <div class="edit-field"><label>Финансовое влияние (если оцифровано)</label><input id="editFin" value="${r.finImpact||'—'}"></div>
+      <div class="ai-disclaimer" style="margin-top:2px; padding-top:0; border-top:none;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px;"><path d="M12 9v4M12 17h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/></svg>
+        <span>Остаточная оценка риска (P/I «после мер») не редактируется вручную — она автоматически пересчитывается по статусам мероприятий реагирования, согласно методике.</span>
+      </div>
     </div>
     <div class="detail-foot">
       <button class="btn" onclick="toggleRiskEdit('${r.id}', false)">Отмена</button>
@@ -1442,13 +1568,12 @@ function saveRiskEdit(id){
   r.status = document.getElementById('editStatus').value;
   r.p = Number(document.getElementById('editP').value);
   r.i = Number(document.getElementById('editI').value);
-  r.pRes = Number(document.getElementById('editPRes').value);
-  r.iRes = Number(document.getElementById('editIRes').value);
   r.strategy = document.getElementById('editStrategy').value;
   r.overdue = document.getElementById('editOverdue').value==='true';
+  r.cause = document.getElementById('editCause').value.trim() || '—';
+  r.consequence = document.getElementById('editConsequence').value.trim() || '—';
   r.finImpact = document.getElementById('editFin').value.trim() || '—';
-  r.qualImpact = document.getElementById('editQual').value.trim() || '—';
-  r.score = r.p*r.i; r.scoreRes = r.pRes*r.iRes;
+  r.score = r.p*r.i; applyResidual(r);
   riskCardEditing = false;
   document.getElementById('riskCardContent').innerHTML = riskCardReadView(r);
   renderRegister(); renderMatrices(); renderDashKpis(); renderTop5();
@@ -1483,7 +1608,7 @@ function openNewRiskModal(fromLessonId){
   const lesson = fromLessonId ? LESSONS.find(l=>l.id===fromLessonId) : null;
   const prefill = lesson ? {
     description: lesson.lesson !== '—' ? lesson.lesson : lesson.problem,
-    category: LESSON_TO_RISK_CAT[lesson.cc] || 'schedule',
+    category: LESSON_TO_RISK_CAT[lesson.cc] || 'process',
     stage: lesson.stage,
     sourceNote: `Сформировано на основе урока ${lesson.id} «${lesson.title}»`
   } : null;
@@ -1506,11 +1631,11 @@ function openNewRiskModal(fromLessonId){
       <div class="edit-field"><label>Описание риска</label><textarea id="nrDesc">${prefill ? prefill.description : ''}</textarea></div>
       <div class="edit-grid">
         <div class="edit-field"><label>Категория</label><select id="nrCategory">${Object.keys(RISK_CATS).map(k=>`<option value="${k}" ${prefill && prefill.category===k?'selected':''}>${RISK_CATS[k].label}</option>`).join('')}</select></div>
-        <div class="edit-field"><label>Стадия</label><input id="nrStage" value="${prefill ? prefill.stage : 'Строительство'}"></div>
+        <div class="edit-field"><label>Стадия</label><input id="nrStage" value="${prefill ? prefill.stage : 'Фаза-1 (завершение)'}"></div>
         <div class="edit-field"><label>Владелец</label><input id="nrOwner" value="" placeholder="Не назначен"></div>
         <div class="edit-field"><label>Стратегия реагирования</label><select id="nrStrategy">${STRATEGIES.map(s=>`<option>${s}</option>`).join('')}</select></div>
-        <div class="edit-field"><label>Вероятность P</label><select id="nrP">${[1,2,3,4,5].map(v=>`<option value="${v}" ${v===3?'selected':''}>${v}</option>`).join('')}</select></div>
-        <div class="edit-field"><label>Влияние I</label><select id="nrI">${[1,2,3,4,5].map(v=>`<option value="${v}" ${v===3?'selected':''}>${v}</option>`).join('')}</select></div>
+        <div class="edit-field"><label>Вероятность P (1–3)</label><select id="nrP">${[1,2,3].map(v=>`<option value="${v}" ${v===2?'selected':''}>${v}</option>`).join('')}</select></div>
+        <div class="edit-field"><label>Материальность I (1–3)</label><select id="nrI">${[1,2,3].map(v=>`<option value="${v}" ${v===2?'selected':''}>${v}</option>`).join('')}</select></div>
       </div>
       <div class="ai-disclaimer" style="margin-top:2px; padding-top:0; border-top:none;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px;"><path d="M12 9v4M12 17h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/></svg>
@@ -1540,7 +1665,7 @@ function suggestLessonsForNewRisk(cat, el){
 function applyLessonSuggestion(lessonId){
   const l = LESSONS.find(x=>x.id===lessonId);
   document.getElementById('nrDesc').value = l.lesson !== '—' ? l.lesson : l.problem;
-  document.getElementById('nrCategory').value = LESSON_TO_RISK_CAT[l.cc] || 'schedule';
+  document.getElementById('nrCategory').value = LESSON_TO_RISK_CAT[l.cc] || 'process';
   document.getElementById('nrStage').value = l.stage;
 }
 function closeNewRiskModal(){ document.getElementById('newRiskOverlay').classList.remove('show'); }
@@ -1553,13 +1678,14 @@ function submitNewRisk(){
   const p = Number(document.getElementById('nrP').value), i = Number(document.getElementById('nrI').value);
   const r = {
     id, category: document.getElementById('nrCategory').value, description: desc,
-    stage: document.getElementById('nrStage').value.trim() || 'Строительство',
-    p, i, pRes:p, iRes:i, owner: document.getElementById('nrOwner').value.trim() || 'Не назначен',
-    status:'open', strategy: document.getElementById('nrStrategy').value,
-    finImpact:'—', qualImpact:'Оценивается', overdue:false,
-    actions:['Требует уточнения владельцем'], comments:[], attachments:[], seq: nextRiskSeq++
+    stage: document.getElementById('nrStage').value.trim() || 'Фаза-1 (завершение)',
+    p, i, owner: document.getElementById('nrOwner').value.trim() || 'Не назначен',
+    status:'identification', strategy: document.getElementById('nrStrategy').value,
+    cause:'Требует уточнения', consequence:'Оценивается', finImpact:'—', overdue:false,
+    actions:[{text:'Требует уточнения владельцем', type:'Причина', responsible:'—', dueDate:'—', cost:'—', status:'Планируется'}],
+    comments:[], attachments:[], seq: nextRiskSeq++
   };
-  r.score = r.p*r.i; r.scoreRes = r.pRes*r.iRes;
+  r.score = r.p*r.i; applyResidual(r);
   RISKS.push(r);
   closeNewRiskModal();
   showView('register');
