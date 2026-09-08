@@ -382,11 +382,33 @@
   .stat-tile .v.small{font-size:12px; font-weight:600;}
   .valid-box{display:flex; gap:11px; padding:12px; border-radius:8px; background:var(--green-50); border:1px solid transparent; align-items:flex-start;}
   .valid-box.pending{background:var(--amber-50);}
+  .valid-box.neutral{background:var(--canvas-alt);}
   .valid-box svg{flex-shrink:0; margin-top:1px;}
   .valid-box .t{font-size:12.5px; font-weight:700; color:var(--green-700);}
   .valid-box.pending .t{color:var(--amber-700);}
+  .valid-box.neutral .t{color:var(--ink-700);}
   .valid-box .d{font-size:11.5px; color:var(--ink-600); margin-top:3px; line-height:1.5;}
   .valid-box .d b{color:var(--ink-900);}
+
+  /* Центры компетенций (реальная таксономия базы уроков) */
+  .cc-preproject{background:var(--accent-50); color:var(--accent-600);}
+  .cc-procsvc{background:var(--amber-50); color:var(--amber-700);}
+  .cc-development{background:var(--violet-50); color:var(--violet-700);}
+  .cc-procequip{background:var(--navycat-50); color:var(--navycat-700);}
+  .cc-pir{background:var(--mint-50); color:var(--mint-700);}
+  .cc-engineering{background:var(--cyan-50); color:var(--cyan-700);}
+  .cc-pnr{background:var(--green-50); color:var(--green-700);}
+  .cc-hr{background:var(--slate-50); color:var(--slate-700);}
+  .cc-smr{background:var(--red-50); color:var(--red-700);}
+  .cc-unspecified{background:var(--slate-50); color:var(--ink-400);}
+
+  /* Статус мероприятия (реальные значения из Confluence) */
+  .status-undefined{background:var(--slate-50); color:var(--ink-600); border:1px solid var(--line);}
+  .status-undefined::before{background:var(--ink-400);}
+  .status-inprogress{background:var(--amber-50); color:var(--amber-700);}
+  .status-inprogress::before{background:var(--amber-700);}
+  .status-done{background:var(--green-50); color:var(--green-700);}
+  .status-done::before{background:var(--green-700);}
   .detail-foot{display:flex; gap:8px; padding:14px 18px; border-top:1px solid var(--line); background:var(--canvas-alt);}
   .detail-foot .btn{flex:1; justify-content:center;}
 
@@ -551,7 +573,7 @@
       <a href="#" data-view="dashboard" class="active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="13" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="13" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/></svg>Дэшборд</a>
       <a href="#" data-view="register"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v16H4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M4 9h16M9 9v11" stroke="currentColor" stroke-width="1.8"/></svg>Риск-регистр</a>
       <a href="#" data-view="matrix"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18" stroke="currentColor" stroke-width="1.4"/></svg>Риск-матрица</a>
-      <a href="#" data-view="lessons"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 3h9l5 5v13H6z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M15 3v5h5M9 13h6M9 17h6M9 9h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Уроки на основе рисков</a>
+      <a href="#" data-view="lessons"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 3h9l5 5v13H6z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M15 3v5h5M9 13h6M9 17h6M9 9h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Извлечённые уроки</a>
     </nav>
     <div class="sidebar-spacer"></div>
     <div class="user" id="userBlock" title="Сменить роль или проект" style="cursor:pointer;">
@@ -730,12 +752,7 @@
     <!-- ============================================================ LESSONS LEARNED ============================================================ -->
     <section id="view-lessons" class="view">
 
-      <div class="kpis">
-        <div class="kpi"><div class="label">Всего уроков в базе</div><div class="value" id="kpiTotal">9</div><div class="note">по 3 пилотным проектам</div></div>
-        <div class="kpi"><div class="label">Верифицировано экспертами</div><div class="value green" id="kpiVerified">6</div><div class="note">готовы к использованию в RAG</div></div>
-        <div class="kpi"><div class="label">На верификации</div><div class="value amber" id="kpiReview">3</div><div class="note">ожидают решения риск-менеджера</div></div>
-        <div class="kpi"><div class="label">Проблемная категория</div><div class="value accent" style="font-size:18px;">Расписание</div><div class="note">4 из 9 уроков — задержки графика</div></div>
-      </div>
+      <div class="kpis" id="lessonsKpis"></div>
 
       <div class="panel search-panel">
         <div class="chip-group" style="margin-bottom:12px;">
@@ -752,7 +769,7 @@
             Спросить RAG
           </button>
         </div>
-        <div class="search-hint">Семантический поиск (F-19) по <b>lesson_text</b>, <b>context</b> и <b>recommendation</b> с учётом текущего профиля проекта. Источники всегда указываются.</div>
+        <div class="search-hint">Семантический поиск (F-19) по описанию проблемы, корневой причине и извлечённому уроку. Источник (СПП проекта) всегда указывается.</div>
       </div>
 
       <div class="panel ai-answer" id="aiAnswer">
@@ -770,13 +787,9 @@
       </div>
 
       <div class="panel filters-row">
-        <div class="field"><label>Категория</label>
-          <select id="fCategory"><option value="">Все</option><option value="schedule">Расписание</option><option value="cost">Стоимость</option><option value="hse">HSE</option><option value="design">Проектирование</option><option value="external">Внешние факторы</option><option value="resource">Ресурсы</option><option value="contract">Контракт</option><option value="environmental">Окружающая среда</option></select>
-        </div>
-        <div class="field"><label>Стадия</label><select id="fStage"><option value="">Все</option><option>Проектирование</option><option>Закупки</option><option>Строительство</option><option>Ввод в эксплуатацию</option></select></div>
-        <div class="field"><label>Регион</label><select id="fRegion"><option value="">Все</option><option>Северо-Запад</option><option>Дальний Восток</option><option>Юг</option><option>Урал</option></select></div>
-        <div class="field"><label>Контрактная модель</label><select id="fContract"><option value="">Все</option><option>EPC</option><option>EPCM</option><option>Design-Build</option></select></div>
-        <div class="field"><label>Статус</label><select id="fStatus"><option value="">Все</option><option value="verified">Проверено</option><option value="review">На верификации</option><option value="rejected">Отклонено</option></select></div>
+        <div class="field"><label>Центр компетенций</label><select id="fCategory"><option value="">Все</option></select></div>
+        <div class="field"><label>Этап</label><select id="fStage"><option value="">Все</option><option>Фаза 2</option><option>Фаза 4</option></select></div>
+        <div class="field"><label>Статус</label><select id="fStatus"><option value="">Все</option><option>Не определен</option><option>В работе</option><option>Внедрено</option><option>Выполнено</option></select></div>
         <div class="spacer"></div>
         <button class="link-btn" id="resetBtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 1 1 3 6.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M3 17v-5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Сбросить фильтры</button>
         <button class="btn" id="lessonsImportXlsxBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Импорт .xlsx</button>
@@ -787,17 +800,12 @@
 
       <div class="workspace">
         <div class="panel">
-          <div class="tabs">
-            <div class="tab active" data-status="">Все <span class="count">(9)</span></div>
-            <div class="tab" data-status="verified">Проверено <span class="count">(6)</span></div>
-            <div class="tab" data-status="review">На верификации <span class="count">(2)</span></div>
-            <div class="tab" data-status="rejected">Отклонено <span class="count">(1)</span></div>
-          </div>
+          <div class="tabs" id="lessonsTabs"></div>
           <div class="table-wrap">
             <table class="min-w">
-              <thead><tr><th style="width:88px;">ID</th><th class="col-title">Урок / источник</th><th>Категория</th><th>Влияние</th><th>Стадия</th><th>Статус</th></tr></thead>
+              <thead><tr><th style="width:64px;">ID</th><th class="col-title">Урок / источник</th><th>Центр компетенций</th><th>Этап</th><th>Статус</th></tr></thead>
               <tbody id="lessonsTbody"></tbody>
-              <tfoot><tr><td colspan="6" id="lessonsTfootNote">Показаны 9 из 9 уроков</td></tr></tfoot>
+              <tfoot><tr><td colspan="5" id="lessonsTfootNote"></td></tr></tfoot>
             </table>
           </div>
         </div>
@@ -826,7 +834,7 @@ const PAGE_META = {
   dashboard:{t:'Дэшборд', s:()=>`${session.projectName} · ${session.spp} · ${session.site}`},
   register:{t:'Риск-регистр', s:()=>`Активные риски проекта ${session.projectName} с оценкой P/I и статусом мероприятий`},
   matrix:{t:'Риск-матрица 5×5', s:()=>'Визуализация вероятности и влияния активных рисков проекта'},
-  lessons:{t:'База уроков (Lessons Learned)', s:()=>'Исторический опыт завершённых EPC-проектов как основание для оценки P/I/RRA новых рисков и подготовки Pre-mortem.'}
+  lessons:{t:'Извлечённые уроки', s:()=>'База проблем и извлечённых уроков по проектам НЛМК — сессии с Центрами компетенций по завершении Фазы-2 и Фазы-4, источник данных для оценки новых рисков.'}
 };
 function showView(name){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
@@ -1038,9 +1046,13 @@ const RISKS = [
 RISKS.forEach((r,idx)=>{ r.score = r.p*r.i; r.scoreRes = r.pRes*r.iRes; r.seq = idx; });
 let nextRiskSeq = RISKS.length;
 
-const RISK_TO_LESSON_CAT = {schedule:'schedule', financial:'cost', technical:'design', execution:'external', environment:'environmental', hse:'hse', supplychain:'resource'};
-const LESSON_TO_RISK_CAT = {};
-Object.entries(RISK_TO_LESSON_CAT).forEach(([rk,lk])=>{ if(!(lk in LESSON_TO_RISK_CAT)) LESSON_TO_RISK_CAT[lk]=rk; });
+/* Реальных Центров компетенций из базы уроков нет для HSE и экологии — там связка сознательно не строится, а не подменяется случайным тегом. */
+const RISK_TO_LESSON_CAT = {schedule:'Предпроектная проработка', financial:'Закупка услуг', technical:'ПИР', execution:'СМР', environment:null, hse:null, supplychain:'Закупка оборудования'};
+const LESSON_TO_RISK_CAT = {
+  'Предпроектная проработка':'schedule', 'Закупка услуг':'financial', 'ПИР':'technical', 'СМР':'execution',
+  'Закупка оборудования':'supplychain', 'Управление по развитию':'schedule', 'НЛМК-Инжиниринг':'technical',
+  'ПНР':'execution', 'HR':'execution', '':'schedule'
+};
 
 function fmtDate(d){ return d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'}); }
 function buildLifecycle(r){
@@ -1302,7 +1314,7 @@ function migrationMiniSVG(r){
 
 function riskCardReadView(r){
   const lessonCat = RISK_TO_LESSON_CAT[r.category];
-  const related = LESSONS.filter(l=>l.category===lessonCat).slice(0,2);
+  const related = lessonCat ? LESSONS.filter(l=>l.cc===lessonCat).slice(0,2) : [];
   const lifecycle = buildLifecycle(r);
   return `
     <div class="detail-head">
@@ -1470,8 +1482,8 @@ function openLessonFromRisk(lessonId){
 function openNewRiskModal(fromLessonId){
   const lesson = fromLessonId ? LESSONS.find(l=>l.id===fromLessonId) : null;
   const prefill = lesson ? {
-    description: lesson.recommendation,
-    category: LESSON_TO_RISK_CAT[lesson.category] || 'schedule',
+    description: lesson.lesson !== '—' ? lesson.lesson : lesson.problem,
+    category: LESSON_TO_RISK_CAT[lesson.cc] || 'schedule',
     stage: lesson.stage,
     sourceNote: `Сформировано на основе урока ${lesson.id} «${lesson.title}»`
   } : null;
@@ -1519,16 +1531,16 @@ function renderNewRiskTagPicker(){
 function suggestLessonsForNewRisk(cat, el){
   document.querySelectorAll('#newRiskTagPicker .tagchip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
-  const matches = LESSONS.filter(l=>l.category===cat).slice(0,3);
+  const matches = LESSONS.filter(l=>l.cc===cat).slice(0,3);
   document.getElementById('newRiskSuggestions').innerHTML = matches.length ? matches.map(l=>`
     <div class="src-chip" style="cursor:pointer; display:block; margin-bottom:6px; width:100%;" onclick="applyLessonSuggestion('${l.id}')">
       <span class="id">${l.id}</span> ${l.title} — <b>использовать</b>
-    </div>`).join('') : `<div style="font-size:12px; color:var(--ink-400);">Уроков по этому тегу пока нет.</div>`;
+    </div>`).join('') : `<div style="font-size:12px; color:var(--ink-400);">Уроков по этому центру компетенций пока нет.</div>`;
 }
 function applyLessonSuggestion(lessonId){
   const l = LESSONS.find(x=>x.id===lessonId);
-  document.getElementById('nrDesc').value = l.recommendation;
-  document.getElementById('nrCategory').value = LESSON_TO_RISK_CAT[l.category] || 'schedule';
+  document.getElementById('nrDesc').value = l.lesson !== '—' ? l.lesson : l.problem;
+  document.getElementById('nrCategory').value = LESSON_TO_RISK_CAT[l.cc] || 'schedule';
   document.getElementById('nrStage').value = l.stage;
 }
 function closeNewRiskModal(){ document.getElementById('newRiskOverlay').classList.remove('show'); }
@@ -1559,28 +1571,20 @@ function submitNewRisk(){
 /* =========================================================
    LESSONS LEARNED (existing module — ids scoped with "lesson" prefix)
    ========================================================= */
-const CATS = {
-  schedule:{label:'Расписание', cls:'badge-schedule'}, cost:{label:'Стоимость', cls:'badge-cost'},
-  hse:{label:'HSE', cls:'badge-hse'}, design:{label:'Проектирование', cls:'badge-design'},
-  external:{label:'Внешние факторы', cls:'badge-external'}, resource:{label:'Ресурсы', cls:'badge-resource'},
-  contract:{label:'Контракт', cls:'badge-contract'}, environmental:{label:'Окружающая среда', cls:'badge-environmental'}
-};
-const STATUS = {
-  verified:{label:'Проверено', cls:'status-verified'}, review:{label:'На верификации', cls:'status-review'}, rejected:{label:'Отклонено', cls:'status-rejected'}
-};
+/* Таксономия "Центр компетенций" — реальные значения из базы уроков (Confluence), не выдуманы. */
+function catBadge(l){ return `<span class="badge ${l.ccClass}">${l.cc || 'Не указан'}</span>`; }
+function statusPill(l){ return `<span class="status-pill ${l.statusClass}">${l.status}</span>`; }
 const TAGS = [
-  {icon:'📅', label:'Расписание', cat:'schedule'}, {icon:'💰', label:'Стоимость', cat:'cost'},
-  {icon:'⛑️', label:'HSE', cat:'hse'}, {icon:'📐', label:'Проектирование', cat:'design'},
-  {icon:'🌍', label:'Внешние факторы', cat:'external'}, {icon:'👷', label:'Ресурсы', cat:'resource'},
-  {icon:'📄', label:'Контракт', cat:'contract'}, {icon:'🌦️', label:'Окружающая среда', cat:'environmental'}
+  {icon:'📋', label:'Предпроектная проработка', cat:'Предпроектная проработка'},
+  {icon:'🛒', label:'Закупка услуг', cat:'Закупка услуг'},
+  {icon:'📦', label:'Закупка оборудования', cat:'Закупка оборудования'},
+  {icon:'📈', label:'Управление по развитию', cat:'Управление по развитию'},
+  {icon:'📐', label:'ПИР', cat:'ПИР'},
+  {icon:'🏗️', label:'НЛМК-Инжиниринг', cat:'НЛМК-Инжиниринг'},
+  {icon:'🔧', label:'ПНР', cat:'ПНР'},
+  {icon:'🏭', label:'СМР', cat:'СМР'},
+  {icon:'👥', label:'HR', cat:'HR'}
 ];
-function impactIconsHTML(l){
-  let out = '';
-  if(l.impactDays) out += `<span class="ii" title="Влияние на срок: ${l.impactDays} дн.">⏱️</span>`;
-  if(l.impactCostPct) out += `<span class="ii" title="Влияние на бюджет: ${l.impactCostPct}% CAPEX">💰</span>`;
-  if(l.category==='design' || l.category==='hse' || l.category==='cost') out += `<span class="ii" title="Технический/операционный эффект">⚙️</span>`;
-  return out ? `<span class="impact-icons">${out}</span>` : '<span style="color:var(--ink-400); font-size:11px;">—</span>';
-}
 function renderTagPicker(){
   document.getElementById('tagPicker').innerHTML = TAGS.map(t=>`<span class="tagchip" data-cat="${t.cat}" onclick="toggleTagFilter('${t.cat}', this)">${t.icon} ${t.label}</span>`).join('');
 }
@@ -1591,124 +1595,344 @@ function toggleTagFilter(cat, el){
   if(!already) el.classList.add('active');
   applyLessonFilters();
 }
+
 const LESSONS = [
-  {id:'LL-014', category:'schedule', stage:'Закупки', region:'Дальний Восток', contract:'EPC', projectType:'Greenfield',
-    title:'Раннее бронирование длинноцикловых позиций сокращает срыв графика поставки',
-    project:'Greenfield LNG Plant, 2024', risk:'R-1001 · Delay in critical material delivery', sourceDoc:'PMR-2024-014.pdf',
-    context:'Проект строительства СПГ-завода, длинноцикловое оборудование (криогенные теплообменники) закупалось у единственного квалифицированного поставщика с циклом изготовления 14 месяцев.',
-    whatHappened:'Заказ на теплообменники был размещён через 5 месяцев после утверждения FEED вместо предусмотренных методикой 2 месяцев, что сдвинуло поставку на критический путь графика.',
-    rootCause:'Отсутствие процедуры, обязывающей начинать закупку long-lead items параллельно с завершением FEED, а не после его полного утверждения.',
-    consequence:'Смещение контрольной даты механической готовности на 47 дней и рост затрат на ускорение логистики.',
-    successfulAction:'После обнаружения риска — переход на еженедельный трекинг статуса изготовления и экспедайтинг с выездом инженера к поставщику.',
-    unsuccessfulAction:'Попытка компенсировать отставание за счёт сокращения периода пусконаладки не удалась — потребовала отдельного пересмотра графика.',
-    recommendation:'Инициировать закупку оборудования с циклом изготовления от 9 месяцев не позднее выпуска предварительной спецификации (60% FEED), закладывать буфер логистики 15%.',
-    applicability:'Проекты Greenfield/Brownfield с единственным квалифицированным поставщиком критического оборудования и циклом изготовления свыше 9 месяцев.',
-    impactDays:47, impactCostPct:1.8, occurrences:'6 / 9', validatedBy:'И. Соколова, риск-менеджер', validationDate:'12.03.2024', status:'verified',
-    sim:{type:92, region:58, contract:81, capex:74, stage:66}},
-  {id:'LL-015', category:'schedule', stage:'Строительство', region:'Северо-Запад', contract:'EPCM', projectType:'Brownfield',
-    title:'Не учтено ограничение производственной мощности поставщика при планировании графика',
-    project:'Offshore Platform Project, 2023', risk:'R-1001 · Delay in critical material delivery', sourceDoc:'PMR-2023-091.pdf',
-    context:'Единственный поставщик трубной продукции спецификации X65 одновременно исполнял заказы для трёх других проектов отрасли.',
-    whatHappened:'Плановая дата поставки была принята «как заявлено» поставщиком без проверки его фактической загрузки производства.',
-    rootCause:'На этапе планирования не запрашивалось подтверждение резервирования производственных мощностей у поставщика.',
-    consequence:'Задержка поставки на 61 день, простой монтажной бригады.',
-    successfulAction:'—',
-    unsuccessfulAction:'Принятие заявленного поставщиком срока без независимой верификации загрузки завода-изготовителя.',
-    recommendation:'Для единственных источников критических материалов запрашивать подтверждение резервирования мощности и включать пункт о приоритетности заказа в контракт.',
-    applicability:'Проекты с монопольным поставщиком труб/металлопроката и высокой отраслевой загрузкой рынка.',
-    impactDays:61, impactCostPct:2.4, occurrences:'6 / 9', validatedBy:'И. Соколова, риск-менеджер', validationDate:'02.11.2023', status:'verified',
-    sim:{type:70, region:40, contract:55, capex:60, stage:48}},
-  {id:'LL-009', category:'cost', stage:'Закупки', region:'Урал', contract:'EPC', projectType:'Brownfield',
-    title:'Валютная и индексная оговорка в EPC-контракте снижает риск скачка цены на сталь',
-    project:'Refinery Upgrade, 2022', risk:'R-1002 · Escalation in steel prices', sourceDoc:'PMR-2022-054.pdf',
-    context:'Контракт на металлоконструкции заключался по фиксированной цене без индексации на срок изготовления 11 месяцев.',
-    whatHappened:'Рост биржевых цен на прокат на 34% за период изготовления был частично переложен подрядчиком на заказчика через претензии.',
-    rootCause:'В договоре отсутствовала формула пересмотра цены при отклонении биржевого индекса свыше согласованного порога.',
-    consequence:'Дополнительные расходы 6.1% от стоимости позиции металлоконструкций, урегулированные через переговоры.',
-    successfulAction:'Введение hedging-механизма (форвардный контракт на часть объёма) в последующих закупках снизило волатильность.',
-    unsuccessfulAction:'Отказ от индексной оговорки «для упрощения контракта» на этапе тендера.',
-    recommendation:'Включать формулу пересмотра цены (price adjustment clause) при циклах изготовления свыше 6 месяцев и рассматривать частичный hedging объёма.',
-    applicability:'Контракты на металлоёмкое оборудование/конструкции с длительным циклом изготовления в условиях волатильного рынка сырья.',
-    impactDays:0, impactCostPct:6.1, occurrences:'4 / 7', validatedBy:'А. Мельник, эксперт по закупкам', validationDate:'20.08.2022', status:'verified',
-    sim:{type:64, region:35, contract:88, capex:70, stage:52}},
-  {id:'LL-021', category:'hse', stage:'Строительство', region:'Юг', contract:'EPC', projectType:'Greenfield',
-    title:'Ежедневный аудит СИЗ и допусков к работам снижает частоту происшествий',
-    project:'Coastal Power Plant, 2021', risk:'R-1003 · Workforce safety incident', sourceDoc:'PMR-2021-118.pdf',
-    context:'Пиковая численность персонала на площадке — 640 человек, преобладание субподрядных бригад с разным уровнем культуры безопасности.',
-    whatHappened:'После двух происшествий с временной потерей трудоспособности внедрён ежедневный выборочный аудит СИЗ и нарядов-допусков перед началом смены.',
-    rootCause:'Недостаточный контроль соблюдения требований СИЗ и порядка допуска на начальном этапе мобилизации субподрядчиков.',
-    consequence:'До внедрения меры — 2 происшествия с ВПТ за 3 месяца.',
-    successfulAction:'Ежедневный аудит + еженедельный разбор инцидентов на общей планёрке снизили частоту происшествий до нуля за оставшиеся 14 месяцев.',
-    unsuccessfulAction:'Однократный вводный инструктаж без периодического контроля оказался недостаточен.',
-    recommendation:'Закладывать ежедневный аудит СИЗ/допусков и еженедельный разбор инцидентов как стандартную меру уже на этапе мобилизации, а не как реакцию на происшествие.',
-    applicability:'Площадки с высокой долей субподрядного персонала и параллельным ведением нескольких видов работ.',
-    impactDays:0, impactCostPct:0, occurrences:'2 / 8', validatedBy:'Н. Гаврилов, HSE-менеджер', validationDate:'—', status:'review',
-    sim:{type:55, region:47, contract:60, capex:38, stage:70}},
-  {id:'LL-005', category:'design', stage:'Проектирование', region:'Дальний Восток', contract:'EPC', projectType:'Greenfield',
-    title:'Позднее вовлечение эксплуатации в проектирование увеличивает объём переделок',
-    project:'Greenfield LNG Plant, 2024', risk:'R-1004 · Design changes and rework', sourceDoc:'PMR-2024-027.pdf',
-    context:'Служба эксплуатации будущего объекта была подключена к ревью проектных решений только на стадии Detail Design (после 70% готовности).',
-    whatHappened:'Замечания эксплуатации по компоновке узла факельной системы потребовали пересмотра трассировки трубопроводов, уже выпущенных в производство.',
-    rootCause:'В плане проектирования отсутствовала контрольная точка обязательного ревью с эксплуатацией на стадии FEED.',
-    consequence:'Переработка 23 чертежей, задержка выпуска IFC-документации на 18 дней.',
-    successfulAction:'Введение обязательного HAZOP/операбилити-ревью с участием эксплуатации на завершении FEED в последующих узлах устранило повторение проблемы.',
-    unsuccessfulAction:'—',
-    recommendation:'Включать представителя эксплуатации в ревью на стадии FEED как обязательную контрольную точку, а не опциональную консультацию.',
-    applicability:'Технологически сложные узлы (факельные системы, системы аварийного сброса) на проектах Greenfield.',
-    impactDays:18, impactCostPct:0.6, occurrences:'5 / 9', validatedBy:'Т. Волкова, гл. инженер проекта', validationDate:'—', status:'review',
-    sim:{type:80, region:62, contract:71, capex:55, stage:44}},
-  {id:'LL-030', category:'external', stage:'Проектирование', region:'Северо-Запад', contract:'EPCM', projectType:'Brownfield',
-    title:'Параллельное согласование с двумя регуляторами сокращает срок получения разрешений',
-    project:'Offshore Platform Project, 2023', risk:'R-1005 · Regulatory approval delays', sourceDoc:'PMR-2023-063.pdf',
-    context:'Проект требовал последовательного согласования экологической экспертизы и разрешения на строительство в морской акватории у двух independent регуляторов.',
-    whatHappened:'Первичный график предполагал последовательную подачу пакетов документов, что удлиняло путь согласования.',
-    rootCause:'Регламент проекта не предусматривал возможности параллельной подготовки пакетов для независимых регуляторов.',
-    consequence:'При последовательной схеме прогнозировалась задержка старта строительства на 2.5 месяца.',
-    successfulAction:'Параллельная подготовка и подача пакетов с назначением отдельного ответственного за каждый трек сократила совокупный срок согласования на 40%.',
-    unsuccessfulAction:'—',
-    recommendation:'На проектах с несколькими независимыми регуляторами формировать параллельные треки согласования с самого начала, а не выстраивать их последовательно.',
-    applicability:'Проекты в прибрежной/морской зоне и на территориях с пересекающейся юрисдикцией нескольких регуляторов.',
-    impactDays:0, impactCostPct:0, occurrences:'3 / 6', validatedBy:'П. Крылов, юридический советник', validationDate:'14.05.2023', status:'verified',
-    sim:{type:48, region:66, contract:52, capex:40, stage:58}},
-  {id:'LL-011', category:'resource', stage:'Строительство', region:'Урал', contract:'EPC', projectType:'Brownfield',
-    title:'Резерв вахтового персонала компенсирует дефицит квалифицированных рабочих в регионе',
-    project:'Refinery Upgrade, 2022', risk:'R-1006 · Skilled labor shortage', sourceDoc:'PMR-2022-077.pdf',
-    context:'Регион исполнения проекта имел ограниченный локальный рынок сварщиков с допуском НАКС требуемого уровня.',
-    whatHappened:'На пике потребности локальный рынок не мог обеспечить более 55% требуемой численности сварщиков.',
-    rootCause:'Кадровый план строился на прогнозе локального найма без учёта фактической ёмкости регионального рынка труда.',
-    consequence:'Риск срыва темпа сварочно-монтажных работ на критическом участке технологической эстакады.',
-    successfulAction:'Формирование вахтового резерва (20% от плановой численности) с привлечением из соседних регионов закрыло дефицит без остановки работ.',
-    unsuccessfulAction:'Повышение расценок для локального рынка на 100% привлекло незначительное количество дополнительных кадров при значительном росте бюджета.',
-    recommendation:'На старте планирования оценивать фактическую ёмкость локального рынка труда по дефицитным специальностям и закладывать вахтовый резерв 15–20%.',
-    applicability:'Проекты в регионах с ограниченным предложением квалифицированного персонала по НАКС-специальностям.',
-    impactDays:0, impactCostPct:1.1, occurrences:'5 / 8', validatedBy:'Е. Орлова, HR бизнес-партнёр', validationDate:'09.09.2022', status:'verified',
-    sim:{type:59, region:73, contract:49, capex:52, stage:61}},
-  {id:'LL-018', category:'contract', stage:'Строительство', region:'Юг', contract:'EPC', projectType:'Greenfield',
-    title:'Отсутствие штрафных условий в договоре субподряда осложнило разрешение спора',
-    project:'Coastal Power Plant, 2021', risk:'R-1007 · Disputes with subcontractor', sourceDoc:'PMR-2021-142.pdf',
-    context:'Договор субподряда на пусконаладочные работы не содержал детализированных условий по срокам устранения замечаний и штрафных санкций.',
-    whatHappened:'Субподрядчик систематически нарушал согласованные сроки устранения замечаний без договорных последствий.',
-    rootCause:'Юридическая экспертиза договора на этапе тендера не выявила отсутствие штрафных условий как существенный риск.',
-    consequence:'Спор был урегулирован только через 3 раунда переговоров, потеря 11 дней на пусконаладке.',
-    successfulAction:'—',
-    unsuccessfulAction:'Использование типового шаблона договора без адаптации раздела ответственности под специфику пусконаладочных работ.',
-    recommendation:'В договорах пусконаладки обязательно закреплять сроки устранения замечаний, штрафные санкции и порядок эскалации спора.',
-    applicability:'Договоры субподряда на пусконаладочные и гарантийные работы вне зависимости от контрактной модели.',
-    impactDays:11, impactCostPct:0.4, occurrences:'3 / 9', validatedBy:'—', validationDate:'—', status:'rejected',
-    sim:{type:41, region:50, contract:77, capex:33, stage:39}},
-  {id:'LL-024', category:'environmental', stage:'Строительство', region:'Юг', contract:'EPC', projectType:'Greenfield',
-    title:'Сезонное окно морской логистики не заложено в график тяжеловесных грузов',
-    project:'Coastal Power Plant, 2021', risk:'R-1008 · Adverse weather impact', sourceDoc:'PMR-2021-156.pdf',
-    context:'Доставка крупногабаритного генераторного оборудования планировалась морским транспортом в прибрежном регионе с выраженной штормовой сезонностью.',
-    whatHappened:'Плановая дата захода судна попала в начало сезона штормов, что привело к трёхнедельному ожиданию safe weather window.',
-    rootCause:'График логистики формировался без учёта многолетней статистики штормовой активности региона.',
-    consequence:'Задержка выгрузки на 21 день, простой такелажной бригады на площадке.',
-    successfulAction:'Перенос последующих тяжеловесных поставок за пределы штормового окна по многолетней статистике исключил повторение.',
-    unsuccessfulAction:'—',
-    recommendation:'При планировании морской логистики тяжеловесных грузов в прибрежных регионах закладывать буфер по многолетней статистике штормовых окон, а не только по контрактному сроку изготовления.',
-    applicability:'Проекты с морской доставкой негабаритного/тяжеловесного оборудования в регионах с сезонной штормовой активностью.',
-    impactDays:21, impactCostPct:0.3, occurrences:'2 / 5', validatedBy:'Н. Гаврилов, HSE-менеджер', validationDate:'—', status:'review',
-    sim:{type:37, region:69, contract:44, capex:29, stage:35}}
+  {id:'LL-001', title:`Увеличение сроков проработки проекта в связи с геополитической обстановкой`, date:'31 May 2023', sppCode:'12-2152', project:`Кислородный цех. Строительство кислородно-регуляторного пункта» (КРП-1.1)`,
+    stage:'Фаза 2', problem:`Длительность проработки`, rootCause:`Геополитическая обстановка. Привлечение дополнительных компаний к проработке`, lesson:`Привлекать к обсуждению максимум заинтересованных лиц. Поиск альтернативных проектировщиков.`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-002', title:`Позднее подключение команды реализации`, date:'27 Sep 2023', sppCode:'12-2189', project:`ЦГП. Модернизация системы осевого перемещения рабочих валков клетей №№ 7-12 чистовой группы с установкой системы на клети №6`,
+    stage:'Фаза 2', problem:`Позднее подключение команды реализации`, rootCause:`Высокая загрузка специалистов УРП`, lesson:`Привлечение специалистов в сроки установленные нормативными документами`,
+    cc:'', ccClass:'cc-unspecified', ccOwner:'',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-003', title:`Временные ограничения при выполнении работ`, date:'27 Sep 2023', sppCode:'12-2189', project:`ЦГП. Модернизация системы осевого перемещения рабочих валков клетей №№ 7-12 чистовой группы с установкой системы на клети №6`,
+    stage:'Фаза 2', problem:`Сложность в одновременном выполнении работ по замене системы осевого перемещения валков на клетях 7-12 и устройстве новой системы на клети 6 в остановочный период с сохранением гарантии по качеству со стороны поставщика.`, rootCause:`Сложность и длительность работ по замене. Ограниченность остановочного периода.`, lesson:`—`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-004', title:`Отсутствие информации об исходном состоянии объекта модернизации`, date:'27 Sep 2023', sppCode:'', project:`Проект не указан в СПП`,
+    stage:'Фаза 2', problem:`Отсутствие информации о фактическом износе станины клетей, отклонении габаритов подвижных и неподвижных блоков от соответствующих размеров в чертежах`, rootCause:`Высокая сложность и длительность процесса демонтажа неподвижного блока системы осевого перемещения валков`, lesson:`На начальном этапе вести проработку проекта с привлечением поставщика к выполнению работ по фрезеровке станины`,
+    cc:'', ccClass:'cc-unspecified', ccOwner:'',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-005', title:`Сложности интеграции АСУ ТП поставщика в систему АСУ ТП Стана 2000`, date:'27 Sep 2023', sppCode:'12-2189', project:`ЦГП. Модернизация системы осевого перемещения рабочих валков клетей №№ 7-12 чистовой группы с установкой системы на клети №6`,
+    stage:'Фаза 2', problem:`Сложность интеграции систем АСУ ТП разработки поставщика в систему АСУ ТП Стана 2000`, rootCause:`Наличие большого количества входных сигналов от смежного оборудования Стана 2000. Сложность в получении полной информации по работе системы АСУ ТП.`, lesson:`На начальном этапе проработки предлагать в качестве исполнителя работ и интегратора системы российского поставщика, имеющего опыт работы с системами стана 2000 ЦГП`,
+    cc:'Закупка услуг', ccClass:'cc-procsvc', ccOwner:'Булашов И.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-006', title:`Сложности интеграции технических решений поставщика в систему АСУ ТП НЛМК`, date:'27 Sep 2023', sppCode:'12-2189', project:`ЦГП. Модернизация системы осевого перемещения рабочих валков клетей №№ 7-12 чистовой группы с установкой системы на клети №6`,
+    stage:'Фаза 2', problem:`Совместная работа модели управления системой осевого перемещения валков PCFC поставки фирмы и второго уровня АСУ ТП разработки ПАО "НЛМК"`, rootCause:`Сложность интеграции системы PCFC поставщиком в существующую систему второго уровня.`, lesson:`—`,
+    cc:'', ccClass:'cc-unspecified', ccOwner:'',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-007', title:`Проведение тендера только на первый этап`, date:'05 Sep 2023', sppCode:'12-1957', project:`НЛМК. КХЦ. Техническое перевооружение пылегазоочистных установок УСТК-2`,
+    stage:'Фаза 2', problem:`Проведение тендера только на этап 1.`, rootCause:`Ограниченное финансирование.`, lesson:`Если финансирование ограничено и проект может реализовываться поэтапно, то ТЧК готовить отдельные по каждому этапу, не предполагать, что тендер будет проведён сразу на все этапы.`,
+    cc:'Закупка услуг', ccClass:'cc-procsvc', ccOwner:'Булашов И.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-008', title:`Дробление проекта на этапы`, date:'05 Sep 2023', sppCode:'12-1957', project:`НЛМК. КХЦ. Техническое перевооружение пылегазоочистных установок УСТК-2`,
+    stage:'Фаза 2', problem:`Разбивка проекта на этапы: 10 аспирационных установок, реализация в 2 этапа и затем ещё одна разбивка на 5 этапов.`, rootCause:`Ограниченное финансирование.`, lesson:`Если проект состоит из независимых элементов (этапов), то изначально планировать разбивку крупного проекта на этапы или подпроекты, и в дальнейшем моделировать проведение тендера (предпочтительно отдельный тендер по каждому этапу).`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-009', title:`Увеличение срока проработки вследствие недостаточной проработки пула поставщиков ОТО`, date:'05 Sep 2023', sppCode:'12-1957', project:`НЛМК. КХЦ. Техническое перевооружение пылегазоочистных установок УСТК-2`,
+    stage:'Фаза 2', problem:`Привлечение дополнительных поставщиков ОТО в середине Фазы-2.`, rootCause:`Отказ от участия европейских поставщиков (из 7 отказались 5). Отсутствие в панели поставщиков аспирационных установок китайских компаний/`, lesson:`Направлять ТЗ на поставку оборудования в китайский офис для раннего поиска дополнительных поставщиков в КНР.`,
+    cc:'Закупка оборудования', ccClass:'cc-procequip', ccOwner:'Чистяков Л.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-010', title:`Увеличение объемов реализации за счёт недостаточной детализации WBS`, date:'21 Mar 2023', sppCode:'11-0356', project:`НЛМК. ФН Логистика. Строительство сухого порта`,
+    stage:'Фаза 2', problem:`Дополнительное выделение подобъектов реализации`, rootCause:`Укрупнённое выделение подобъектов (WBS структуры) при формировании ТЗП`, lesson:`При формировании ТЗП максимально разбивать WBS структуру`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-011', title:`Изменение срока проработки в связи с изменением цели и концепции проекта`, date:'21 Mar 2023', sppCode:'11-0356', project:`НЛМК. ФН Логистика. Строительство сухого порта`,
+    stage:'Фаза 2', problem:`Изменение цели и концепции проекта`, rootCause:`Некорректное определение границ проекта.`, lesson:`Привлекать к обсуждению максимум заинтересованных лиц`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-012', title:`Увеличение сроков разработки ОПР в связи с длительным сроков выдачи ТУ`, date:'10 Feb 2023', sppCode:'11-0446', project:`НЛМК. КХЦ. Строительство установки по производству гранулированного сульфата аммония`,
+    stage:'Фаза 2', problem:`Долгий ответ на запрос ТУ на подключение привело к увеличению срока разработки ОПР.`, rootCause:`Личные загрузки у отделов, которые выдают ТУ на подключение.`, lesson:`Отдельно ускорять службы, ответственные за выдачу ТУ. Отдельно контролировать сроки выдачи ТУ.`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-013', title:`Рост стоимости прокладки сетей`, date:'10 Feb 2023', sppCode:'11-0446', project:`НЛМК. КХЦ. Строительство установки по производству гранулированного сульфата аммония`,
+    stage:'Фаза 2', problem:`Увеличилась стоимость прокладки сетей связи более чем в 10 раз (по Липецкой площадке).`, rootCause:`Низкое качество проработки ТУ.`, lesson:`На Фазе-1 детально прорабатывать выданные ТУ, материалы и оборудование.`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-014', title:`Увеличение срока проработки из-за попадания на действующие сети`, date:'10 Feb 2023', sppCode:'11-0446', project:`НЛМК. КХЦ. Строительство установки по производству гранулированного сульфата аммония`,
+    stage:'Фаза 2', problem:`Отсутствие актуального генплана привело к переносу места строительства из-из попадания на действующие сети, которые не были учтены в генплане`, rootCause:`Генплан не обновляется должным образом.`, lesson:`На Фазе-1 детально прорабатывать Генплан и закладывать средства на изыскания.`,
+    cc:'', ccClass:'cc-unspecified', ccOwner:'',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-015', title:`Поставщики ОТО не хотят предоставлять детальную информацию`, date:'10 Feb 2023', sppCode:'11-0446', project:`НЛМК. КХЦ. Строительство установки по производству гранулированного сульфата аммония`,
+    stage:'Фаза 2', problem:`Поставщики ОТО не хотят предоставлять детальную информацию без частичной оплаты. Это ведет к увеличению срока разработки ТЧК и ОПР.`, rootCause:`Поставщик ОТО не замотивирован в заполнении ТЧК. В следствии чего приоритизирует свои работы на более важные и с действующими договорными отношениями.`, lesson:`Рассмотреть возможность финансирования на Фазе-2 для подготовки ТЧК.`,
+    cc:'Закупка услуг', ccClass:'cc-procsvc', ccOwner:'Булашов И.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-016', title:`Отсутствие опыта подготовки ТЧК у вновь привлекаемых китайских фирм`, date:'06 Feb 2023', sppCode:'12-2187', project:`НЛМК. Кислородный цех. Строительство ВРУ 20`,
+    stage:'Фаза 2', problem:`Работа с китайскими фирмами`, rootCause:`Длительная процедура заключения договора NDA. Отсутствие опыта подготовки ТЧК в соответствии с требованиями НЛМК у вновь привлекаемых китайских фирм.`, lesson:`Проведение установочных совещаний с фирмами для разъяснения требований НЛМК при подготовке проектов ТЧК.`,
+    cc:'', ccClass:'cc-unspecified', ccOwner:'',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-017', title:`Избыточное количество вариантов проработки`, date:'06 Feb 2023', sppCode:'12-2187', project:`НЛМК. Кислородный цех. Строительство ВРУ 20`,
+    stage:'Фаза 2', problem:`Вариативность`, rootCause:`Большое количество вариантов реализации и проработки`, lesson:`Применение АБК при инициации проекта`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-018', title:`Недостаточность экспертизы при проработке ТЗО`, date:'10 Nov 2022', sppCode:'12-1715', project:`НЛМК. АГЦ. Реконструкция ЦАС-1 на агломашине №2`,
+    stage:'Фаза 2', problem:`Первоначально ТЗО проработано не в полном объеме.`, rootCause:`Внесение дополнений и изменений в период проработки на Фазе-2`, lesson:`Привлечение внешних экспертов`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-019', title:`Отсутствие согласованного с заказчиком пула поставщиков ОТО`, date:'10 Nov 2022', sppCode:'12-1715', project:`НЛМК. АГЦ. Реконструкция ЦАС-1 на агломашине №2`,
+    stage:'Фаза 2', problem:`Нет детального согласования с Заказчиком о привлечении фирм`, rootCause:`Не согласован пул поставщиков ОТО`, lesson:`Привлечение большего количества лиц, еженедельные совещания РГ, с оформлением протокола`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-020', title:`Недостаточность критериев проработки тендерных процедур`, date:'10 Nov 2022', sppCode:'12-1715', project:`НЛМК. АГЦ. Реконструкция ЦАС-1 на агломашине №2`,
+    stage:'Фаза 2', problem:`По результату тендерных процедур не выбран поставщик ОТО (выбраны два лидера)`, rootCause:`Ответственность ТК`, lesson:`Расшить список оценок и критерий проработки результатов ТК`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-021', title:`Увеличение сроков проработки в связи с недостаточным объемом вовлечения ЦК`, date:'10 Nov 2022', sppCode:'12-1715', project:`НЛМК. АГЦ. Реконструкция ЦАС-1 на агломашине №2`,
+    stage:'Фаза 2', problem:`Длительность проработки`, rootCause:`Загрузка проектной организации, проведение 4-х предварительных заседаний ТК (привлечение доп. фирм, внесение изм. в ТЗО, уточнение срока пуска). Увеличение стоимости.`, lesson:`Привлекать к обсуждению максимум заинтересованных лиц. Согласование поставщиков ОТО до рассылки ТЗО. Поиск альтернативных проектировщиков.`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-022', title:`Неспецифичное оборудование в проекте. Необходимость индивидуального инжиниринга`, date:'06 Jul 2022', sppCode:'12-1810', project:`НЛМК. АГЦ. Установка систем водяного пылеподавления`,
+    stage:'Фаза 2', problem:`Подготовка фирмами ТЧК, т.к. предлагаемое оборудование не является серийным и предусматривает разработку инжиниринга под конкретный проект. Изначально разработка ТЧК не планировалась.`, rootCause:`МП/РГ не в полном объёме разобралась со спецификой оборудования в проекте: по итогам Ф-1 проекта не было понятно, что оборудование систем пылеподавления требует индивидуального инжиниринга под конкретный проект.`, lesson:`Все проекты изначально рассматривать по наихудшему сценарию с точки зрения трудоёмкости работ: разработка ТЗО, подготовка ТЧК.`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-023', title:`Исключение Фазы-1 из проработки в связи со сжатыми сроками реализации проекта`, date:'11 Apr 2022', sppCode:'11-0356', project:`НЛМК. ФН Логистика. Строительство сухого порта`,
+    stage:'Фаза 2', problem:`Длительная проработка значительного количества вариантов реализации проекта`, rootCause:`В связи с необходимостью в сжатые сроки проработать мероприятия по развитию ж/д инфраструктуры, связанные с увеличением производства, было принято решение приступить к проработке проекта на Фазе-2, минуя Фазу-1. Из-за этого, на Фазе-2 было затрачено значительное время на проработку альтернативных вариантов конфигурации объекта с разными площадями и границами с целью оптимизации технических/логистических решений и получения максимального экономического эффекта.`, lesson:`При переходе "не зрелого" проекта на следующую Фазу необходимо оценить возможные риски и запланировать мероприятия по их снижению.`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-024', title:`Отсутствие чертежей действующего производства`, date:'04 Apr 2022', sppCode:'11-0415', project:`НЛМК. ОГЦ. Техническое перевооружение системы подачи воздуха вращающихся печей №9 и 10`,
+    stage:'Фаза 2', problem:`Трудности в сборе исходных данных из-за отсутствия чертежей существующих зданий горячих концов печей, привело к задержке в разработке ОПР, и как следствие, к возможному увеличению срока проекта.`, rootCause:`Отсутствие проработки на Фазе-1. Отсутствие необходимых чертежей в архиве комбината и в архиве ОГЦ.`, lesson:`Проверку наличия необходимых чертежей для выдачи исх. данных проектной организации осуществлять на Фазе-1 до подготовки ТЗ на ППР.`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-025', title:`Неполный объём исследований на этапе ОПР`, date:'01 Oct 2024', sppCode:'12-1294', project:`НЛМК. ЦГП. Реконструкция НП-2`,
+    stage:'Фаза 2', problem:`Отсутствие данных о состоянии фундаментов на отм. -8…-14,8 м - позднее проведение обследования и инструментального определения несущей способности. На этапе ОПР ограничились визуальным осмотром. Пришлось вносить изменения в проект, усиливать конструкции`, rootCause:`Не проведено своевременно инструментальное обследование. Совмещенные фазы.`, lesson:`Выполнять обследования на фазе ОПР`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-026', title:`Увеличение сроков проработки ТЧК в связи с некорректно определённым маршрутом визирования`, date:'01 Nov 2022', sppCode:'12-1718', project:`НЛМК. АГЦ. Рециркуляция отходящих газов агломашин №№1-4`,
+    stage:'Фаза 2', problem:`После проработки ТЧК с поставщиками и службами был разослан лист визирования для согласования руководителями специалистов, участвовавших в проработке. Появились дополнительные замечания, которые пришлось согласовывать с поставщиком ОТО и вносить изменение в ТЧК.`, rootCause:`У согласовывавших руководителей не было достаточно информации и уверенности в качестве проработки ТЧК.`, lesson:`При рассылке на согласование технической части контракта указывать кто от службы принимал участие в проработке. Вовлекать в процесс согласования сотрудников службы участвовавших в проработке.`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-027', title:`Смещение сроков выдачи БИ`, date:'01 Nov 2024', sppCode:'12-1900', project:`АГЦ. Строительство пыле- и сероочистки агломашины № 3`,
+    stage:'Фаза 2', problem:`Недостаточный срок для согласования предварительной компоновки оборудования На что повлияла проблема: Произошло смещение сроков выдачи БИ`, rootCause:`Недостаточная информация по размещению оборудования. Отсутствие опыта работы китайских поставщиков ОТО с российскими компаниями по российским нормативным документам.`, lesson:`Необходимо было закладывать больше времени на согласование компоновки оборудования`,
+    cc:'Закупка оборудования', ccClass:'cc-procequip', ccOwner:'Чистяков Л.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-028', title:`Технологический риск несовместимости контроллеров в поставке`, date:'01 Nov 2024', sppCode:'12-1900', project:`АГЦ. Строительство пыле- и сероочистки агломашины № 3`,
+    stage:'Фаза 2', problem:`Ответственность за поставку контроллеров необходимо было возложить на Продавца (с учетом информации от ДАТП о том, что для ПАО "НЛМК" приемлемо использовать контроллеры из бренд-листа CIE, но информация почему-то появилась после подписания Договора) На что повлияла проблема: Риск несвоевременной поставки контроллеров европейского производства Технологический риск несовместимости контроллеров в поставке Покупателя со шкафами в поставке Продавца`, rootCause:`Геополитическая ситуация в мире. Консервативный взгляд Недостаточная гибкость политики применения АСУТП адаптирование ДАТП к сложившейся обстановке`, lesson:`Уделять больше внимания разделу разделение поставок, опираясь на имеющийся опыт`,
+    cc:'Закупка оборудования', ccClass:'cc-procequip', ccOwner:'Чистяков Л.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-029', title:`Изменение объёма и стоимости контракта в силу позднего поступления замечаний к ТЧК`, date:'01 Nov 2024', sppCode:'12-1900', project:`АГЦ. Строительство пыле- и сероочистки агломашины № 3`,
+    stage:'Фаза 2', problem:`Проектный институт выдал замечания к ТЧК после парафирования и подписания Договора, влияющие на объём поставки оборудования в сторону увеличения На что повлияла проблема: Изменение стоимости контракта`, rootCause:`Проработка ОПР по предложению другого поставщика ОТО, сжатые сроки проработки.`, lesson:`Проектному институту необходимо выдавать замечания и рекомендации в ходе проведения переговоров. Фиксировать согласование с проектировщиком в ходе переговоров.`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-030', title:`Высокие риски увеличения стоимости на Фазе 3,4`, date:'01 Nov 2024', sppCode:'12-1900', project:`АГЦ. Строительство пыле- и сероочистки агломашины № 3`,
+    stage:'Фаза 2', problem:`Высокие риски увеличения стоимости на Фазе 3,4 На что повлияла проблема: Увеличение бюджета проекта`, rootCause:`Сжатые сроки проработки Фазы-1, 2`, lesson:`Уведомить Заказчика и ИК о том, что при сжатых сроках проработки возможно увеличение бюджета проекта. Выстраивать коммуникацию для ИК о существующих рисках.`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-031', title:`Неточная оценка бюджета проекта на Фазе-1`, date:'01 Nov 2024', sppCode:'12-1900', project:`АГЦ. Строительство пыле- и сероочистки агломашины № 3`,
+    stage:'Фаза 2', problem:`Неточная оценка бюджета проекта на Фазе-1 На что повлияла проблема: Увеличился бюджет на Фазе-2`, rootCause:`1. Новая технология, не используется в Группе НЛМК 2. Не выполнены в полном объеме работы Фазы-1`, lesson:`Чётко выстраивать коммуникацию с Заказчиком и ИК , когда выдаем оценки стоимости с высоким риском`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-032', title:`Отсутствие процедуры проверки референций по китайским компаниям`, date:'01 Nov 2024', sppCode:'12-1900', project:`АГЦ. Строительство пыле- и сероочистки агломашины № 3`,
+    stage:'Фаза 2', problem:`Риски фальсификации референций со стороны контрагентов На что повлияла проблема: Выбор поставщика ОТО с более высокой стоимостью`, rootCause:`Отсутствует процедура проверки по китайским компаниям`, lesson:`При помощи специалистов AVAXA проводить дополнительную проверку референций контрагентов из КНР: 1. Проводить проверку компаний на этапе формирования long list. 2. Проводить проверку компаний на этапе формирования short list до тендера.`,
+    cc:'Закупка услуг', ccClass:'cc-procsvc', ccOwner:'Булашов И.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-033', title:`Сложности проработки панели поставщиков проекта R&D`, date:'31 Jul 2025', sppCode:'11-0509', project:`КЦ-2. Устройство детектирования дефектов слябов на МНЛЗ-9`,
+    stage:'Фаза 2', problem:`Проект был передан со Stage Gate на инвестиционный трек (Фаза-1,2) с максимальным объемом данных без ее сортировки, включая перечень потенциальных поставщиков, в том числе которые не являлись поставщиками того оборудования какое нужно было под проект. Команда потратила много времени на поиск поставщиков (18 фирм), проработку с ними предложений и формирование актуальной панели поставщиков для тендера. Было потрачено дополнительное время на проработку панели поставщиков для проекта R&D, связанного с внедрением новой технологии. Увеличение срока подготовки ТКП без смещения срока проработки проекта`, rootCause:`Наличие новой технологии в проектах R&D`, lesson:`При проработке проектов R&D, связанных с внедрением новой технологии либо если технология не определена при передаче проекта со Stage Gate на инвестиционный трек, учитывать дополнительное время в графике проработки Фазы -1,2 на проработку панели поставщиков. В этом случае проработка панели поставщиков на Фазе -1,2 потребует больших временных ресурсов.`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-034', title:`Коммуникационные проблемы с китайскими фирмами`, date:'24 Jun 2025', sppCode:'11-0507', project:`ДЦ-1. Техническое перевооружение системы ПУТ (подключение к ДП № 3)`,
+    stage:'Фаза 2', problem:`В ходе работы с китайскими фирмами были выявлены проблемы в коммуникациях, связанные с трудностями перевода, разной интерпретацией одной и той же технической информации. Потребовалось достаточно много времени чтобы прийти к единому пониманию предлагаемых технических решений. Увеличение срока подготовки ТЧК`, rootCause:`Недостаточный опыт взаимодействия с китайскими фирмами, слабый уровень переводческих услуг, отсутствие базы данных по соответствию между НД КНР и РФ.`, lesson:`1) При подготовке ТЧК с китайскими фирмами использовать обновленные шаблоны Приложений №№1-12 ТЧК (в новые шаблоны включены рекомендации и примеры по оформлению документов, шаблоны с примерами переведены на английский язык). 2) В случае отказа китайских фирм работать в соответствии со стандартами РФ, рекомендовать китайским Поставщикам привлекать фирмы, оказывающие посреднические услуги в получении разрешительной документации и прохождении необходимых сертификаций.`,
+    cc:'Закупка услуг', ccClass:'cc-procsvc', ccOwner:'Булашов И.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-035', title:`Изменение условий контракта`, date:'06 May 2025', sppCode:'11-0507', project:`ДЦ-1. Техническое перевооружение системы ПУТ (подключение к ДП № 3)`,
+    stage:'Фаза 2', problem:`На финишном этапе проработки, после завершения тендера и определения лидера, на ТИС было принято решение о подготовке двухэтапного контракта. Изначально данный тип контрактования не рассматривался применительно к этому проекту и Поставщики ОТО к нему не были готовы. Это повлекло увеличение сроков проработки, а также возник риск срыва контракта с Поставщиком. Риск срыва был обусловлен тем, что двухэтапный контракт, как правило, выше по стоимости одноэтапного, т.к. включает не только поставку оборудования, но и базисного инжиниринга. Путем длительных переговоров с Поставщиком удалось перейти на двухэтапное контрактование при условии сохранения первоначальной стоимости договора`, rootCause:`Двухэтапный контракт в проекте изначально не рассматривался. Поставщики не были готовы к двухэтапной реализации проекта.`, lesson:`При разработке контрактной стратегии на Фазе-1 / совмещенной Фазе-1,2 оценивать возможность применения двухэтапной схемы контрактования в соответствии с действующей методологией контрактного моделирования. Прорабатывать с потенциальными поставщиками возможность заключения двухэтапного контракта. Рассчитывать КПЭ проекта по одноэтапной и двухэтапной схемам контрактования. Учитывать готовность поставщиков работать по двухэтапной схеме при проведении тендера.`,
+    cc:'Закупка услуг', ccClass:'cc-procsvc', ccOwner:'Булашов И.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-036', title:`Длительная разработка ТЧК поставщиками оборудования`, date:'24 Jun 2025', sppCode:'11-0507', project:`ДЦ-1. Техническое перевооружение системы ПУТ (подключение к ДП № 3)`,
+    stage:'Фаза 2', problem:`Проектные решения (ПР), разработанные ф. Paul Wurth 10 лет назад, были направлены китайским поставщикам для учёта при разработке ТЧК. Китайские специалисты, изучив ПР, высказали мнение о нежизнеспособности технических решений, заложенных в ПР. И одновременно предложили свои техн. решения (причем у каждой из 6-ти привлечённых фирм было свое техн. решение). Специалисты НЛМК, изучив вопрос, в конечном итоге согласились с выводами китайских специалистов. При этом, потребовалось достаточно много времени чтобы изучить предложенные тех. решения и сформировать единое оптимальное тех. решение. В результате были внесены необходимые корректировки в ПР, после чего были подговлены фирмами ТЧК.`, rootCause:`Специалистами НЛМК не были своевременно проверены технические решения ф. Paul Wurth в части подключения ДП-3 на предмет реализуемости схемы вдувания ПУТ (по одной трубе в две ДП).`, lesson:`Технические решения, разработанные несколько лет назад, проверять на предмет актуальности и реализуемости в текущих условиях перед их использованием в ходе проработки. Например, целесообразно организовать проведение тех. аудита на предмет реализуемости проекта (в данном случае в части возможности прокладки сетей по существующим эстакадам).`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-037', title:`Отсутствие конкурентной среды при закупке оборудования`, date:'22 Jul 2025', sppCode:'12-2518', project:`ЦХПП. Установка электроразрядного текстурирования прокатных валков`,
+    stage:'Фаза 2', problem:`В связи с существующей геополитической обстановкой невозможна работа с двумя фирмами-производителями аналогичного оборудования из Европы: Herkules (Германия), Sarclad (Великобритания). Известен один поставщик оборудования из КНР: Hebei Bojan (контракт через Lanzhou). В ходе проработки был выполнен сорсинг рынка поставщиков, в т.ч. с привлечением Avaxa - альтернативные поставщики не найдены. Произведен анализ используемого аналогичного оборудования на крупнейших предприятиях КНР - преимущественно используются установки Herkules. Проведены тендерные процедуры с одним участником из КНР: Lanzhou. Для снижения рисков (недоверие к фирме со стороны эксплуатации) и подтверждения возможности достижения гарантийных показателей возникла необходимость повторного референс-визита на все предприятия, на которых размещено оборудование производителя.`, rootCause:`Геополитическая обстановка и ввод санкций ограничили сотрудничество с проверенными европейскими поставщиками оборудования.`, lesson:`—`,
+    cc:'Закупка оборудования', ccClass:'cc-procequip', ccOwner:'Чистяков Л.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-038', title:`Изменение Заказчиком границ проекта`, date:'22 Jul 2025', sppCode:'12-2518', project:`ЦХПП. Установка электроразрядного текстурирования прокатных валков`,
+    stage:'Фаза 2', problem:`На Фазе-1 Заказчик определил месторасположение оборудования и принял решение не проводить проработку альтернатив проекта по месторасположению установки. В конце Фазы-2 в ходе планового обхода Заказчик по предложению ГИЗ пересмотрел свое решение по месторасположению установки, что привело к необходимости разработки материалов ОПР по варианту нового месторасположения.`, rootCause:`В принятии решения по месторасположению оборудования без проработки альтернатив ГИЗ не участвовал, т.к. на момент проработки проекта на Фазе-1 роль ГИЗ отсутствовала как сущность.`, lesson:`Привлекать ГИЗ на Фазе-1 при согласовании рассмотренных альтернатив и концепций предлагаемых для дальнейшей проработки. Сверять все технические решения с ГИЗ на всем жизненном цикле проработки проекта в т.ч. организовывать встречи Заказчика, Куратора и ГИЗ для рассмотрения требований, заложенных в ТЗО и ТЗП.`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-039', title:`Систематическое невыполнение поставщиком оборудования обязательств по предоставлению информации при формировании ТЧК`, date:'14 Nov 2025', sppCode:'11-0496', project:`КХП. Установка грохотов в отделении окончательного дробления № 1`,
+    stage:'Фаза 2', problem:`После проведения тендера поставщик оборудования систематически нарушал сроки предоставления информации для заключения контракта в соответствии с ТЗО. Длительное предоставление проекта договора с технической спецификацией (около 2-х месяцев). Невыполнение обязательств по предоставлению исходных данных по гарантийному письму. Длительное перечисление аванса субпоставщику грохотов в Китай. Отсутствие контроля и эскалации со стороны отв. за снабжение и руководителя проекта за сроками оформления договорных обязательств поставщиком.`, rootCause:`На момент проработки проекта происходила частая смена команды поставщика. Договоренности, достигнутые ранее с прежней командой поставщика, не фиксировались.`, lesson:`1. С целью снижения рисков несоблюдения сроков или некачественного предоставления информации поставщиком ОТО при формировании ТЧК, рекомендуется оформлять дорожную карту разработки ТЧК и уведомлять поставщика о контрольных точках данной карты, закрепленных в ответственности поставщика (в случае изменения контрольных точек своевременно информировать поставщика ОТО). 2. В случае систематического невыполнения поставщиком сроков, указанных в дорожной карте, своевременно эскалировать проблемные вопросы взаимодействия с поставщиком ответственному за снабжение или руководителю профильной службы закупок для организации переговоров или проведения УК непосредственно с руководителями поставщика.`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-040', title:`Перед проведением тендерных процедур проекта, учитывая высокий IRR, не были устранены замечания к ТБ и были не согласованы тех. части контракта с поставщиками`, date:'14 Nov 2025', sppCode:'11-0496', project:`Проект не указан в СПП`,
+    stage:'Фаза 2', problem:`В связи с высоким IRR предлагалось пойти по fast-track, при этом закупку оборудования планировали осуществить по техническому предложению и техническому балансу. В утвержденном ТЗО и согласованном ТБ отсутствовали важные технические характеристики: гарантийные показатели производительности с учетом коэффициента размолоспособности, в явном виде не были учтены требования к габаритам поставляемого оборудования (ТЗО), требования к оборудованию по взрывозащищенности, требования к количеству пыли (фракции 0-0.5). Отсутствие в ТБ и ТЗО критически важных c т.з. реализации характеристик оборудования привели к увеличению срока реализации проекта.`, rootCause:`Идентификация / категорирование оборудования как КВО не предполагала согласование технической части контракта с поставщиками`, lesson:`1. В случае проработки проектов по fast-track (проекты с высоким IRR) необходимо перед проведением тендерных процедур согласовывать техническую часть контракта на закупку оборудования (в т.ч. на закупку КВО) с поставщиками оборудования и заказчиками. 2. Приглашать на ТК представителей команды реализации в качестве экспертов в случае проработки проектов по fast-track для снижения рисков заключения договоров с техническими частями контракта, в которых будут не учтены важные с точки зрения реализации характеристики к закупаемому оборудованию.`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-041', title:`Невозможность заключить договор закупки грохота и дробилки на Фазе-3 по рамочному договору закупки КВО`, date:'14 Nov 2025', sppCode:'11-0496', project:`КХП. Установка грохотов в отделении окончательного дробления № 1`,
+    stage:'Фаза 2', problem:`В начале Фазы-2 закупку оборудования (грохот и дробилка) идентифицировали / категорировали как КВО. Закупку планировали осуществлять по техническому предложению и техническому балансу. Подготовлен технический баланс. В связи с высоким IRR предлагалось пойти по fast-track (нормативные регламенты по категорированию проектов и возможности исключения ТЧК отсутствуют). Решение о закупке по тех. решению и тех. балансу отображено в материалах для ТИС на входе в Фазу-3-4 (указано, что ТЧК не разрабатывалось). На Фазе-3 при согласовании контракта на закупку КВО, возникли сложности: юристы не согласовали контракт, в связи с тем, что нужен контракт на закупку ОТО с сформированной частью ТЧК и КЧК. Пришлось формировать ТЧК на Фазе-3, что привело к увеличению срока заключения контракта поставки ОТО).`, rootCause:`Недооценка сложности закупаемого оборудования, принятие решения о закупке оборудования с недостаточными техническими требованиями`, lesson:`1. В случае закупки такого оборудования, как подъемные сооружения, грохоты, дробильные установки, решение о его категорировании (ОТО или КВО) в начале Фазы-2, необходимо принимать коллегиально с привлечением профильных специалистов и юристов с формализацией решения протоколом РГ. 2. Разрабатывать ТЧК на Фазе-2 на оборудование, даже если оборудование не было первоначально категорировано как ОТО, и закупка предусматривает : - наличие требований по гарантийным испытаниям и включение санкций к поставщику за несоблюдение требований по гарантийным испытаниям; - сроки монтажа оборудования с привязкой к графику остановочного периода основного технологического оборудования.`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-042', title:`Организация дополнительного фронта зачистки вагонов АГЦ`, date:'13 Mar 2026', sppCode:'', project:`1 2-283 9 НЛМК. УЖДТ/АГЦ. Организация дополнительного фронта зачистки вагонов АГЦ.`,
+    stage:'Фаза 2', problem:`Фактическая компетенция и вовлеченность привлеченной сторонней проектной организации не соответствовали заявленным. Несмотря на формальное наличие у подрядчика необходимой квалификации и опыта, в ходе работы выявились критические недостатки: Низкая вовлеченность ключевых специалистов: Главный инженер проекта (ГИП) систематически отсутствовал на рабочих группах (РГ) и не выезжал на площадку для ее обследования. Игнорирование исходных данных: Материалы проекта производства работ (ППР) на первом этапе были разработаны без учета Технических условий (ТУ) и требований от поставщиков оборудования. Незнание стандартов: Проектная организация оказалась плохо ознакомлена со специфическими корпоративными требованиями к разработке ППР. Следствие: КУП был вынужден тратить значительное дополнительное время не на контроль, а на разъяснение базовых требований и «доучивание» подрядчика при формировании документации ПИР.`, rootCause:`• Формальный подход к предквалификации: Стандартный набор квалификационных критериев проверял только наличие общих признаков (лицензии, общий стаж компании), но не оценивал релевантный опыт выполнения именно таких задач и не гарантировал закрепление конкретных ключевых специалистов (в т.ч. ГИПа) в договоре. • Отсутствие использования исторических данных: При выборе подрядчика не была запрошена или не была учтена внутренняя оценка (рейтинг/обратная связь) от структурных подразделений (КУП), ранее работавших с данной организацией. • Отсутствие четкого старта работ: Не была проведена формализованная установочная встреча с передачей полного и актуального пакета корпоративных стандартов и требований.`, lesson:`•Углубить критерии предквалификации •Внедрить рейтинговую систему подрядчиков •Проводить обязательный стартовый брифинг (Kick-off meeting): •Усилить договорные механизмы: Прописать в договоре право Заказчика требовать замены ключевых специалистов (в т.ч. ГИПа) в случае их низкой вовлеченности или некомпетентности, с применением штрафных санкций или удержанием части оплаты до устранения замечаний.`,
+    cc:'НЛМК-Инжиниринг', ccClass:'cc-engineering', ccOwner:'',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-043', title:`Срыв срока поставки критического оборудования`, date:'06 May 2025', sppCode:'', project:`н/д НЛМК. УЖДТ/АГЦ. Организация дополнительного фронта зачистки вагонов АГЦ`,
+    stage:'Фаза 2', problem:`Срыв срока поставки критического оборудования Несмотря на заявленный процесс дистанционного мониторинга изготовления оборудования, фактический срок поставки был сорван на 1 месяц. Практика показала, что дистанционный контроль, основанный преимущественно на самоотчетах поставщика, не позволил выявить отставание от графика на ранних стадиях и своевременно применить корректирующие или превентивные меры.`, rootCause:`Неэффективность выбранной модели контроля для данного типа оборудования. А именно: • Отсутствие физической верификации • Низкая детализация контрольных точек: График изготовления в договоре не был декомпозирован до уровня конкретных, измеримых этапов, что позволяло поставщику маскировать локальные задержки до самого момента плановой отгрузки. • Отсутствие рычагов влияния: Промежуточные платежи или условия договора не были жестко привязаны к подтвержденному (доказательному) выполнению конкретных этапов изготовления, а не просто к календарным датам.`, lesson:`Для исключения срывов сроков при закупке сложного или длительного в изготовлении оборудования необходимо: • Внедрить гибридный или физический контроль.`,
+    cc:'Закупка оборудования', ccClass:'cc-procequip', ccOwner:'Чистяков Л.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-044', title:`Дополнительные затраты на закупку тепловоза`, date:'01 May 2026', sppCode:'11-0356', project:`НЛМК. ФН Логистика. Строительство сухого порта`,
+    stage:'Фаза 4', problem:`В связи с ростом продаж на экспортном рынке, а также ограниченной возможностью хранения в морских портах увеличился грузопоток, требующий буферного хранения на инфраструктуре НЛМК для минимизации транспортных затрат Возникла необходимость в тепловозе для обеспечения перевозки На стадии реализации проекта были пересмотрены технические эффекты проекта и на ИК 26.06.2024 акцептовано решение по закупке тепловоза`, rootCause:`Изменение рынка сбыта в период реализации проекта`, lesson:`Осуществление интегрированного планирования (кросс-функциональное взаимодействие со всеми заинтересованными службами) с пересчётом технических эффектов для постоянного мониторинга и прогнозирования структуры рынка с привлечением профильных экспертов от ФН «Продажи» Положительный урок: реализация проекта управлялась гибко - состав проекта корректировался в соответствии с изменениями рынка сбыта, а технические эффекты оптимизировались для повышения экономических показателей проекта`,
+    cc:'Управление по развитию', ccClass:'cc-development', ccOwner:'Сакир Д.',
+    event:``, improvement:`В РАБОТЕ Актуализация методики администрирования (разработка матрицы формирования РГ с обязательным включением представителей функциональных направлений с учетом специфики и дисциплин проекта (например, ФН «Продажи»), с фиксацией % загрузки в ИСУП)`, status:'В работе', statusClass:'status-inprogress'},
+  {id:'LL-045', title:`Дополнительные затраты на MES-систему`, date:'01 May 2026', sppCode:'11-0356', project:`НЛМК. ФН Логистика. Строительство сухого порта`,
+    stage:'Фаза 4', problem:`На начальной стадии предполагалось, что на «Сухом порту» передача данных будет происходить в существующих системах НЛМК, и отдельной ИТ-системы не потребуется (передача данных через систему, аналогичную «Логоскладу») На фазе реализации (при изменении грузопотоков) рабочей группой выяснилось, что решение «Логосклад» не применимо, потому что на Сухом порту требуется: oизменение маршрутов отгрузки в процессе производства; oработа с сертификатами, замена сертификатов; oтаможенное декларирование В результате потребовалась доработка свыше десяти систем и создание единой MES-системы`, rootCause:`Неверное предположение о достаточности минимального IT - решения (аналог "Логосклад") для передачи данных в системы НЛМК`, lesson:`При «Аудите бизнес-кейса» верифицируется необходимость старта интеграционных ИТ-проектов Внедрен инструмент «Критический обзор проекта» - коллегиальное рассмотрение технических, инфраструктурных и коммерческих решений на уровне директоров и гл. инженера с выдачей рекомендаций для КУП`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:`ВЫПОЛНЕНО СТО 05757665-IN-423-0115-2024 по предпроектной проработке, включено требование о согласовании предпроектных материалов с Умным производством Инструмент «Аудит бизнес-кейса» Инструмент «Критический обзор проекта», распоряжение 1-1347-Р-ОД от 03.09.2025 В РАБОТЕ «Сквозной реестр требований проекта» (на стадии внедрения)`, status:'В работе', statusClass:'status-inprogress'},
+  {id:'LL-046', title:`Дополнительные затраты из-за увеличения площади АБК`, date:'01 May 2026', sppCode:'11-0356', project:`НЛМК. ФН Логистика. Строительство сухого порта`,
+    stage:'Фаза 4', problem:`Больший грузопоток (в связи с ростом продаж на экспортном рынке) потребовал использования большего количества складской техники и обслуживающего персонала Для реализации требования на Фазе 3 Заказчик инициировал увеличение площади с 326 до 475,4м2 по результатам уточнения численности персонала`, rootCause:`Изменение рынка сбыта в период реализации проекта`, lesson:`Положительный урок : реализация проекта управлялась гибко - состав проекта корректировался в соответствии с изменениями рынка сбыта, а технические эффекты оптимизировались для повышения экономических показателей проекта Осуществление интегрированного планирования (кросс-функциональное взаимодействие со всеми заинтересованными службами) с пересчётом технических эффектов для постоянного мониторинга и прогнозирования структуры рынка с привлечением профильных экспертов от ФН «Продажи»`,
+    cc:'Управление по развитию', ccClass:'cc-development', ccOwner:'Сакир Д.',
+    event:``, improvement:`Актуализация методики администрирования (разработка матрицы формирования РГ с обязательным включением представителей функциональных направлений с учетом специфики и дисциплин проекта (например, ФН «Продажи»), с фиксацией % загрузки в ИСУП)`, status:'В работе', statusClass:'status-inprogress'},
+  {id:'LL-047', title:`Влияние качества входного сырья на характеристики окатышей и производительность отдельных агрегатов`, date:'01 Apr 2021', sppCode:'21-0009', project:`СГОК. Фабрика окомкования`,
+    stage:'Фаза 4', problem:`Влияние качества входного сырья на характеристики окатышей и производительность отдельных агрегатов (окомкователей) В проекте были закуплены все необходимые приборы для проведения качественного анализа сырья. Для достижения качества входного сырья необходимо снижать объемы производства на ОФ, что приводит к потерям.`, rootCause:``, lesson:`Необходимо особое внимание уделять всем параметрам входного сырья и энергоносителей. В контракт необходимо закладывать параметры, которые 100%-но достижимы (а лучше с запасом)`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:`Проводить замеры несколькими независимыми лабораториями и проводить тщательный анализ требований к исходному сырью перед их указанием в контракте. При этом необходимо отдельно проверить достоверности выборки и методов измерения. Для всех параметров необходимо указывать диапазоны значений и способы измерения.`, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-048', title:`Недостаточная проработка сервисного обеспечения до запуска Фабрики`, date:'01 Apr 2021', sppCode:'21-0009', project:`СГОК. Фабрика окомкования`,
+    stage:'Фаза 4', problem:`Недостаточная проработка сервисного обеспечения до запуска Фабрики. Необеспеченность запасными частями.`, rootCause:`Недостаточная проработка сервисного обеспечения до запуска Фабрики`, lesson:`В проекте получен как положительный, так и отрицательный опыт. В части выбора решений по некоторым видам оборудования. Как результат задержка в выводе на проектную мощность, дополнительные операционные затраты. Урок: в крупных проектах организация сервисного обслуживания необходимо организовывать отдельным подпроектом с отдельным ответственным.`,
+    cc:'ПНР', ccClass:'cc-pnr', ccOwner:'Быков А.',
+    event:``, improvement:`Разработан регламент планирования в ЗИП по инвестиционным проектам и ее использования в плановых ремонтах оборудования после его ввода в эксплуатацию, внесены изменения в РУИД.`, status:'Внедрено', statusClass:'status-done'},
+  {id:'LL-049', title:`Сложность управления больших по стоимости контрактов`, date:'01 Apr 2021', sppCode:'21-0009', project:`СГОК. Фабрика окомкования`,
+    stage:'Фаза 4', problem:`Сложность управления больших по стоимости контрактов. Подрядчики несколько раз выходили с инициативами увеличить стоимость контрактов. Также срывали сроки работ по контрактам В целом был получен положительный опыт. Урок: цена любого контракта должна быть разумной (заниженная стоимость контракта также негативно скажется на интересах Заказчика). Обязательно необходимо организовать специальное юридическое сопровождение крупных контрактов. Включать в объем контракта гарантию исполнения и систему премий и штрафов по ходу работ. Спорные вопросы по крупным договорам необходимо принимать с учетом размеров доходности и эффективности проектов.`, rootCause:``, lesson:`В целом был получен положительный опыт. Урок: цена любого контракта должна быть разумной (заниженная стоимость контракта также негативно скажется на интересах Заказчика). Обязательно необходимо организовать специальное юридическое сопровождение крупных контрактов. Включать в объем контракта гарантию исполнения и систему премий и штрафов по ходу работ. Спорные вопросы по крупным договорам необходимо принимать с учетом размеров доходности и эффективности проектов.`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:`Включать систему "ключевых событий" не только в договоры подряда, но и в контракты на оборудование, а за амбиции включать в контракты премии. При рассмотрении спорных вопросов решение принимать с учетом доходности проекта. Использовать опытных внешних юристов для сопровождения контрактов и усиления своей позиции на переговорах.`, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-050', title:`Недостаток знаний и опыта у участников проекта по отдельным направлениям технологии или отдельным элементам и системам оборудования`, date:'01 Apr 2021', sppCode:'21-0009', project:`СГОК. Фабрика окомкования`,
+    stage:'Фаза 4', problem:`Недостаток знаний и опыта у участников проекта по отдельным направлениям технологии или отдельным элементам и системам оборудования. Как следствие выбор неоптимальной технологии. Пример: оборудование ГБФ, системы пневмотранспортировки пыли`, rootCause:`Недостаток знаний и опыта у участников проекта по отдельным направлениям технологии`, lesson:`В проекте получен отрицательный опыт в части выбора решений по некоторым видам оборудования. Как результат задержка в выводе на проектную мощность, и повышенные эксплуатационные затраты. Урок: особое внимание уделить технологии и оборудованию, с которым нет опыта работы.`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:`Внести требование в РУИД о необходимости в ходе проектирования составлять перечень технологических систем и оборудования с оценкой на предмет ее новизны и правильности применения в данном конкретном случае. Проводить экспертную "рисковую" оценку правильности применения решений по перечню всех систем. По "рисковому" оборудованию устанавливать в Контрактах на оборудование технические критерии по технологичности, и срокам замены сменных деталей (с применением штрафных санкций).`, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-051', title:`Обеспечение Фабрики окомкования квалифицированным технологическим и обслуживающим персоналом`, date:'01 Apr 2021', sppCode:'21-0009', project:`СГОК. Фабрика окомкования`,
+    stage:'Фаза 4', problem:`Задача: Обеспечение Фабрики окомкования квалифицированным технологическим и обслуживающим персоналом`, rootCause:`-`, lesson:`В проекте по строительству ФОК был организован отдельный подпроект по найму и обучению персонала для ФОК. В целом был получен положительный результат. В крупных проектах при появлении значительного количества новых рабочих мест необходимо отдельное внимание уделять найму и обучению нового персонала. Лучше реализовывать в виде подпроекта.`,
+    cc:'HR', ccClass:'cc-hr', ccOwner:'',
+    event:``, improvement:`Зафиксировать в документах Общества необходимость организации специального подпроекта по найму и обучению персонала в крупных проектах (с большим количеством новых РМ), с установлением ответственных за этот подпроект. Предусмотреть процедуру определения бюджета на такой организационный подпроект.`, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-052', title:`Недостаточные и не оборудованные надлежащим образом складские мощности на стороне Заказчика`, date:'01 Aug 2025', sppCode:'', project:`Строительство электростанции УТЭЦ-2 11-0250 А+`,
+    stage:'Фаза 4', problem:`Недостаточные и не оборудованные надлежащим образом складские мощности на стороне Заказчика не позволили обеспечить безопасное хранение ТМЦ/оборудования (хранение турбин на улице и т. п.), что привело к дополнительным затратам на их повторную закупку или восстановление.`, rootCause:`Недостаточные и не оборудованные надлежащим образом складские мощности на стороне Заказчика`, lesson:`Развивать собственное складское хозяйство, в т. ч. обеспечивать приобъектовые склады силами НЛМК (надувные склады и и пр.) Усилить контроль за соблюдением требований производителя к хранению поставляемого оборудования.`,
+    cc:'Закупка оборудования', ccClass:'cc-procequip', ccOwner:'Чистяков Л.',
+    event:``, improvement:`Подготовлено Изм. к РУИЗиЗ с описанием процесса регулярного планирования загрузки и оборота складских мощностей, начиная с Фазы 2, который обеспечит: своевременное размещение оборудования; сохранность оборудования; подготовку и проведение OPI в требуемые сроки.`, status:'Внедрено', statusClass:'status-done'},
+  {id:'LL-053', title:`Управление бюджетом проекта`, date:'06 May 2025', sppCode:'11-0250', project:`Строительство электростанции УТЭЦ-2 А+`,
+    stage:'Фаза 2', problem:`Недостаточная численность аналитиков (1 человек на проект), отсутствие бюджетных комитетов, ошибки и отставание актуализации бюджета от выдачи смет, возникновение фактических обязательств (леса, транспорт) привели к некорректному планированию бюджета и позднему выявлению удорожания проекта.`, rootCause:`Недостаточная численность аналитиков (1 человек на проект)`, lesson:`Пересмотреть численность и функционал аналитиков на крупных проектах. Внедрить необходимые процессы на всех крупных проектах (бюджетные комитеты, контроль смет и т. п.). Развивать ИТ системы для контроля и актуализации бюджета проекта.`,
+    cc:'Управление по развитию', ccClass:'cc-development', ccOwner:'Сакир Д.',
+    event:``, improvement:`Пересмотреть численность и функционал аналитиков на крупных проектах. \\ Включено в РУИД и ПоУП доп. требование по рассмотрению и согласованию на ИК орг. структуры и численности КУП по проектам кат. А. Внедрить необходимые процессы на всех крупных проектах (бюджетные комитеты, контроль смет и т. п.). С целью унификации правил и процессов формирования, актуализации и контроля изменения бюджетов проектов, а также обеспечения преемственности данных на всех фазах жизненного цикла проекта внедрены шаблоны бюджетных форм. Проводятся бюджетные комитеты. Развивать ИТ системы для контроля и актуализации бюджета проекта. Идёт проработка ИТ инициативы Проектное бюджетирование, разработаны функциональные Требования. На текущий момент идет просмотр и оценка технических решений.`, status:'Внедрено', statusClass:'status-done'},
+  {id:'LL-054', title:`Работа с претензиями`, date:'06 May 2025', sppCode:'', project:`А+`,
+    stage:'Фаза 4', problem:`Отсутствие контрактного менеджера привело к недостаточному контролю соблюдения условий контракта, как следствие невозможности/сложности выставления претензий по формальным признакам (актирование брака, ненадлежащего хранения и проч.). Выставление претензий в объёме договорного лимита может не восприниматься подрядчиком серьёзно: отказ по формальным признакам, при значительном объёме обоснованных претензий проще уйти в банкротство, чем платить.`, rootCause:`Отсутствие контрактного менеджера`, lesson:`Назначать в команде проекта выделенного контрактного менеджера. Особое внимание уделять клейм менеджменту Управлять договорным «потолком» претензий как инструментом снижения стоимости вести претензионную работу с направлением предпретензионных писем, не дожидаясь завершения контракта. Фиксировать неисполнение договорных обязательств с обеих сторон в постоянном режиме на протяжении исполнения всего проекта; информировать подрядчика о ближайших договорных вехах, вести реестр претензий с указанием вероятности их признания судом (арбитражем), использовать претензии для « расторговки » с контрагентами в части неисполнения встречных обязательств со стороны Заказчика.`,
+    cc:'Закупка оборудования', ccClass:'cc-procequip', ccOwner:'Чистяков Л.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-055', title:`Дефицит подрядчиков`, date:'06 May 2025', sppCode:'11-0250', project:`Строительство электростанции УТЭЦ-2 А+`,
+    stage:'Фаза 4', problem:`Отсутствие достаточного количества работников, невозможность быстрой мобилизации при открытии фронтов работ. Затраты времени для возможности допуска на площадку, обучение, подготовку ППР и пр. Длительные процедуры выбора подрядных организаций, отсутствие достаточных панелей.`, rootCause:`Дефицит подрядчиков`, lesson:`Использовать контракты на условиях «твёрдой» цены для некрупных и технологически несложных проектов ( (<500 млн.) со сроком реализации 1 2 года (риски значительного роста цен минимальны). Более гибко реагировать на изменение рыночных цен, определить порядок и регулярность их пересмотра, перекладывать риски на Подрядчика в ограниченном объёме ( (±10%10%)`,
+    cc:'Закупка оборудования', ccClass:'cc-procequip', ccOwner:'Чистяков Л.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-056', title:`Потери времени на разработку и согласование «нестандартных» схем работы с подрядчиком`, date:'01 Aug 2025', sppCode:'', project:`А+`,
+    stage:'Фаза 2', problem:`Потери времени на разработку и согласование «нестандартных» схем работы с подрядчиком (изменение схем авансирования с уходом от банковской гарантии на ОБС, раскрытие твёрдой цены, частичное изъятие работ и прочее). С учётом опыта работы с Трест СЗЭМ на проекте ТВД, в договор были включены дополнительные контроли со стороны НЛМК и ковенанты его досрочного расторжения, что стало фактором отказа банков в выдаче БГ. В отсутствие БГ была применена схема финансирования через ОБС счёт. С одной стороны, она страховала нас от нецелевого использования средств, с другой значительно замедляла взаиморасчёты с субподрядчиками и поставщиками. Частичное изъятие работ в рамках ДС 12 и раскрытие твёрдой цены привели к увеличению сроков реализации проекта: фактически на площадке появилось два генподрядчика, не синхронизированные между собой.`, rootCause:`Потери времени на разработку и согласование «нестандартных» схем работы с подрядчиком (изменение схем авансирования с уходом от банковской гарантии на ОБС, раскрытие твёрдой цены, частичное изъятие работ и прочее)`, lesson:`Разработать перечень «ковенант»/« алармов », при достижении которых НЛМК безусловно принимает решение о досрочном расторжении договора. Выполнить переоценку необходимости запроса у контрагентов банковских гарантий на выданные авансы (фактически, этот инструмент мы почти никогда не применяем, но платим за БГ в цене контракта), проработать альтернативные варианты более «быстрого» использования ОБС.`,
+    cc:'Закупка услуг', ccClass:'cc-procsvc', ccOwner:'Булашов И.',
+    event:``, improvement:`Подготовлены распоряжения по ФН «Закупки» и ФН «Инвестиции», включающие требования для повышения эффективности применения банковских инструментов обеспечения авансов в инвестиционных проектах ПАО «НЛМК»`, status:'Внедрено', statusClass:'status-done'},
+  {id:'LL-057', title:`Замедление работ, перенос срока пуска проекта на Ф 3,4 из за ухудшения рыночной ситуации, приостановка платежей`, date:'01 Aug 2025', sppCode:'11-0250', project:`Строительство электростанции УТЭЦ-2 А+`,
+    stage:'Фаза 4', problem:`Замедление работ, перенос срока пуска проекта на Ф 3,4 из за ухудшения рыночной ситуации, приостановка платежей при ухудшении денежного потока НЛМК привели к дестабилизации подрядчика, потере ключевых членов его команды, разрыву (ухудшению) его отношений с субподрядчиками, банками и т.д. Длительные переговоры об условиях переноса сроков в условиях роста цен на СМР привели к остановке работ без надлежащей консервации объекта, что привело к частичной потере ТМЦ и необходимости повторного выполнения ранее выполненных работ.`, rootCause:`Замедление работ, перенос срока пуска проекта на Ф 3,4 из за ухудшения рыночной ситуации, приостановка платежей`, lesson:`Заходить в крупные инвестиционные проекты с открытой линией финансирования (возможно, использовать проектное финансирование). Прибегать к замедлению проектов на Ф 4 в исключительных случаях, когда привлечение заёмных средств невозможно, т.к. альтернативы могут иметь худшие последствия. Разработать типовые решения и «калькулятор» затрат на проекты консервации, определить порядок принятия решений о консервации за счёт НЛМК, несмотря на возможные споры с подрядчиком.`,
+    cc:'Закупка услуг', ccClass:'cc-procsvc', ccOwner:'Булашов И.',
+    event:``, improvement:`Разработан Порядок остановки инвестиционных проектов.`, status:'Внедрено', statusClass:'status-done'},
+  {id:'LL-058', title:`Некорректный акцент на сроки без учета финансовых рисков`, date:'01 Aug 2025', sppCode:'', project:`А+`,
+    stage:'Фаза 4', problem:`Некорректный акцент на сроки без учета финансовых рисков Первоначальный акцент на сроки предопределил выбор варианта контрактации подрядчика по человеко часам. Возобновить проект с выходом подрядной организации по сметам или даже ЕР не было возможности из за отсутствия фактически выполненных и остаточных объемов к реализации. Впоследствии при увеличении бюджета акцент сместился в сторону управления бюджетом, что привело к смещению сроков`, rootCause:`Некорректный акцент на сроки без учета финансовых рисков`, lesson:`Действовать последовательно, понимать, что невозможно одновременное достижение агрессивных сроков, удержания стоимости и качества, особенно в таких сложных проектах При смене приоритетов выделять соответствующие ресурсы, в частности в настоящем проекте целесообразно было бы согласиться на сдвиг сроков. Использовать привлечение подрядных организаций по варианту контрактации подрядчика по человеко часам только в исключительных случаях.`,
+    cc:'Закупка услуг', ccClass:'cc-procsvc', ccOwner:'Булашов И.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-059', title:`Недостаток квалифицированной рабочей силы подрядных организаций в регионе`, date:'06 May 2025', sppCode:'11-0250', project:`Строительство электростанции УТЭЦ-2 А+`,
+    stage:'Фаза 4', problem:`В момент перехвата в регионе не было подрядных организаций с рабочей силой, готовой выставить 1300 чел. Реализовавшиеся геополитические риски уже по ходу проекта привели к оттоку людей и к сдвигу сроков строительства (атаки БПЛА, теракт в Крокус Сити).`, rootCause:`Недостаток квалифицированной рабочей силы подрядных организаций в регионе`, lesson:`Развивать панели подрядных организаций. Развивать стратегические партнерства с подрядными организациями. Развивать СМТ (собственный ресурс).`,
+    cc:'Закупка услуг', ccClass:'cc-procsvc', ccOwner:'Булашов И.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-060', title:`Отсутствие контроля освоения физ. объемов`, date:'01 Aug 2025', sppCode:'11-0250', project:`Строительство электростанции УТЭЦ-2 А+`,
+    stage:'Фаза 4', problem:`Отсутствие контроля освоения физ. объемов и, как следствие, искажение данных о реальном прогрессе, прогнозе бюджета и сроков завершения стройки`, rootCause:`Отсутствие контроля освоения физ. объемов`, lesson:`Внедрить систему планирования освоения и факта в формате МСГ Реализовано на больших проектах. Автоматизировать процесс планирования строительных работ и стройконтроля. Организовать процесс отслеживания техзапросов с площадки (коллизия по МУЗам ) и получения техрешений с целью своевременной актуализации в графике. Организовать дополнительный контроль открытия и закрытия фронтов работ с определением ответственных, кто отвечает за организацию открытие фронта ПИР, МТО, СМР.`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:``, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-061', title:`Деградация EPC подрядчика`, date:'01 Aug 2025', sppCode:'11-0250', project:`Строительство электростанции УТЭЦ-2. А+`,
+    stage:'Фаза 4', problem:`Деградация EPC подрядчика из за смены собственников и ухода продуктивной части команды в 2020 2021 г.г . компанию покинула значительная часть компетентной команды, при этом риски дальнейшей работы с СЗЭМ не были объективно оценены.`, rootCause:`Деградация EPC подрядчика`, lesson:`Оперативно реагировать на изменения в ресурсе / компетенциях / структуре Подрядчика, анализировать риски, реагировать соответствующим образом. Уже в 2021 г. можно было сделать вывод, что стройка под риском и нужно перехватывать управление, но это не было предложено и сделано.`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:`Менеджерам крупным проектов рекомендуется проводить диагностику финансового состояния подрядчика не реже, чем раз в квартал (индекс финансового здоровья и т.п.). В типовую форму договора поставки основного технологического оборудования, выполнения проектно изыскательских, строительно монтажных и пусконаладочных работ, оказания инженерно консультационных услуг включено требование о ключевом персонале. Заказчик, согласно условиям этого требования, формирует приложение к договору, в котором указывает перечень ключевого персонала, присутствие которого на объекте строительства является значимым фактом для заказчика.`, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-062', title:`Отсутствие приемки по качеству`, date:'01 Aug 2025', sppCode:'11-0250', project:`Строительство электростанции УТЭЦ-2 А+`,
+    stage:'Фаза 4', problem:`НЛМК осуществлял приёмку по объёмам и качеству, но представители Заказчика в недостаточной мере контролировали результаты работ, опираясь на заключенный ЕРС контракт и то, что все риски лежат на Подрядчике. При расторжении договора и перехвате управления проектом Заказчиком был выявлен брак в работах, а также невыполненные, но оплаченные работы и пр.`, rootCause:`Отсутствие приемки по качеству`, lesson:`Усилить контроль за качеством и объёмами выполненных работ, возможно, с привлечением сторонних организаций.`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:`Разработано Положение об использовании систем фото видеофиксации, в которое включен порядок приёмки ответственных (в т. ч. скрытых) работ, включая требования по их обязательной видеофиксации. В проектах договоров с ПО отражена возможность привлечения организаций, осуществляющих внешний строительный контроль, к ответственности, если принятые работы будут с браком.`, status:'Внедрено', statusClass:'status-done'},
+  {id:'LL-063', title:`Качество проектирования и документация`, date:'01 Aug 2025', sppCode:'11-0250', project:`Строительство электростанции УТЭЦ-2 А+`,
+    stage:'Фаза 4', problem:`Со стороны Заказчика не был обеспечен необходимый контроль за качеством выдаваемой документации, очередностью проектирования, применением 3D модели для идентификации коллизий. Частично, это обусловлено структурой контракта: во избежание излишних объёмов в условиях твёрдой цены ЗАО «Трест СЗЭМ» остановил прямое взаимодействие Заказчика с Проектировщиком, что ухудшило логистику документации и привело к потере части комплектов, замечаний и пр. Впоследствии, отсутствие полного комплекта документации у Заказчика стало серьёзным рычагом давления на Заказчика в переговорах об изменении цены и, далее, о расторжении договора.`, rootCause:`Качество проектирования и документация`, lesson:`Задавать требования к качеству и контролю проектирования на стадии согласования контракта, в т. ч. ЕРС. Развивать компетенции НЛМК Инжиниринг или привлекать специализированные организации для поддержания 3 D модели в актуальном состоянии. НИ выступать «единым окном», в том числе для приемки проектной продукции в рамках проектов ЕРС. Обеспечивать проактивное участие КУП и НИ в процессе проектирования у внешнего проектировщика. Формировать группу из инженеров по дисциплинам в КУП для приемки ПД и РД.`,
+    cc:'ПИР', ccClass:'cc-pir', ccOwner:'Комаров А.',
+    event:``, improvement:`Включено в ПоУП и проекты договоров «под ключ»: доп. требования по подписанию трехстороннего соглашения о проектировании с генподрядчиком и генпроектировщиком доп. требования по каталогизации ПСД в части состава работ внешнего генпроектировщика ; описание механизма соотнесения ключевых событий и комплектов РД.`, status:'Внедрено', statusClass:'status-done'},
+  {id:'LL-064', title:`Выбор контрактной стратегии ЕРС`, date:'01 Aug 2025', sppCode:'11-0250', project:`Строительство электростанции УТЭЦ-2 А+`,
+    stage:'Фаза 4', problem:`Данная стратегия предусматривала найм специализированного EPC подрядчика на условиях твёрдой цены. ЕРС в России достаточно редкая контрактная стратегия, не регулируется законодательством, не позволяет Заказчику полноценно контролировать проект, использовать инструменты правовой и финансовой защиты своих интересов. Эта стратегия приемлема для некрупных и технологически несложных проектов, но риски изменения цены в любом случае лежат на Заказчике.`, rootCause:`Выбор контрактной стратегии ЕРС`, lesson:`Применение данной стратегии на крупные проекты EPC возможно только в случае наличия безболезненного переформатирования проекта (страховки), с резервированием дополнительного CAPEX и с запасом по срокам.`,
+    cc:'Закупка услуг', ccClass:'cc-procsvc', ccOwner:'Булашов И.',
+    event:``, improvement:`Учтено в Положении по организации разработки контрактных стратегий для инвестиционных проектов`, status:'Внедрено', statusClass:'status-done'},
+  {id:'LL-065', title:`Недостаточный ресурс команды управления проектом (КУП)`, date:'01 Aug 2025', sppCode:'11-0250', project:`Строительство электростанции УТЭЦ-2. А+`,
+    stage:'Фаза 2', problem:`В процессе реализации контракта Заказчиком¹ был выделен ресурс, недостаточный для контроля за Подрядчиком. КУП была выделенной, но в основном контролировала проектные решения и выбор оборудования. Инструменты контроля со стороны Заказчика были прописаны в договоре, но, в силу недостаточности ресурса КУП, реализовывались не полностью. Контрактный менеджер в КУП отсутствовал. Штатные единицы специалистов, способных контролировать закупки, планирование строительства, достаточность и квалификацию субподрядных организаций и пр., в КУП вводились уже на этапе расторжения договора с Генеральным подрядчиком.`, rootCause:`Недостаточный ресурс команды управления проектом (КУП)`, lesson:`1. При реализации проекта «под ключ» или с «твёрдой ценой» требуется создание КУП, по численности / компетенциям аналогичной команде Подрядчика. 2. Менеджер проектов, аналогичных по масштабу и стратегической важности, должен быть выделенным 100% загрузка в одном проекте ) и иметь уровень корпоративного 3. При проработке контрактной стратегии по крупным и масштабным проектам не следует брать на НЛМК функционал ген. подрядчика, т.к. НЛМК не обладает достаточными для этого компетенциями и опытом (развивать данные компетенции не планируется`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:`Включено в РУИД и ПоУП доп. требования по рассмотрению и согласованию на ИК орг. структуры и численности КУП по проектам кат. А, в т. ч. с учётом рекомендации по включению контрактного менеджера в состав РГ по проектам кат. А.`, status:'Внедрено', statusClass:'status-done'},
+  {id:'LL-066', title:`Отсутствие единого центра планирования работ в ремонтах и инвестициях с учётом загрузки подрядчиков`, date:'28 Apr 2026', sppCode:'', project:`Программа поддержания (высокоприоритетные проекты)`,
+    stage:'Фаза 4', problem:`Увеличение срока выполнения СМР Для выполнения электромонтажных работ определили квалифицированного субподрядчика – ЮВЭМ-1, согласовали срок выполнения СМР и ПНР окт.-ноя. 2025 г. В сентябре выяснилось, что в октябре ЮВЭМ-1 приступить не сможет связи с высокой загрузкой на капитальных ремонтах`, rootCause:`Отсутствие единого центра планирования работ в ремонтах и инвестициях с учётом загрузки подрядчиков`, lesson:`Разрабатывать план привлечения персонала с учётом загрузки всех исполнителей СМР, включая субподрядчиков. По возможности, не планировать ключевые работы на период КР основных агрегатов НЛМК`,
+    cc:'Закупка услуг', ccClass:'cc-procsvc', ccOwner:'',
+    event:``, improvement:`ЕЦПО предусматривает планирование и контроль загрузки подрядчиков в ремонтах и инвестициях`, status:'В работе', statusClass:'status-inprogress'},
+  {id:'LL-067', title:`Недостаточно проработан риск ресурсных ограничений подрядчика, его финансового состояния, не разработана стратегия оперативной замены/усиления подрядчика`, date:'28 Apr 2026', sppCode:'', project:`Программа поддержания (высокоприоритетные проекты)`,
+    stage:'Фаза 4', problem:`Увеличение срока выполнения СМР Праймтек приступил к СМР 08.05.2025. В течение 2х месяцев были выполнены демонтажные и земляные работы. С 14.07.2025 работы остановлены по причине увольнения персонала Праймтек. Подрядчик заявил о невозможности продолжать СМР`, rootCause:`Недостаточно проработан риск ресурсных ограничений подрядчика, его финансового состояния, не разработана стратегия оперативной замены/усиления подрядчика`, lesson:`Оценивать финансовое состояние, загрузку и риски при привлечении подрядчиков на проекты с малым объёмом СМР`,
+    cc:'Закупка услуг', ccClass:'cc-procsvc', ccOwner:'',
+    event:``, improvement:`Рейтинговая оценка подрядных организаций`, status:'В работе', statusClass:'status-inprogress'},
+  {id:'LL-068', title:`Недостаточно проработан риск ресурсных ограничений подрядчика, его финансового состояния, не разработана стратегия оперативной замены/усиления подрядчика`, date:'28 Apr 2026', sppCode:'', project:`Программа поддержания (высокоприоритетные проекты)`,
+    stage:'Фаза 4', problem:`Увеличение срока выполнения СМР Низкий темп производства работ подрядчиком Праймтек из-за недостаточного количества персонала подрядчика (+3 мес.) Приостановка работ в период с декабря 2025 г. по февраль 2026 г. из-за отсутствия персонала (+3 мес.)`, rootCause:`Недостаточно проработан риск ресурсных ограничений подрядчика, его финансового состояния, не разработана стратегия оперативной замены/усиления подрядчика`, lesson:`Своевременно эскалировать на ТК вопрос замены подрядчика`,
+    cc:'Закупка услуг', ccClass:'cc-procsvc', ccOwner:'',
+    event:``, improvement:`tbd`, status:'Не определен', statusClass:'status-undefined'},
+  {id:'LL-069', title:`Недостаточная проверка подрядной организации на соответствие требованиям по квалификации и и наличию персонала`, date:'28 Apr 2026', sppCode:'', project:`Программа поддержания (высокоприоритетные проекты)`,
+    stage:'Фаза 4', problem:`Длительная квалификация и обучения персонала подрядчика При заключении договора выяснилось, что у МСК не завершена процедура квалификации. МСК небольшая компания, впервые заключающая прямой договор с НЛМК, для завершения квалификации, укомплектования бригад и обучения по ОТиПБ потребовалось доп. время`, rootCause:`Недостаточная проверка подрядной организации на соответствие требованиям по квалификации и и наличию персонала`, lesson:`Допускать до тендерных процедур только квалифицированные подрядные организации с обученным персоналом по ОТиПБ`,
+    cc:'Закупка услуг', ccClass:'cc-procsvc', ccOwner:'',
+    event:``, improvement:`Регламент по квалификации контрагентов`, status:'В работе', statusClass:'status-inprogress'},
+  {id:'LL-070', title:`Лотирование без выделения узкоспециализированных работ, некорректная контрактная стратегия`, date:'28 Apr 2026', sppCode:'', project:`Программа поддержания (высокоприоритетные проекты)`,
+    stage:'Фаза 4', problem:`Длительный выбор исполнителей СМР В рамках тендера направлен запрос в 17 подрядных организаций, от которых получили отказ в связи с наличием в объёме работ врезки под давлением. В ноябре 2024 г. врезку в действующий трубопровод Ду 250 мм под давлением выделили в отдельную работу, привлекли специализированную компанию`, rootCause:`Лотирование без выделения узкоспециализированных работ, некорректная контрактная стратегия`, lesson:`При разработке контрактной стратегии специализированные работы выделать в отдельные лоты`,
+    cc:'Закупка оборудования', ccClass:'cc-procequip', ccOwner:'',
+    event:``, improvement:`Методология контрактной стратегии (разработка перечня узкоспециализированных работ)`, status:'В работе', statusClass:'status-inprogress'},
+  {id:'LL-071', title:`Заказчиком на этапе формирования ТЗ не включено требование об установке расходомерных узлов`, date:'28 Apr 2026', sppCode:'', project:`Программа поддержания (высокоприоритетные проекты)`,
+    stage:'Фаза 4', problem:`Дополнительное требование Заказчика об установке расходомерных узлов: Включение в проект работ по монтажу трёх расходомерных узлов ультразвукового действия на новом и двух существующих напорных трубопроводах чистого цикла потребителей КЦ-2 взамен изношенных старых расходомеров`, rootCause:`Заказчиком на этапе формирования ТЗ не включено требование об установке расходомерных узлов`, lesson:`Разработан чек-лист с типовым составом работ и элементов трубопроводов (применяется при разработке ТЗ)`,
+    cc:'СМР', ccClass:'cc-smr', ccOwner:'',
+    event:``, improvement:`Всесторонне оценивать границы и объём проекта на стадии его инициации с учётом состояния существующего оборудования и критичности требований к качеству его работы`, status:'Внедрено', statusClass:'status-done'},
+  {id:'LL-072', title:`Упрощенный подход к оценке стоимости по тоннажу монтируемого оборудования, не учитывающий объемы обвязки колпаковых печей и модернизации инфраструктуры`, date:'07 Nov 2025', sppCode:'12-2105', project:`ЦХПП. Перевод печей отделения колпакового отжига на природный газ`,
+    stage:'Фаза 4', problem:`•Н-И и КУП передали в УСИ ВОР без детализации видов монтажных работ и проверки соответствия Методике применения корпоративных сметных нормативов •Сметная стоимость по печам рассчитана упрощенно по тоннажу оборудования, что нарушает требования методики •Работы (монтаж горелок, футеровка и др.) объединены в одну статью «КСЦ 20-12-001-01», хотя методика требует их раздельного учета •Уровень детализации ОПР не позволял рассчитать бюджет с требуемым уровнем достоверности`, rootCause:`Упрощенный подход к оценке стоимости по тоннажу монтируемого оборудования, не учитывающий объемы обвязки колпаковых печей и модернизации инфраструктуры`, lesson:`•Оценку стоимости проекта выполнять по BoQ/BoE/BoM с поэтапным повышением точности бюджета от фазы к фазе •Выдачу физ. объемов проекта производить в едином формате в модуле IDP`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:`ВЫПОЛНЕНО Распоряжение № ПР 1-1288-Р-ОД о введении в действие шаблонов бюджетных форм проектов: BoQ, BoE, BoM В РАБОТЕ Модуль IDP`, status:'В работе', statusClass:'status-inprogress'},
+  {id:'LL-073', title:`Оптимизационная инициатива по демонтажу 22 стендов принята без достаточной проработки ее целесообразности и эффективности (без опоры на цифры), с включением в границы проекта объемов СМР из другого проекта`, date:'07 Nov 2025', sppCode:'12-2105', project:`ЦХПП. Перевод печей отделения колпакового отжига на природный газ`,
+    stage:'Фаза 4', problem:`•По решению ТИС в проект включили демонтаж 22 стендов печей для обеспечения безопасности при СМР на действующем производстве •КУП не проработал объемы и стоимость этих работ. Решение принято без оценки рисков и реальной необходимости площади. В границы включены объемы СМР из другого проекта •Демонтаж выполнили, но площади не использовали, что привело к необоснованным затратам и отсутствию заявленного эффекта`, rootCause:`Оптимизационная инициатива по демонтажу 22 стендов принята без достаточной проработки ее целесообразности и эффективности (без опоры на цифры), с включением в границы проекта объемов СМР из другого проекта`, lesson:`•Обязательная процедура оценки и утверждения изменений границ проекта: включение новых объемов возможно только после подтверждения их проработки, оценки рисков и пересчета последствий решений до принятия изменений •Вовлечение команд начальных Фаз в аналитику причин изменений в проектах на Фазах 3,4,5`,
+    cc:'Управление по развитию', ccClass:'cc-development', ccOwner:'Сакир Д.',
+    event:``, improvement:`В РАБОТЕ Актуализация ПоУП ВЫПОЛНЕНО Распоряжение № 1-1743-Р-ОД`, status:'В работе', statusClass:'status-inprogress'},
+  {id:'LL-074', title:`Неэффективность / отсутствие процесса актуализации документов, определяющих содержание проекта`, date:'07 Nov 2025', sppCode:'12-2105', project:`ЦХПП. Перевод печей отделения колпакового отжига на природный газ`,
+    stage:'Фаза 4', problem:`•После выпуска ТЗО изм. 1 с обновленными границами и объемами (число печей, вентиляторов и др.) ОПР не был актуализирован •Н-И разрабатывал документацию по устаревшему ТЗП, не соответствующему текущим требованиям Заказчика •Объемы работ по обвязке печей были утеряны, и их требования не вошли в ТЗП •Изменения в ТЗО и потерянные объемы требовали выпуска нового ТЗП, но КУП не инициировал его доработку`, rootCause:`Неэффективность / отсутствие процесса актуализации документов, определяющих содержание проекта`, lesson:`•Внедрить процедуру синхронизации документов на основе сравнения версий •Внедрить процесс сверки всех документов: ТЗ, ТЧК, ОПР, смета и 3B по итогам проработки`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:`В РАБОТЕ Тегирование и кодирование документов (пилот НГ) В РАБОТЕ Актуализация ПоУП, Управление изменениями 2.0`, status:'В работе', statusClass:'status-inprogress'},
+  {id:'LL-075', title:`Техническая ошибка проектировщика в расчете объемов кабельной продукции`, date:'07 Nov 2025', sppCode:'12-2105', project:`ЦХПП. Перевод печей отделения колпакового отжига на природный газ`,
+    stage:'Фаза 4', problem:`•Проектировщик (Н-И) при разработке РД неверно определил объемы кабельной продукции для автоматизации печей «Стальпроект»: 3-я очередь (50 печей), 1-я очередь (100 печей) •Фактическое состояние объекта (цех, печи) отличалось от данных ТЗ для РД и не было учтено при проектировании: расположение кабельных каналов и печей •Проектировщик выезжал на площадку, но из-за больших объемов работ ограничился минимумом (визуальный осмотр нескольких печей). Следовало провести 3D-сканирование или привлечь дополнительных проектировщиков •При сравнении объемов РД 3-й очереди (после СМР) с 1-й выявлено: объемы автоматизации сопоставимы 1:1, хотя логично ожидалось соотношение 1:2 (50 vs 100 печей). Это технически невозможно и создает риск корректировки бюджета в сторону увеличения из-за упущенных объемов`, rootCause:`Техническая ошибка проектировщика в расчете объемов кабельной продукции (длин кабелей) раздела автоматизации РД для печей «Стальпроект» из-за несоответствия исходных данных фактическому состоянию объекта (расположение печей) и влияния человеческого фактора`, lesson:`•Проводить детальное обследование существующих кабельных конструкций и трасс с применением 3D-сканирования объекта перед началом проектирования, а также 3D-проектирование для выявления коллизий особенно для объектов на высоте, где визуальный осмотр затруднен •Перед утверждением бюджета проекта проводить верификацию объемов и стоимости работ, отраженных в локальных сметах / BoQ на соответствие актуальным проектным решениям`,
+    cc:'ПИР', ccClass:'cc-pir', ccOwner:'Комаров А.',
+    event:``, improvement:`ВЫПОЛНЕНО Положение о критериях применения технологий информационного моделирования на проектах ВЫПОЛНЕНО Распоряжение № ПР 1-1288-Р-ОД от 26.08.2025 о введении в действие шаблонов бюджетных форм проектов: BoQ, BoE, BoM`, status:'Внедрено', statusClass:'status-done'},
+  {id:'LL-076', title:`Отсутствие обязательной эскалации на управляющие органы проекта при приближении или исчерпании лимита по статьям бюджета`, date:'07 Nov 2025', sppCode:'12-2105', project:`ЦХПП. Перевод печей отделения колпакового отжига на природный газ А+`,
+    stage:'Фаза 2', problem:`•В 2024 стало известно, что сметная стоимость СМР по Этапу 1 «ГРПБ» достигла ~370 млн ₽, что составило 80% от утвержденного бюджета на СМР, в т.ч. из-за ошибки в применении коэф. стесненности •При исчерпании лимита СМР не была проведена необходимая эскалация на ТИС для расчета смет по Этапу 1 «ГРПБ» •Работы по проекту продолжались, а превышение бюджета нивелировалось за счет утверждения «прогнозных» увеличений`, rootCause:`Отсутствие обязательной эскалации на управляющие органы проекта при приближении или исчерпании лимита по статьям бюджета`, lesson:`•Внедрить критерии эскалации на ИКД/ИК при превышении бюджетных лимитов с возможностью приостановки проекта для переоценки •Актуализировать ОПР после получения БИ для подтверждения бюджета проекта •При достижении критического лимита (например, 80% затрат), пересмотр КПЭ и базового бюджета •Регулярное сопоставление объемов работ по проекту при выпуске каждого этапа РД с объемами ППР / ОПР (с предыдущим этапом)`,
+    cc:'Управление по развитию', ccClass:'cc-development', ccOwner:'Сакир Д.',
+    event:``, improvement:`В РАБОТЕ Актуализация ПоУП`, status:'В работе', statusClass:'status-inprogress'},
+  {id:'LL-077', title:`Отсутствие механизмов контроля изменений ТЧК`, date:'07 Nov 2025', sppCode:'12-2105', project:`ЦХПП. Перевод печей отделения колпакового отжига на природный газ`,
+    stage:'Фаза 4', problem:`•После проведения тендера КУП добавил в разделительную ведомость упущенные позиции оборудования и новые требования цеха (шланги, клапаны), которые были описаны в текстовой части ТЧК, но отсутствовали в таблице поставки •Стоимость контракта осталась без изменений, увеличился объем СМР`, rootCause:`Отсутствие механизмов контроля изменений ТЧК`, lesson:`•Запретить внесение дополнений в разделительную ведомость после проведения тендера без пересмотра контрактной цены и подписания дополнительного соглашения`,
+    cc:'Управление по развитию', ccClass:'cc-development', ccOwner:'Сакир Д.',
+    event:``, improvement:`ВЫПОЛНЕНО Протокол КФГ «Технологическое оборудование» №1/3389 ПР от 29.04.2025 ВЫПОЛНЕНО Распоряжение №1-1349-Р-ОД - 03.09.2025 «Методика управления изменениями 2.0»`, status:'Внедрено', statusClass:'status-done'},
+  {id:'LL-078', title:`Отсутствие преемственности результатов при передаче проекта между менеджерами реализации (Фаза 3,4). Выбор МП без учета сложности проекта`, date:'07 Nov 2025', sppCode:'12-2105', project:`ЦХПП. Перевод печей отделения колпакового отжига на природный газ`,
+    stage:'Фаза 4', problem:``, rootCause:`Отсутствие преемственности результатов при передаче проекта между менеджерами реализации (Фаза 3,4). Выбор МП без учета сложности проекта`, lesson:`•МП Фазы 3 (Титов Д.) принял проект от КУП Фазы 2 (Алферов А.), но не приступил к работе из-за орг. изм. •На Бюджетном комитете МП Фазы 3 задал вопрос о достаточности объемов трубопроводов для внутренней части; МП Фазы 2 сообщил о заложенном запасе на внешнюю часть (ГРПБ), пообещав уточнить вопрос, но не сделал этого. Возник риск недооценки объемов работ •Проект передан новому МП Фазы 3 (Иванову Ю.) без формальной процедуры передачи •МП тратил ресурсы и принимал решения без полного понимания системных рисков проекта`,
+    cc:'Управление по развитию', ccClass:'cc-development', ccOwner:'Сакир Д.',
+    event:``, improvement:`•Включить Куратора проекта в процесс передачи результатов проекта между фазами и смены МП для утверждения полноты и качества передачи •Руководитель ПО персонально отвечает за соответствие КУП сложности проекта •Закрепить персональную ответственность за передачу и приемку результатов проекта`, status:'В работе', statusClass:'status-inprogress'},
+  {id:'LL-079', title:`Менеджер проекта проигнорировал замечание БК по объемам модернизации печей, не убедившись в полноте выявления критических рисков проекта`, date:'07 Nov 2025', sppCode:'12-2105', project:`ЦХПП. Перевод печей отделения колпакового отжига на природный газ`,
+    stage:'Фаза 4', problem:`•КУП проработки представил бюджет, рассчитанный упрощенно по общему тоннажу оборудования, без детализации по видам работ •Из-за нехватки технической и строительной экспертизы, а также поверхностной проверки объемов смету ошибочно приняли за достоверную`, rootCause:`Менеджер проекта проигнорировал замечание БК по объемам модернизации печей, не убедившись в полноте выявления критических рисков проекта (анализ управления рисками приведен в Приложении 7)`, lesson:`•Раннее вовлечение КУП реализации в проекты на Фазе 2 •Закрепить персональную ответственность за передачу и приемку результатов проекта`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:`ВЫПОЛНЕНО Расп.№ 1-99-Р-ОД от 27.01.2025 О внесении изменений в Порядок вовлечения команды реализации в проект В РАБОТЕ Актуализация ПоУП, Матрица RACI проекта`, status:'Внедрено', statusClass:'status-done'},
+  {id:'LL-080', title:`Отсутствует механизм синхронизации бюджета с объемами работ. Итоговый бюджет проекта рассчитан на разных базисах: тендерных данных ОТО и укрупненных объемов СМР без детализации объемов модернизации`, date:'07 Nov 2025', sppCode:'12-2105', project:`ЦХПП. Перевод печей отделения колпакового отжига на природный газ`,
+    stage:'Фаза 4', problem:`•Итоговый бюджет проекта рассчитан на разных базисах: стоимость ОТО определена из результатов тендера (лидер – Hengyuan), а стоимость СМР из укрупненного ССР ОПР, не отражавшего реальные объемы работ`, rootCause:`Отсутствует механизм синхронизации бюджета с объемами работ. Итоговый бюджет проекта рассчитан на разных базисах: тендерных данных ОТО и укрупненных объемов СМР без детализации объемов модернизации`, lesson:`•Перед утверждением бюджета проекта проводить верификацию объемов и стоимости работ отраженных в локальных сметах / BoQ на соответствие актуальным проектным решениям •Внедрение практики Критического обзора проекта для систематизации процесса рассмотрения и согласования материалов проекта`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:`ВЫПОЛНЕНО Распоряжение № ПР 1-1288-Р-ОД от 26.08.2025 о введении в действие шаблонов бюджетных форм проектов: BoQ, BoE, BoM ВЫПОЛНЕНО Критический обзор проекта`, status:'Выполнено', statusClass:'status-done'},
+  {id:'LL-081', title:`Рабочая группа ограничилась формальной проверкой наличия текстовой информации в ОПР при прохождении тех. аудита (отсутствует «хозяйский» подход к работе)`, date:'07 Nov 2025', sppCode:'12-2105', project:`ЦХПП. Перевод печей отделения колпакового отжига на природный газ`,
+    stage:'Фаза 4', problem:`•Заказчик (ЦХПП) сосредоточился на анализе ТЧК и качественно не проводил тех. аудит ОПР •МП не эскалировал расхождения ОПР и ТЧК, а РГ формально согласовала некорректную документацию`, rootCause:`Рабочая группа ограничилась формальной проверкой наличия текстовой информации в ОПР при прохождении тех. аудита (отсутствует «хозяйский» подход к работе)`, lesson:`•Формализовать процесс проведения тех. аудита предпроектных материалов с назначением ответственных и закреплением персональных KPI •Внедрить процесс кодирования и тегирования, обязывающий при изменении базисных документов (ТЗО, ТЧК) проводить сквозную актуализацию ППР/ОПР и всех связанных разделов`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:`В РАБОТЕ Положение о проведении технического аудита предпроектных материалов В РАБОТЕ Тегирование и кодирование документов (пилот НГ)`, status:'В работе', statusClass:'status-inprogress'},
+  {id:'LL-082', title:`В ТЗП на ОПР нечетко определены границы проектирования, что привело к разработке ОПР без детальных проектных решений и проработки СМР по обвязке печей`, date:'06 May 2025', sppCode:'12-2105', project:`ЦХПП. Перевод печей отделения колпакового отжига на природный газ`,
+    stage:'Фаза 4', problem:`•ОПР не содержал детальных проектных решений по модернизации печей, входящих в границы проекта •ТЗП на ОПР содержало двусмысленные формулировки в части работ по переводу печей на природный газ. Объем модернизации предполагалось уточнить в отдельных ТЗ на поставку ОТО и инжиниринга, но с обязательным учетом в ОПР •Н-И формально учел только текстовую часть предложений по печам поставщиков ОТО без проработки тех. решений и СМР •РГ согласовала неполный ОПР`, rootCause:`В ТЗП на ОПР нечетко определены границы проектирования, что привело к разработке ОПР без детальных проектных решений и проработки СМР по обвязке печей`, lesson:`•Внедрить практику Критического обзора проекта для систематизации процесса рассмотрения и согласования материалов проекта •Сформировать критерии качества содержания продуктов для оценки зрелости фазы проекта`,
+    cc:'Управление по развитию', ccClass:'cc-development', ccOwner:'Сакир Д.',
+    event:``, improvement:`ВЫПОЛНЕНО Критический обзор проекта РАБОТЕ Оценка зрелости 2.0`, status:'В работе', statusClass:'status-inprogress'},
+  {id:'LL-083', title:`Недостаточная оценка фактического состояния оборудования для определения объемов работ по проекту`, date:'07 Nov 2025', sppCode:'12-2105', project:`ЦХПП. Перевод печей отделения колпакового отжига на природный газ`,
+    stage:'Фаза 4', problem:`На этапе проработки из проекта исключен кап. ремонт печей: восстановление футеровки и замена конструкций При реализации выяснилось, что без этих мероприятий замена горелок приведет к разрушению футеровки, что вынудило повторно включить указанные работы в проект Риски состояния футеровки и м/к не были идентифицированы, оценены и включены в план управления рисками`, rootCause:`Недостаточная оценка фактического состояния оборудования для определения объемов работ по проекту`, lesson:`•Корректировка критериев минимального технического решения и АБК, рассмотрение на КОП итоговых границ проекта •Границы проекта утверждать на управляющих органах, в т.ч. ввести сквозной реестр требований •Переход к количественной оценке рисков с их учетом в бюджете и графике проекта. Исключенные технические / технологические опции оценивать и отражать в реестре рисков`,
+    cc:'Предпроектная проработка', ccClass:'cc-preproject', ccOwner:'Ролин Д.',
+    event:``, improvement:`В РАБОТЕ Корректировка АБК, МТР, введение реестра требований В РАБОТЕ Актуализация ПоУП В РАБОТЕ Актуализация методики управления рисками`, status:'В работе', statusClass:'status-inprogress'},
+  {id:'LL-084', title:`Недооценка технической сложности проекта (отказ от работ) и отсутствие критериев допустимости пропуска начальных Фаз`, date:'07 Nov 2025', sppCode:'12-2105', project:`ЦХПП. Перевод печей отделения колпакового отжига на природный газ`,
+    stage:'Фаза 4', problem:`•На этапе инициации рассматривались 2 варианта: (1) перевод участка ОКО на природный газ, (2) модернизация ГПС-3. Выбран (1), исключающий кап. затраты на модернизацию ГПС-3 •Несмотря на высокую сложность работ проекта (внутренней обвязке печей), из-за ограничений по срокам ЭПБ, ТИС (заочный ИК) принял решение пропустить Фазу 1 и сразу перевести проект на Фазу 2 •Оценка проекта проведена без разработки ППР, из-за чего не удалось объективно оценить риски и границы`, rootCause:`Недооценка технической сложности проекта (отказ от работ) и отсутствие критериев допустимости пропуска начальных Фаз`, lesson:`Выносить на управляющие органы стоимостную оценку рисков, закладывать резервы на митигацию в бюджете и графике проекта`,
+    cc:'Управление по развитию', ccClass:'cc-development', ccOwner:'Сакир Д.',
+    event:``, improvement:`Актуализация методики управления рисками`, status:'В работе', statusClass:'status-inprogress'}
 ];
 
 let lessonCurrentStatus = '';
@@ -1719,18 +1943,47 @@ const lessonsTbody = $('#lessonsTbody');
 const lessonsTfootNote = $('#lessonsTfootNote');
 const lessonsDetailPanel = $('#lessonsDetailPanel');
 
-function statusPill(s){ const st = STATUS[s]; return `<span class="status-pill ${st.cls}">${st.label}</span>`; }
-function catBadge(c){ const cat = CATS[c]; return `<span class="badge ${cat.cls}">${cat.label}</span>`; }
+function populateLessonsFilterOptions(){
+  const ccValues = [...new Set(LESSONS.map(l=>l.cc).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ru'));
+  document.getElementById('fCategory').innerHTML = '<option value="">Все</option>' + ccValues.map(c=>`<option>${c}</option>`).join('');
+}
+function renderLessonsKpis(){
+  const total = LESSONS.length;
+  const done = LESSONS.filter(l=>l.status==='Внедрено'||l.status==='Выполнено').length;
+  const inProgress = LESSONS.filter(l=>l.status==='В работе').length;
+  const undef = LESSONS.filter(l=>l.status==='Не определен').length;
+  document.getElementById('lessonsKpis').innerHTML = `
+    <div class="kpi"><div class="label">Всего уроков в базе</div><div class="value" id="kpiTotal">${total}</div><div class="note">импортировано из Confluence</div></div>
+    <div class="kpi"><div class="label">Внедрено</div><div class="value green">${done}</div><div class="note">мероприятие выполнено</div></div>
+    <div class="kpi"><div class="label">В работе</div><div class="value amber">${inProgress}</div><div class="note">мероприятие в процессе</div></div>
+    <div class="kpi"><div class="label">Не определено</div><div class="value" style="color:var(--ink-600);">${undef}</div><div class="note">статус мероприятия не задан</div></div>
+  `;
+}
+function renderLessonsTabs(){
+  const total = LESSONS.length;
+  const undef = LESSONS.filter(l=>l.status==='Не определен').length;
+  const inProgress = LESSONS.filter(l=>l.status==='В работе').length;
+  const done = LESSONS.filter(l=>l.status==='Внедрено'||l.status==='Выполнено').length;
+  const tabs = [
+    {key:'', label:'Все', count:total},
+    {key:'Не определен', label:'Не определено', count:undef},
+    {key:'В работе', label:'В работе', count:inProgress},
+    {key:'done', label:'Внедрено', count:done}
+  ];
+  document.getElementById('lessonsTabs').innerHTML = tabs.map(t=>`<div class="tab ${t.key===lessonCurrentStatus?'active':''}" data-status="${t.key}">${t.label} <span class="count">(${t.count})</span></div>`).join('');
+  document.querySelectorAll('#lessonsTabs .tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{ lessonCurrentStatus = tab.dataset.status; renderLessonsTabs(); applyLessonFilters(); });
+  });
+}
 
 function renderLessonsTable(list){
   lessonsTbody.innerHTML = list.map(l => `
     <tr data-id="${l.id}" class="clickable ${l.id===lessonSelectedId ? 'selected':''}">
       <td class="lesson-id">${l.id}</td>
-      <td class="col-title"><div class="lesson-title">${l.title}</div><div class="lesson-src">${l.project} · риск ${l.risk.split(' · ')[0]}</div></td>
-      <td>${catBadge(l.category)}</td>
-      <td>${impactIconsHTML(l)}</td>
+      <td class="col-title"><div class="lesson-title">${l.title}</div><div class="lesson-src">${l.project}${l.sppCode ? ' · СПП '+l.sppCode : ''} · ${l.date}</div></td>
+      <td>${catBadge(l)}</td>
       <td>${l.stage}</td>
-      <td>${statusPill(l.status)}</td>
+      <td>${statusPill(l)}</td>
     </tr>`).join('');
   lessonsTfootNote.textContent = `Показаны ${list.length} из ${LESSONS.length} уроков`;
   lessonsTbody.querySelectorAll('tr').forEach(tr=>{
@@ -1741,60 +1994,42 @@ function renderLessonsTable(list){
     });
   });
 }
-function simRow(name, pct){ return `<div class="sim-row"><div class="name">${name}</div><div class="sim-bar"><span style="width:${pct}%"></span></div><div class="pct">${pct}%</div></div>`; }
 function recBlock(label, value, kind, icon){ return `<div class="rec ${kind||''}"><div class="k">${icon||''}${label}</div><div class="v">${value}</div></div>`; }
 
+const STATUS_BOX_META = {
+  'status-done': {cls:'valid-box', stroke:'#0d932b', icon:'<path d="M4 12.5l4.5 4.5L20 6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'},
+  'status-inprogress': {cls:'valid-box pending', stroke:'#f97b0f', icon:'<path d="M12 8v5l3 2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke-width="1.8"/>'},
+  'status-undefined': {cls:'valid-box neutral', stroke:'#66747e', icon:'<path d="M12 8v5m0 3h.01" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke-width="1.8"/>'}
+};
 function renderLessonsDetail(l){
-  const weights = {type:.30, region:.15, contract:.20, capex:.20, stage:.15};
-  const total = Math.round(l.sim.type*weights.type + l.sim.region*weights.region + l.sim.contract*weights.contract + l.sim.capex*weights.capex + l.sim.stage*weights.stage);
-  const validBox = l.status === 'verified'
-    ? `<div class="valid-box"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 12.5l4.5 4.5L20 6" stroke="#0a6847" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><div><div class="t">Верифицировано</div><div class="d"><b>${l.validatedBy}</b> · ${l.validationDate}<br>Источник: <span class="mono">${l.sourceDoc}</span></div></div></div>`
-    : l.status === 'review'
-    ? `<div class="valid-box pending"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 8v5l3 2" stroke="#b8710f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="#b8710f" stroke-width="1.8"/></svg><div><div class="t">Ожидает верификации риск-менеджера</div><div class="d">Предложено экспертом предметной области. Источник: <span class="mono">${l.sourceDoc}</span></div></div></div>`
-    : `<div class="valid-box" style="background:var(--red-50);"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 8v5m0 3h.01" stroke="#c2372c" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="#c2372c" stroke-width="1.8"/></svg><div><div class="t" style="color:#c2372c;">Отклонено при верификации</div><div class="d">Недостаточно оснований для добавления в базу RAG. Источник: <span class="mono">${l.sourceDoc}</span></div></div></div>`;
-  const footAction = l.status === 'review'
-    ? `<button class="btn btn-primary">Принять</button><button class="btn">Уточнить</button>`
-    : l.status === 'rejected'
-    ? `<button class="btn">Вернуть на верификацию</button>`
-    : `<button class="btn btn-primary" onclick="openNewRiskModal('${l.id}')">Использовать как основание для риска</button>`;
-
+  const box = STATUS_BOX_META[l.statusClass];
   lessonsDetailPanel.innerHTML = `
     <div class="detail-head">
       <div>
-        <div class="eyebrow">${l.id} · lessons_learned</div>
+        <div class="eyebrow">${l.id} · извлечённый урок</div>
         <h2>${l.title}</h2>
-        <div class="detail-badges">${catBadge(l.category)}<span class="badge badge-design">${l.stage}</span><span class="badge badge-external">${l.projectType}</span></div>
+        <div class="detail-badges">${catBadge(l)}<span class="badge badge-design">${l.stage}</span>${statusPill(l)}</div>
       </div>
       <button class="close-x" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
     </div>
     <div class="detail-body">
       <div class="link-row">
         <span class="chip2">📁 ${l.project}</span><span class="sep">·</span>
-        <span class="chip2">риск <span class="mono">${l.risk.split(' · ')[0]}</span></span><span class="sep">·</span>
-        <span class="chip2">${l.contract} · ${l.region}</span>
+        ${l.sppCode ? `<span class="chip2">СПП <span class="mono">${l.sppCode}</span></span><span class="sep">·</span>` : ''}
+        <span class="chip2">📅 ${l.date}</span>${l.ccOwner ? `<span class="sep">·</span><span class="chip2">👤 ${l.ccOwner}</span>` : ''}
       </div>
-      ${recBlock('Контекст', l.context)}
-      ${recBlock('Что произошло', l.whatHappened)}
-      ${recBlock('Коренная причина', l.rootCause)}
-      ${recBlock('Последствие', l.consequence)}
-      ${recBlock('Что сработало', l.successfulAction, 'good', '✓ ')}
-      ${recBlock('Что не сработало', l.unsuccessfulAction, 'bad', '✕ ')}
-      ${recBlock('Рекомендация', l.recommendation)}
-      ${recBlock('Условия применимости', l.applicability)}
-      <div class="stat-tiles">
-        <div class="stat-tile"><div class="l">Влияние на срок</div><div class="v">${l.impactDays ? l.impactDays+' дн.' : '—'}</div></div>
-        <div class="stat-tile"><div class="l">Влияние на CAPEX</div><div class="v">${l.impactCostPct ? l.impactCostPct+'%' : '—'}</div></div>
-        <div class="stat-tile"><div class="l">Частота в схожих проектах</div><div class="v small">${l.occurrences}</div></div>
-        <div class="stat-tile"><div class="l">Категория риска</div><div class="v small">${CATS[l.category].label}</div></div>
+      ${recBlock('Описание проблемы', l.problem)}
+      ${recBlock('Корневая причина', l.rootCause)}
+      ${recBlock('Извлечённый урок / что делаем по-новому', l.lesson, 'good', '✓ ')}
+      ${l.event ? recBlock('Мероприятие / где будет учтено', l.event) : ''}
+      ${l.improvement ? recBlock('Предложение по улучшению процессов', l.improvement) : ''}
+      <div class="divider"></div>
+      <div class="${box.cls}">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="${box.stroke}">${box.icon}</svg>
+        <div><div class="t">Статус мероприятия: ${l.status}</div><div class="d">Центр компетенций: <b>${l.cc || 'не указан'}</b>${l.ccOwner ? ' · '+l.ccOwner : ''}. Сессия проведена ${l.date}.</div></div>
       </div>
-      <div class="divider"></div>
-      <div class="mini-title">Похожесть на текущий проект <span class="formula">Σ(w·s)</span></div>
-      ${simRow('Тип проекта', l.sim.type)}${simRow('Регион', l.sim.region)}${simRow('Контрактная модель', l.sim.contract)}${simRow('Диапазон CAPEX', l.sim.capex)}${simRow('Стадия', l.sim.stage)}
-      <div class="sim-total"><div class="lbl">Итоговый score похожести</div><div class="score">${total}%</div></div>
-      <div class="divider"></div>
-      ${validBox}
     </div>
-    <div class="detail-foot">${footAction}</div>
+    <div class="detail-foot"><button class="btn btn-primary" onclick="openNewRiskModal('${l.id}')">Использовать как основание для риска</button></div>
   `;
   lessonsDetailPanel.querySelector('.close-x').addEventListener('click', ()=>{
     lessonSelectedId = null;
@@ -1803,31 +2038,25 @@ function renderLessonsDetail(l){
   });
 }
 function applyLessonFilters(){
-  const cat = $('#fCategory').value, stage = $('#fStage').value, region = $('#fRegion').value, contract = $('#fContract').value, status = $('#fStatus').value;
+  const cc = $('#fCategory').value, stage = $('#fStage').value, status = $('#fStatus').value;
   lessonCurrentList = LESSONS.filter(l =>
-    (!cat || l.category===cat) && (!stage || l.stage===stage) && (!region || l.region===region) &&
-    (!contract || l.contract===contract) && (!status || l.status===status) && (!lessonCurrentStatus || l.status===lessonCurrentStatus)
+    (!cc || l.cc===cc) && (!stage || l.stage===stage) && (!status || l.status===status) &&
+    (!lessonCurrentStatus || (lessonCurrentStatus==='done' ? (l.status==='Внедрено'||l.status==='Выполнено') : l.status===lessonCurrentStatus))
   );
   renderLessonsTable(lessonCurrentList);
 }
-['fCategory','fStage','fRegion','fContract','fStatus'].forEach(id=> document.getElementById(id).addEventListener('change', applyLessonFilters));
+['fCategory','fStage','fStatus'].forEach(id=> document.getElementById(id).addEventListener('change', applyLessonFilters));
 $('#resetBtn').addEventListener('click', ()=>{
-  ['fCategory','fStage','fRegion','fContract','fStatus'].forEach(id=> document.getElementById(id).value = '');
-  document.querySelectorAll('#view-lessons .tab').forEach(t=>t.classList.remove('active'));
-  document.querySelector('#view-lessons .tab[data-status=""]').classList.add('active');
-  lessonCurrentStatus = ''; $('#aiAnswer').classList.remove('show'); $('#ragQuery').value = '';
+  ['fCategory','fStage','fStatus'].forEach(id=> document.getElementById(id).value = '');
+  document.querySelectorAll('#tagPicker .tagchip').forEach(c=>c.classList.remove('active'));
+  lessonCurrentStatus = ''; renderLessonsTabs();
+  $('#aiAnswer').classList.remove('show'); $('#ragQuery').value = '';
   applyLessonFilters();
-});
-document.querySelectorAll('#view-lessons .tab').forEach(tab=>{
-  tab.addEventListener('click', ()=>{
-    document.querySelectorAll('#view-lessons .tab').forEach(t=>t.classList.remove('active'));
-    tab.classList.add('active'); lessonCurrentStatus = tab.dataset.status; applyLessonFilters();
-  });
 });
 function scoreLesson(q, l){
   q = q.toLowerCase();
   const terms = q.split(/\s+/).filter(t=>t.length>2);
-  const haystack = [l.title, l.context, l.whatHappened, l.recommendation, l.applicability, CATS[l.category].label, l.stage].join(' ').toLowerCase();
+  const haystack = [l.title, l.problem, l.rootCause, l.lesson, l.event, l.improvement, l.cc, l.stage, l.project].join(' ').toLowerCase();
   let score = 0; terms.forEach(t=>{ if(haystack.includes(t)) score += 1; }); return score;
 }
 $('#askBtn').addEventListener('click', runLessonSearch);
@@ -1841,8 +2070,8 @@ function runLessonSearch(){
     $('#aiAnswerText').textContent = 'В базе не найдено уроков, релевантных запросу. Недостаточно данных для обоснованного ответа — уточните формулировку или расширьте фильтры.';
     $('#aiSources').innerHTML = '';
   } else {
-    const bullets = top.map(r=> `«${r.l.recommendation}»`).join(' ');
-    $('#aiAnswerText').textContent = `На основании ${top.length} релевантных уроков из завершённых проектов: ${bullets}`;
+    const bullets = top.map(r=> `«${r.l.lesson!=='—' ? r.l.lesson : r.l.problem}»`).join(' ');
+    $('#aiAnswerText').textContent = `На основании ${top.length} релевантных уроков из базы: ${bullets}`;
     $('#aiSources').innerHTML = top.map(r=>`<span class="src-chip"><span class="id">${r.l.id}</span> ${r.l.project}</span>`).join('');
   }
   $('#aiAnswer').classList.add('show');
@@ -1869,6 +2098,9 @@ renderTrend();
 renderRegister();
 renderTagPicker();
 renderNotifs();
+populateLessonsFilterOptions();
+renderLessonsKpis();
+renderLessonsTabs();
 renderLessonsTable(lessonCurrentList);
 renderLessonsDetail(LESSONS.find(l=>l.id===lessonSelectedId));
 
