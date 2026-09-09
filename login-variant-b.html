@@ -259,14 +259,33 @@
   .ws-brand .brand-mark{width:36px; height:20px;}
   .ws-brand .name{font-family:var(--font-display); font-weight:800; font-size:16px; color:#fff;}
 
-  .ws-nav{display:flex; flex-direction:column; gap:2px;}
+  /* nav — по механике референсного Sidebar: MenuItem с position="top"/"bottom"
+     (две группы, нижняя прижата к низу), SubmenuItem (вложенный expand/collapse
+     список) и disabled-пункт (без hover/клика). */
+  .ws-nav{flex:1; display:flex; flex-direction:column; min-height:0; overflow-y:auto;}
+  .ws-nav-group{display:flex; flex-direction:column; gap:2px;}
+  .ws-nav-bottom{margin-top:auto; padding-top:12px; border-top:1px solid rgba(255,255,255,.12);}
   .ws-nav-item{display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:8px;
     border:none; background:none; color:#aab4c4; font-family:inherit; font-size:14px; font-weight:600;
-    cursor:pointer; text-align:left; transition:background-color .15s ease, color .15s ease;}
+    cursor:pointer; text-align:left; width:100%; transition:background-color .15s ease, color .15s ease;}
   .ws-nav-item svg{width:20px; height:20px; flex-shrink:0;}
   .ws-nav-item:hover{background:rgba(255,255,255,.06); color:#fff;}
   .ws-nav-item.active{background:rgba(255,255,255,.1); color:#fff;}
   .ws-nav-item.active svg{color:var(--accent-500);}
+  .ws-nav-item[disabled]{opacity:.4; cursor:not-allowed;}
+  .ws-nav-item[disabled]:hover{background:none; color:#aab4c4;}
+
+  .ws-nav-chevron{margin-left:auto; width:14px !important; height:14px !important; flex-shrink:0;
+    transition:transform .2s ease;}
+  .ws-nav-toggle[aria-expanded="true"] .ws-nav-chevron{transform:rotate(180deg);}
+  .ws-submenu{max-height:0; overflow:hidden; transition:max-height .22s ease; display:flex; flex-direction:column; gap:1px;}
+  .ws-submenu-item{display:flex; align-items:center; width:100%; padding:9px 12px 9px 46px; border:none;
+    background:none; color:#aab4c4; font-family:inherit; font-size:13px; font-weight:500; border-radius:8px;
+    cursor:pointer; text-align:left; transition:background-color .15s ease, color .15s ease;}
+  .ws-submenu-item:hover{background:rgba(255,255,255,.06); color:#fff;}
+  .ws-submenu-item.active{background:rgba(255,255,255,.1); color:#fff; font-weight:600;}
+  .ws-submenu-item[disabled]{opacity:.4; cursor:not-allowed;}
+  .ws-submenu-item[disabled]:hover{background:none; color:#aab4c4;}
 
   .ws-user{margin-top:auto; display:flex; align-items:center; gap:10px; padding:12px 10px;
     border-top:1px solid rgba(255,255,255,.12);}
@@ -369,22 +388,43 @@
       <div class="name">RiskLesson</div>
     </div>
     <nav class="ws-nav" id="wsNav">
-      <button type="button" class="ws-nav-item active" data-page="dashboard">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
-        <span>Дэшборд</span>
-      </button>
-      <button type="button" class="ws-nav-item" data-page="register">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6z"/><path d="M15 3v3h3"/><path d="M9 12h6M9 16h6"/></svg>
-        <span>Реестр рисков</span>
-      </button>
-      <button type="button" class="ws-nav-item" data-page="matrix">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
-        <span>Матрица рисков</span>
-      </button>
-      <button type="button" class="ws-nav-item" data-page="lessons">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H12v16H5.5C4.7 20 4 19.3 4 18.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H12v16h6.5c.8 0 1.5-.7 1.5-1.5z"/></svg>
-        <span>Выученные уроки</span>
-      </button>
+      <div class="ws-nav-group">
+        <button type="button" class="ws-nav-item active" data-page="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
+          <span>Дэшборд</span>
+        </button>
+
+        <!-- Sidebar.MenuItem с детьми — раскрывающаяся группа (механика SubmenuItem) -->
+        <button type="button" class="ws-nav-item ws-nav-toggle" id="wsRegisterToggle" aria-expanded="false" aria-controls="wsRegisterSubmenu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6z"/><path d="M15 3v3h3"/><path d="M9 12h6M9 16h6"/></svg>
+          <span>Реестр рисков</span>
+          <svg class="ws-nav-chevron" viewBox="0 0 10 6" fill="none"><path d="M0 0l5 6 5-6z" fill="currentColor"/></svg>
+        </button>
+        <div class="ws-submenu" id="wsRegisterSubmenu">
+          <button type="button" class="ws-submenu-item" data-page="register-all">Все риски</button>
+          <button type="button" class="ws-submenu-item" data-page="register-categories">По категориям</button>
+          <button type="button" class="ws-submenu-item" data-page="register-archive">Архив</button>
+        </div>
+
+        <button type="button" class="ws-nav-item" data-page="matrix">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+          <span>Матрица рисков</span>
+        </button>
+
+        <!-- disabled — по механике Sidebar.MenuItem disabled: не кликается, приглушён -->
+        <button type="button" class="ws-nav-item" data-page="admin" disabled title="Доступно роли «Администратор»">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.04 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.35a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.65 15a1.7 1.7 0 0 0-1.56-1.04H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.65 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.65a1.7 1.7 0 0 0 1.04-1.56V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.65a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.35 9a1.7 1.7 0 0 0 1.56 1.04H21a2 2 0 1 1 0 4h-.09A1.7 1.7 0 0 0 19.4 15z"/></svg>
+          <span>Администрирование</span>
+        </button>
+      </div>
+
+      <!-- Sidebar.MenuItem position="bottom" — вторая группа прижата к низу навигации -->
+      <div class="ws-nav-group ws-nav-bottom">
+        <button type="button" class="ws-nav-item" data-page="lessons">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H12v16H5.5C4.7 20 4 19.3 4 18.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H12v16h6.5c.8 0 1.5-.7 1.5-1.5z"/></svg>
+          <span>Выученные уроки</span>
+        </button>
+      </div>
     </nav>
     <div class="ws-user">
       <div class="ws-user-avatar" id="wsAvatar"></div>
@@ -540,16 +580,34 @@
   // навигация рабочего пространства — переключение раздела (пока заглушки)
   const WS_PAGES = {
     dashboard: {title:'Дэшборд', desc:'Общая сводка по рискам программы: количество, критичность, статус мероприятий.'},
-    register: {title:'Реестр рисков', desc:'Полный список зарегистрированных рисков проекта с владельцем, оценкой и статусом.'},
     matrix: {title:'Матрица рисков', desc:'Визуализация рисков по вероятности и влиянию (P×I).'},
     lessons: {title:'Выученные уроки', desc:'База знаний по прошлым проектам — риски, которые уже случались, и как их избежать.'},
+    'register-all': {title:'Реестр рисков · Все риски', desc:'Полный список зарегистрированных рисков проекта с владельцем, оценкой и статусом.'},
+    'register-categories': {title:'Реестр рисков · По категориям', desc:'Риски, сгруппированные по категориям (технологические, экономические, ПИР, СМР и др.).'},
+    'register-archive': {title:'Реестр рисков · Архив', desc:'Закрытые и снятые с контроля риски прошлых периодов проекта.'},
   };
+
+  // раскрывающееся подменю «Реестр рисков» — механика Sidebar.MenuItem с
+  // вложенными SubmenuItem: клик по заголовку группы разворачивает список
+  const wsRegisterToggle = document.getElementById('wsRegisterToggle');
+  const wsRegisterSubmenu = document.getElementById('wsRegisterSubmenu');
+  wsRegisterToggle.addEventListener('click', () => {
+    const isOpen = wsRegisterToggle.getAttribute('aria-expanded') === 'true';
+    wsRegisterToggle.setAttribute('aria-expanded', String(!isOpen));
+    wsRegisterSubmenu.style.maxHeight = isOpen ? null : wsRegisterSubmenu.scrollHeight + 'px';
+  });
+
   document.getElementById('wsNav').addEventListener('click', (e) => {
-    const btn = e.target.closest('.ws-nav-item');
-    if (!btn) return;
-    document.querySelectorAll('.ws-nav-item').forEach(o => o.classList.remove('active'));
-    btn.classList.add('active');
+    const btn = e.target.closest('.ws-nav-item, .ws-submenu-item');
+    if (!btn || btn.disabled) return;
     const page = WS_PAGES[btn.dataset.page];
+    if (!page) return; // клик по самому переключателю «Реестр рисков» — не страница
+
+    document.querySelectorAll('.ws-nav-item, .ws-submenu-item').forEach(o => o.classList.remove('active'));
+    btn.classList.add('active');
+    // если выбран пункт подменю — подсвечиваем и родительский заголовок группы
+    wsRegisterToggle.classList.toggle('active', btn.classList.contains('ws-submenu-item'));
+
     document.getElementById('wsTitle').textContent = page.title;
     document.getElementById('wsDesc').textContent = page.desc;
   });
