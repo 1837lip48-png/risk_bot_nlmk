@@ -111,6 +111,24 @@
   .field .err-msg{font-size:12px; line-height:16px; color:var(--red-700); display:none;}
   .field.invalid .err-msg{display:block;}
 
+  /* Плавающий лейбл — оформление поля Input из референса ds-2.0: лейбл сидит
+     внутри рамки как плейсхолдер, при фокусе/вводе плавно всплывает наверх
+     и уменьшается — так система «реагирует» на ввод данных. */
+  .field .input-float{position:relative;}
+  .field .input-float input{padding:19px 14px 7px;}
+  .field .input-float label{
+    position:absolute; left:15px; top:50%; transform:translateY(-50%);
+    font-size:14px; line-height:20px; font-weight:400; color:var(--ink-400);
+    text-transform:none; letter-spacing:0; pointer-events:none;
+    transition:top .18s ease, transform .18s ease, font-size .18s ease, color .18s ease, font-weight .18s ease;
+  }
+  .field .input-float input:focus + label,
+  .field .input-float input:not(:placeholder-shown) + label{
+    top:9px; transform:translateY(0); font-size:10.5px; font-weight:700;
+    letter-spacing:.3px; text-transform:uppercase; color:var(--ink-600);
+  }
+  .field .input-float input:focus + label{color:var(--accent-600);}
+
   /* Карточки ролей с иконкой сверху и описанием (формат по референсу «Choose Your Role»),
      цвета и иконки — корпоративные ds-2.0 */
   .role-cards{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
@@ -196,13 +214,17 @@
     <form id="entryForm" novalidate>
       <div class="row">
         <div class="field" data-field="firstName">
-          <label>Имя</label>
-          <input type="text" id="firstName" placeholder="Иван" autocomplete="given-name">
+          <div class="input-float">
+            <input type="text" id="firstName" placeholder=" " autocomplete="given-name">
+            <label for="firstName">Имя</label>
+          </div>
           <div class="err-msg">Укажите имя</div>
         </div>
         <div class="field" data-field="lastName">
-          <label>Фамилия</label>
-          <input type="text" id="lastName" placeholder="Петров" autocomplete="family-name">
+          <div class="input-float">
+            <input type="text" id="lastName" placeholder=" " autocomplete="family-name">
+            <label for="lastName">Фамилия</label>
+          </div>
           <div class="err-msg">Укажите фамилию</div>
         </div>
       </div>
