@@ -60,15 +60,15 @@
     min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
   }
 
-  .theme-switch{position:fixed; top:16px; right:16px; display:flex; align-items:center; gap:8px;
-    font-size:12px; color:var(--ink-600); background:var(--paper-0); border:1px solid var(--line);
-    border-radius:20px; padding:8px 12px 8px 8px;}
-  .theme-switch button{width:30px; height:18px; border-radius:10px; border:none; background:var(--line);
-    position:relative; cursor:pointer; padding:0; flex-shrink:0;}
-  .theme-switch button::after{content:''; position:absolute; top:2px; left:2px; width:14px; height:14px;
-    border-radius:50%; background:var(--paper-0); box-shadow:0 1px 2px rgba(0,0,0,.3); transition:transform .15s ease;}
-  .theme-switch button.on{background:var(--accent-600);}
-  .theme-switch button.on::after{transform:translateX(12px); background:#fff;}
+  .theme-toggle{position:fixed; top:16px; right:16px; width:40px; height:40px; border-radius:50%;
+    border:1px solid var(--line); background:var(--paper-0); cursor:pointer; padding:0;
+    display:flex; align-items:center; justify-content:center;}
+  .theme-toggle svg{position:absolute; width:20px; height:20px; color:var(--ink-700);
+    transition:opacity .25s ease, transform .35s ease;}
+  .theme-toggle .icon-sun{opacity:1; transform:rotate(0deg) scale(1);}
+  .theme-toggle .icon-moon{opacity:0; transform:rotate(90deg) scale(.5);}
+  :root[data-theme="dark"] .theme-toggle .icon-sun{opacity:0; transform:rotate(-90deg) scale(.5);}
+  :root[data-theme="dark"] .theme-toggle .icon-moon{opacity:1; transform:rotate(0deg) scale(1);}
 
   .login-card{
     width:100%; max-width:460px; background:var(--paper-0); border:1px solid var(--line);
@@ -105,7 +105,20 @@
   .field input.err, .field select.err{border-color:var(--red-700);}
   .field .err-msg{font-size:12px; color:var(--red-700); display:none;}
   .field.invalid .err-msg{display:block;}
-  #spp{font-family:var(--font-mono);}
+
+  .accordion-select{border:1px solid var(--line); border-radius:var(--radius-field); background:var(--paper-0); overflow:hidden;}
+  .accordion-select.err{border-color:var(--red-700);}
+  .accordion-trigger{display:flex; align-items:center; justify-content:space-between; width:100%;
+    border:none; background:none; padding:12px 14px; font-size:14px; font-family:inherit; color:var(--ink-900);
+    cursor:pointer; text-align:left;}
+  .accordion-trigger .placeholder{color:var(--ink-400);}
+  .accordion-trigger .chevron{width:10px; height:6px; flex-shrink:0; transition:transform .25s ease; color:#8290b3;}
+  .accordion-trigger[aria-expanded="true"] .chevron{transform:rotate(180deg);}
+  .accordion-panel{max-height:0; overflow:hidden; transition:max-height .25s ease; border-top:1px solid transparent;}
+  .accordion-panel.open{border-top-color:var(--line);}
+  .accordion-option{padding:10px 14px; font-size:14px; cursor:pointer; color:var(--ink-700);}
+  .accordion-option:hover{background:var(--canvas);}
+  .accordion-option.selected{background:var(--accent-50); color:var(--accent-600); font-weight:600;}
 
   .role-toggle{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
   .role-opt{border:1px solid var(--line); border-radius:var(--radius-field); padding:12px 8px; text-align:center;
@@ -138,24 +151,24 @@
       max-width:900px; padding:0; display:flex; align-items:stretch; overflow:hidden;
     }
     .brand{
-      flex:0 0 40%; flex-direction:column; align-items:flex-start; justify-content:center;
-      gap:16px; padding:48px 40px; margin-bottom:0; border-bottom:none; border-right:1px solid var(--line);
+      flex:0 0 auto; width:auto; max-width:260px; flex-direction:column; align-items:flex-start; justify-content:center;
+      gap:16px; padding:48px 32px; margin-bottom:0; border-bottom:none; border-right:1px solid var(--line);
       background:var(--navy-900);
     }
     .brand-mark{width:56px; height:31px;}
     .brand-text .name{color:#fff;}
     .brand-text .tag{color:#8ea0d4;}
-    .login-form, .success{flex:1 1 60%; padding:48px 40px; align-self:center;}
+    .login-form, .success{flex:1 1 auto; padding:48px 40px; align-self:center;}
     h1, .sub{text-align:left;}
   }
 </style>
 </head>
 <body>
 
-<div class="theme-switch">
-  Тёмная тема
-  <button id="themeBtn" type="button" aria-pressed="false"></button>
-</div>
+<button class="theme-toggle" id="themeBtn" type="button" aria-label="Переключить тему">
+  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.5M12 19v2.5M4.5 12H2M22 12h-2.5M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8"/></svg>
+  <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.4 14.7A8.5 8.5 0 1 1 9.3 3.6a7 7 0 0 0 11.1 11.1z"/></svg>
+</button>
 
 <div class="login-card">
   <div class="brand">
@@ -190,7 +203,7 @@
         <label>Роль</label>
         <div class="role-toggle" id="roleToggle">
           <div class="role-opt" data-value="riskmanager">Риск-менеджер</div>
-          <div class="role-opt" data-value="initiator">Инициатор риска</div>
+          <div class="role-opt" data-value="initiator">Инициатор</div>
         </div>
         <div class="err-msg">Выберите роль</div>
       </div>
@@ -204,14 +217,20 @@
 
         <div class="field" data-field="phase">
           <label>Фаза проекта</label>
-          <select id="phase">
-            <option value="" disabled selected hidden>Выберите фазу</option>
-            <option value="1">Фаза 1</option>
-            <option value="2">Фаза 2</option>
-            <option value="3">Фаза 3</option>
-            <option value="4">Фаза 4</option>
-            <option value="5">Фаза 5</option>
-          </select>
+          <div class="accordion-select" id="phaseSelect">
+            <button type="button" class="accordion-trigger" id="phaseTrigger" aria-expanded="false">
+              <span id="phaseTriggerLabel" class="placeholder">Выберите фазу</span>
+              <svg class="chevron" viewBox="0 0 10 6" fill="none"><path d="M0 0l5 6 5-6z" fill="currentColor"/></svg>
+            </button>
+            <div class="accordion-panel" id="phasePanel">
+              <div class="accordion-option" data-value="1">Фаза 1</div>
+              <div class="accordion-option" data-value="2">Фаза 2</div>
+              <div class="accordion-option" data-value="3">Фаза 3</div>
+              <div class="accordion-option" data-value="4">Фаза 4</div>
+              <div class="accordion-option" data-value="5">Фаза 5</div>
+            </div>
+          </div>
+          <input type="hidden" id="phase" value="">
           <div class="err-msg">Выберите фазу проекта</div>
         </div>
       </div>
@@ -261,10 +280,52 @@
     const el = document.querySelector(`.field[data-field="${name}"]`);
     if (!el) return;
     el.classList.toggle('invalid', isInvalid);
-    const control = el.querySelector('input, select');
+    const control = el.querySelector('input, select, .accordion-select');
     if (control) control.classList.toggle('err', isInvalid);
   }
   function clearFieldError(name){ setFieldError(name, false); }
+
+  // аккордеон «Фаза проекта» — открытие/закрытие с анимацией по scrollHeight,
+  // выбор варианта закрывает панель (механика — по референсу Accordion из ds-2.0)
+  const phaseSelect = document.getElementById('phaseSelect');
+  const phaseTrigger = document.getElementById('phaseTrigger');
+  const phaseTriggerLabel = document.getElementById('phaseTriggerLabel');
+  const phasePanel = document.getElementById('phasePanel');
+  const phaseInput = document.getElementById('phase');
+  const phaseOptions = document.querySelectorAll('.accordion-option');
+  const PHASE_LABELS = {1:'Фаза 1', 2:'Фаза 2', 3:'Фаза 3', 4:'Фаза 4', 5:'Фаза 5'};
+
+  function closePhasePanel(){
+    phasePanel.style.maxHeight = null;
+    phasePanel.classList.remove('open');
+    phaseTrigger.setAttribute('aria-expanded', 'false');
+  }
+  function openPhasePanel(){
+    phasePanel.classList.add('open');
+    phasePanel.style.maxHeight = phasePanel.scrollHeight + 'px';
+    phaseTrigger.setAttribute('aria-expanded', 'true');
+  }
+  function setPhase(value){
+    phaseInput.value = value;
+    phaseTriggerLabel.textContent = PHASE_LABELS[value] || 'Выберите фазу';
+    phaseTriggerLabel.classList.toggle('placeholder', !value);
+    phaseOptions.forEach(o => o.classList.toggle('selected', o.dataset.value === String(value)));
+    if (value) clearFieldError('phase');
+  }
+
+  phaseTrigger.addEventListener('click', () => {
+    const isOpen = phaseTrigger.getAttribute('aria-expanded') === 'true';
+    isOpen ? closePhasePanel() : openPhasePanel();
+  });
+  phaseOptions.forEach(opt => {
+    opt.addEventListener('click', () => {
+      setPhase(opt.dataset.value);
+      closePhasePanel();
+    });
+  });
+  document.addEventListener('click', (e) => {
+    if (!phaseSelect.contains(e.target)) closePhasePanel();
+  });
 
   function validate(){
     const firstName = document.getElementById('firstName').value.trim();
@@ -291,7 +352,7 @@
 
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (err) {}
 
-    const roleLabel = data.role === 'riskmanager' ? 'Риск-менеджер' : 'Инициатор риска';
+    const roleLabel = data.role === 'riskmanager' ? 'Риск-менеджер' : 'Инициатор';
     document.getElementById('summaryBox').innerHTML = `
       <div><span>ФИО</span><span>${data.firstName} ${data.lastName}</span></div>
       <div><span>Роль</span><span>${roleLabel}</span></div>
@@ -307,6 +368,8 @@
     document.getElementById('entryForm').reset();
     roleOpts.forEach(o => o.classList.remove('active'));
     selectedRole = '';
+    setPhase('');
+    closePhasePanel();
     ['firstName','lastName','role','spp','projectName','phase'].forEach(clearFieldError);
   });
 
@@ -315,19 +378,17 @@
     document.getElementById('loginForm').classList.remove('hide');
   });
 
-  // тема
+  // тема — иконка солнца/луны, без текстовой подписи (как переключатель внешнего вида в Apple)
   const themeBtn = document.getElementById('themeBtn');
   const THEME_KEY = 'riskassess-theme';
   function applyTheme(isDark){
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-    themeBtn.classList.toggle('on', isDark);
-    themeBtn.setAttribute('aria-pressed', String(isDark));
   }
   let storedTheme = null;
   try { storedTheme = localStorage.getItem(THEME_KEY); } catch (err) {}
   applyTheme(storedTheme === 'dark');
   themeBtn.addEventListener('click', () => {
-    const isDark = !themeBtn.classList.contains('on');
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'dark';
     applyTheme(isDark);
     try { localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light'); } catch (err) {}
   });
@@ -340,7 +401,7 @@
       document.getElementById('lastName').value = saved.lastName || '';
       sppInput.value = saved.spp || '';
       document.getElementById('projectName').value = saved.projectName || '';
-      document.getElementById('phase').value = saved.phase || '';
+      setPhase(saved.phase || '');
       if (saved.role){
         selectedRole = saved.role;
         roleOpts.forEach(o => o.classList.toggle('active', o.dataset.value === saved.role));
