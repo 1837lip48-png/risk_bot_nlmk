@@ -253,32 +253,47 @@
   .workspace.show{display:flex;}
 
   .ws-sidebar{width:248px; flex-shrink:0; background:var(--navy-900); display:flex; flex-direction:column;
-    padding:20px 14px; gap:4px;}
+    padding:20px 14px; gap:4px; transition:width .2s ease; overflow:hidden;}
+  .ws-sidebar.collapsed{width:76px;}
   .ws-brand{display:flex; align-items:center; gap:10px; padding:8px 10px 20px;
     border-bottom:1px solid rgba(255,255,255,.12); margin-bottom:12px;}
-  .ws-brand .brand-mark{width:36px; height:20px;}
-  .ws-brand .name{font-family:var(--font-display); font-weight:800; font-size:16px; color:#fff;}
+  .ws-brand .brand-mark{width:36px; height:20px; flex-shrink:0;}
+  .ws-brand .name{font-family:var(--font-display); font-weight:800; font-size:16px; color:#fff;
+    white-space:nowrap;}
+  .ws-sidebar.collapsed .ws-brand{justify-content:center; padding-left:0; padding-right:0;}
+  .ws-sidebar.collapsed .ws-brand .name{display:none;}
 
-  .ws-nav{flex:1; display:flex; flex-direction:column; min-height:0; overflow-y:auto;}
+  .ws-nav{flex:1; display:flex; flex-direction:column; min-height:0; overflow-y:auto; overflow-x:hidden;}
   .ws-nav-group{display:flex; flex-direction:column; gap:2px;}
   .ws-nav-item{display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:8px;
     border:none; background:none; color:#aab4c4; font-family:inherit; font-size:14px; font-weight:600;
     cursor:pointer; text-align:left; width:100%; transition:background-color .15s ease, color .15s ease;}
+  .ws-nav-item span{white-space:nowrap;}
   .ws-nav-item svg{width:20px; height:20px; flex-shrink:0;}
   .ws-nav-item:hover{background:rgba(255,255,255,.06); color:#fff;}
   .ws-nav-item.active{background:rgba(255,255,255,.1); color:#fff;}
   .ws-nav-item.active svg{color:var(--accent-500);}
+  .ws-sidebar.collapsed .ws-nav-item{justify-content:center; padding:11px;}
+  .ws-sidebar.collapsed .ws-nav-item span{display:none;}
+
+  .ws-collapse-btn{margin-top:4px; border-top:1px solid rgba(255,255,255,.12); border-radius:0 0 8px 8px;
+    padding-top:15px;}
+  .ws-collapse-icon{transition:transform .2s ease;}
+  .ws-sidebar.collapsed .ws-collapse-icon{transform:rotate(180deg);}
 
   .ws-user{margin-top:auto; display:flex; align-items:center; gap:10px; padding:12px 10px;
     border-top:1px solid rgba(255,255,255,.12);}
   .ws-user-avatar{width:32px; height:32px; border-radius:50%; background:var(--accent-600); color:#fff;
     display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0;}
+  .ws-user-info{min-width:0;}
   .ws-user-name{font-size:13px; font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .ws-user-role{font-size:11.5px; color:#8b96aa;}
+  .ws-user-role{font-size:11.5px; color:#8b96aa; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .ws-signout{margin-left:auto; background:none; border:none; color:#8b96aa; cursor:pointer; padding:6px;
     border-radius:6px; display:flex; flex-shrink:0;}
   .ws-signout svg{width:16px; height:16px;}
   .ws-signout:hover{background:rgba(255,255,255,.08); color:#fff;}
+  .ws-sidebar.collapsed .ws-user{justify-content:center; padding:12px 0;}
+  .ws-sidebar.collapsed .ws-user-info, .ws-sidebar.collapsed .ws-signout{display:none;}
 
   .ws-content{flex:1; overflow-y:auto; padding:36px 40px;}
   .ws-content h1{font-family:var(--font-display); font-size:24px; line-height:32px; font-weight:800;
@@ -371,31 +386,38 @@
     </div>
     <nav class="ws-nav" id="wsNav">
       <div class="ws-nav-group">
-        <button type="button" class="ws-nav-item active" data-page="dashboard">
+        <button type="button" class="ws-nav-item active" data-page="dashboard" title="Дэшборд">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
           <span>Дэшборд</span>
         </button>
 
         <!-- «Реестр рисков» — плоский пункт, без вложенных разделов -->
-        <button type="button" class="ws-nav-item" data-page="register">
+        <button type="button" class="ws-nav-item" data-page="register" title="Реестр рисков">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6z"/><path d="M15 3v3h3"/><path d="M9 12h6M9 16h6"/></svg>
           <span>Реестр рисков</span>
         </button>
 
-        <button type="button" class="ws-nav-item" data-page="matrix">
+        <button type="button" class="ws-nav-item" data-page="matrix" title="Матрица рисков">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
           <span>Матрица рисков</span>
         </button>
 
-        <button type="button" class="ws-nav-item" data-page="lessons">
+        <button type="button" class="ws-nav-item" data-page="lessons" title="Выученные уроки">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H12v16H5.5C4.7 20 4 19.3 4 18.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H12v16h6.5c.8 0 1.5-.7 1.5-1.5z"/></svg>
           <span>Выученные уроки</span>
         </button>
       </div>
     </nav>
+
+    <!-- схлопывание панели — по механике ds-2.0 Sidebar («Свернуть» внизу списка) -->
+    <button type="button" class="ws-nav-item ws-collapse-btn" id="wsCollapseBtn" title="Свернуть">
+      <svg class="ws-collapse-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+      <span>Свернуть</span>
+    </button>
+
     <div class="ws-user">
       <div class="ws-user-avatar" id="wsAvatar"></div>
-      <div>
+      <div class="ws-user-info">
         <div class="ws-user-name" id="wsUserName"></div>
         <div class="ws-user-role" id="wsUserRole"></div>
       </div>
@@ -568,6 +590,24 @@
     document.getElementById('workspace').classList.remove('show');
     document.getElementById('loginForm').classList.remove('hide');
   });
+
+  const wsSidebar = document.querySelector('.ws-sidebar');
+  const wsCollapseBtn = document.getElementById('wsCollapseBtn');
+  const wsCollapseLabel = wsCollapseBtn.querySelector('span');
+
+  function setSidebarCollapsed(collapsed) {
+    wsSidebar.classList.toggle('collapsed', collapsed);
+    const label = collapsed ? 'Развернуть' : 'Свернуть';
+    wsCollapseLabel.textContent = label;
+    wsCollapseBtn.title = label;
+    localStorage.setItem('ws-sidebar-collapsed', collapsed ? '1' : '0');
+  }
+
+  wsCollapseBtn.addEventListener('click', () => {
+    setSidebarCollapsed(!wsSidebar.classList.contains('collapsed'));
+  });
+
+  setSidebarCollapsed(localStorage.getItem('ws-sidebar-collapsed') === '1');
 
   document.getElementById('resetBtn').addEventListener('click', () => {
     document.getElementById('entryForm').reset();
