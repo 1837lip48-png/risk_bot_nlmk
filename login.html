@@ -60,9 +60,9 @@
     min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
   }
 
-  .theme-switch{position:fixed; top:18px; right:18px; display:flex; align-items:center; gap:8px;
+  .theme-switch{position:fixed; top:16px; right:16px; display:flex; align-items:center; gap:8px;
     font-size:12px; color:var(--ink-600); background:var(--paper-0); border:1px solid var(--line);
-    border-radius:20px; padding:6px 12px 6px 6px;}
+    border-radius:20px; padding:8px 12px 8px 8px;}
   .theme-switch button{width:30px; height:18px; border-radius:10px; border:none; background:var(--line);
     position:relative; cursor:pointer; padding:0; flex-shrink:0;}
   .theme-switch button::after{content:''; position:absolute; top:2px; left:2px; width:14px; height:14px;
@@ -72,49 +72,50 @@
 
   .login-card{
     width:100%; max-width:460px; background:var(--paper-0); border:1px solid var(--line);
-    border-radius:var(--radius-card); box-shadow:var(--shadow-pop); padding:32px 30px;
+    border-radius:var(--radius-card); box-shadow:var(--shadow-pop); padding:40px 32px;
   }
 
-  .brand{display:flex; align-items:center; justify-content:center; gap:10px; padding-bottom:20px; margin-bottom:22px;
+  .brand{display:flex; align-items:center; justify-content:center; gap:12px; padding-bottom:24px; margin-bottom:28px;
     border-bottom:1px solid var(--line);}
-  .brand-mark{width:42px; height:23px; flex-shrink:0;}
+  .brand-mark{width:48px; height:26px; flex-shrink:0;}
   .brand-mark svg{width:100%; height:100%;}
   .brand-text .name{font-family:var(--font-display); font-weight:800; font-size:16px; color:var(--ink-900);}
   .brand-text .tag{font-size:11px; color:var(--ink-600); letter-spacing:.2px;}
 
-  h1{font-family:var(--font-display); font-size:20px; font-weight:800; text-align:center; margin:0 0 4px;}
-  .sub{font-size:12.5px; color:var(--ink-600); text-align:center; margin:0 0 22px;}
+  h1{font-family:var(--font-display); font-size:26px; font-weight:800; letter-spacing:-0.2px; text-align:center; margin:0 0 4px;}
+  .sub{font-size:14px; color:var(--ink-700); text-align:center; margin:0 0 24px;}
 
-  form{display:flex; flex-direction:column; gap:14px;}
-  .row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  form{display:flex; flex-direction:column; gap:16px;}
+  .row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
 
-  .field{display:flex; flex-direction:column; gap:5px;}
-  .field label{font-size:10.5px; font-weight:700; color:var(--ink-600); text-transform:uppercase; letter-spacing:.4px;}
-  .field .hint{font-size:11px; color:var(--ink-400); font-weight:400; text-transform:none; letter-spacing:0;}
+  .field{display:flex; flex-direction:column; gap:8px;}
+  .field label{font-size:12px; font-weight:600; color:var(--ink-600); text-transform:uppercase; letter-spacing:.2px;}
+  .field .hint{font-size:12px; color:var(--ink-400); font-weight:400; text-transform:none; letter-spacing:0;}
 
   .field input, .field select{
-    border:1px solid var(--line); border-radius:var(--radius-field); padding:10px 12px;
-    font-size:13.5px; font-family:inherit; color:var(--ink-900); background:var(--paper-0); width:100%;
+    border:1px solid var(--line); border-radius:var(--radius-field); padding:12px 14px;
+    font-size:14px; font-family:inherit; color:var(--ink-900); background:var(--paper-0); width:100%;
   }
   .field select{
     appearance:none;
     background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6"><path d="M0 0l5 6 5-6z" fill="%238290b3"/></svg>');
-    background-repeat:no-repeat; background-position:right 12px center; padding-right:30px;
+    background-repeat:no-repeat; background-position:right 12px center; padding-right:32px;
   }
   .field input:focus, .field select:focus{outline:none; border-color:var(--accent-600); box-shadow:0 0 0 3px var(--accent-100);}
   .field input.err, .field select.err{border-color:var(--red-700);}
-  .field .err-msg{font-size:11px; color:var(--red-700); display:none;}
+  .field .err-msg{font-size:12px; color:var(--red-700); display:none;}
   .field.invalid .err-msg{display:block;}
+  #spp{font-family:var(--font-mono);}
 
   .role-toggle{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
-  .role-opt{border:1px solid var(--line); border-radius:var(--radius-field); padding:10px 8px; text-align:center;
+  .role-opt{border:1px solid var(--line); border-radius:var(--radius-field); padding:12px 8px; text-align:center;
     font-size:12.5px; font-weight:600; color:var(--ink-700); cursor:pointer; background:var(--paper-0);}
   .role-opt.active{border-color:var(--accent-600); background:var(--accent-50); color:var(--accent-600);}
 
-  .btn-row{display:flex; gap:10px; margin-top:6px;}
+  .btn-row{display:flex; gap:12px; margin-top:24px;}
   .btn{flex:1; display:inline-flex; align-items:center; justify-content:center; gap:7px; white-space:nowrap;
-    border-radius:var(--radius-field); padding:12px 15px; font-size:13.5px; font-weight:700; border:1px solid var(--line);
-    background:var(--paper-0); color:var(--ink-700); cursor:pointer; font-family:inherit;}
+    border-radius:var(--radius-field); padding:12px 15px; font-size:13.5px; font-weight:700; border:1px solid transparent;
+    background:transparent; color:var(--ink-600); cursor:pointer; font-family:inherit;}
   .btn:hover{border-color:var(--accent-600); color:var(--accent-600);}
   .btn-primary{background:var(--accent-600); border-color:var(--accent-600); color:#fff; flex:2;}
   .btn-primary:hover{background:var(--accent-500); color:#fff;}
@@ -123,14 +124,30 @@
   .success.show{display:block;}
   .success .check{width:52px; height:52px; border-radius:50%; background:var(--green-50); color:var(--green-700);
     display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:26px;}
-  .success h2{font-size:18px; margin:0 0 6px;}
-  .success p{font-size:12.5px; color:var(--ink-600); margin:0 0 20px;}
-  .summary{text-align:left; background:var(--canvas); border-radius:var(--radius-field); padding:14px 16px; margin-bottom:18px;}
+  .success h2{font-size:18px; margin:0 0 8px;}
+  .success p{font-size:12.5px; color:var(--ink-600); margin:0 0 24px;}
+  .summary{text-align:left; background:var(--canvas); border-radius:var(--radius-field); padding:16px; margin-bottom:16px;}
   .summary div{display:flex; justify-content:space-between; font-size:12.5px; padding:4px 0;}
   .summary div span:first-child{color:var(--ink-600);}
   .summary div span:last-child{font-family:var(--font-mono); color:var(--ink-900); font-weight:600;}
 
   .login-form.hide, .success.hide{display:none;}
+
+  @media (min-width:1025px){
+    .login-card{
+      max-width:900px; padding:0; display:flex; align-items:stretch; overflow:hidden;
+    }
+    .brand{
+      flex:0 0 40%; flex-direction:column; align-items:flex-start; justify-content:center;
+      gap:16px; padding:48px 40px; margin-bottom:0; border-bottom:none; border-right:1px solid var(--line);
+      background:var(--navy-900);
+    }
+    .brand-mark{width:56px; height:31px;}
+    .brand-text .name{color:#fff;}
+    .brand-text .tag{color:#8ea0d4;}
+    .login-form, .success{flex:1 1 60%; padding:48px 40px; align-self:center;}
+    h1, .sub{text-align:left;}
+  }
 </style>
 </head>
 <body>
@@ -178,29 +195,31 @@
         <div class="err-msg">Выберите роль</div>
       </div>
 
-      <div class="field" data-field="spp">
-        <label>СПП проекта <span class="hint">— 6 цифр</span></label>
-        <input type="text" id="spp" placeholder="202401" inputmode="numeric" maxlength="6" autocomplete="off">
-        <div class="err-msg">СПП должен состоять ровно из 6 цифр</div>
+      <div class="row">
+        <div class="field" data-field="spp">
+          <label>СПП проекта <span class="hint">— 6 цифр</span></label>
+          <input type="text" id="spp" placeholder="202401" inputmode="numeric" maxlength="6" autocomplete="off">
+          <div class="err-msg">СПП должен состоять ровно из 6 цифр</div>
+        </div>
+
+        <div class="field" data-field="phase">
+          <label>Фаза проекта</label>
+          <select id="phase">
+            <option value="" disabled selected hidden>Выберите фазу</option>
+            <option value="1">Фаза 1</option>
+            <option value="2">Фаза 2</option>
+            <option value="3">Фаза 3</option>
+            <option value="4">Фаза 4</option>
+            <option value="5">Фаза 5</option>
+          </select>
+          <div class="err-msg">Выберите фазу проекта</div>
+        </div>
       </div>
 
       <div class="field" data-field="projectName">
         <label>Название проекта</label>
         <input type="text" id="projectName" placeholder="Программа ЦГП-2 (Стан 1700)" autocomplete="off">
         <div class="err-msg">Укажите название проекта</div>
-      </div>
-
-      <div class="field" data-field="phase">
-        <label>Фаза проекта</label>
-        <select id="phase">
-          <option value="" disabled selected hidden>Выберите фазу</option>
-          <option value="1">Фаза 1</option>
-          <option value="2">Фаза 2</option>
-          <option value="3">Фаза 3</option>
-          <option value="4">Фаза 4</option>
-          <option value="5">Фаза 5</option>
-        </select>
-        <div class="err-msg">Выберите фазу проекта</div>
       </div>
 
       <div class="btn-row">
@@ -215,7 +234,7 @@
     <h2>Добро пожаловать!</h2>
     <p>Вы вошли в RiskAssess Bot</p>
     <div class="summary" id="summaryBox"></div>
-    <button class="btn" id="changeBtn" style="width:100%">Изменить данные</button>
+    <button class="btn btn-primary" id="changeBtn" style="width:100%">Изменить данные</button>
   </div>
 </div>
 
