@@ -99,21 +99,21 @@
      Карточка снова реагирует на тёмную тему как обычно (не закреплена белой). */
   .login-card{
     width:100%; max-width:396px; background:var(--paper-0); border:1px solid var(--line);
-    border-radius:var(--radius-card); box-shadow:var(--shadow-pop); padding:34px;
+    border-radius:var(--radius-card); box-shadow:var(--shadow-pop); padding:32px;
   }
 
   /* лэйбл компании + название системы над «Вход в систему»; разделительная линия
      чуть короче ширины карточки — со скромным отступом от краёв, стильнее сплошной во всю ширину */
-  .brand{display:flex; align-items:center; justify-content:center; gap:14px;
-    padding:0 16px 24px; margin:0 -16px 28px; border-bottom:1px solid var(--line);}
+  .brand{display:flex; align-items:center; justify-content:center; gap:16px;
+    padding:0 16px 24px; margin:0 -16px 24px; border-bottom:1px solid var(--line);}
   .brand-mark{width:60px; height:33px; flex-shrink:0;}
   .brand-mark svg{width:100%; height:100%;}
-  /* градиент — корпоративные синие тона НЛМК, тема-зависимый (в тёмной теме светлее,
-     чтобы не сливаться с тёмным фоном карточки) */
+  /* сплошной var(--logo-blue) — тот же токен, что и у логотипа: раньше лого было
+     однотонным, а название градиентным, что давало рассинхрон цветовой логики
+     бренд-блока; теперь оба элемента читаются как один цветовой знак */
   .brand-text .name{
     font-family:var(--font-display); font-weight:800; font-size:23px; line-height:28px;
-    background:linear-gradient(90deg, var(--brand-grad-1), var(--brand-grad-2));
-    -webkit-background-clip:text; background-clip:text; color:transparent;
+    color:var(--logo-blue);
   }
 
   form{display:flex; flex-direction:column; gap:16px;}
@@ -125,45 +125,52 @@
 
   /* Body2 (14/20, 400) */
   .field input{
-    border:1px solid var(--line); border-radius:var(--radius-field); padding:12px 14px;
+    border:1px solid var(--line); border-radius:var(--radius-field); padding:12px 16px;
     font-size:14px; line-height:20px; font-family:inherit; color:var(--ink-900); background:var(--paper-0); width:100%;
   }
   .field input:focus{outline:none; border-color:var(--accent-600); box-shadow:0 0 0 3px var(--accent-100);}
   .field input.err{border-color:var(--red-700);}
-  .field .err-msg{font-size:12px; line-height:16px; color:var(--red-700); display:none;}
-  .field.invalid .err-msg{display:block;}
+  .field .err-msg{font-size:12px; line-height:16px; color:var(--red-700); background:var(--red-50);
+    padding:4px 8px; border-radius:6px; margin-top:4px; display:none;}
+  .field.invalid .err-msg{display:inline-block;}
 
   /* Плавающий лейбл — оформление поля Input из референса ds-2.0: лейбл сидит
      внутри рамки как плейсхолдер, при фокусе/вводе плавно всплывает наверх
      и уменьшается — так система «реагирует» на ввод данных. */
   .field .input-float{position:relative;}
-  .field .input-float input{padding:19px 14px 7px;}
-  /* плейсхолдер («Иван»/«Петров») скрыт, пока лейбл не всплыл — иначе он
-     наложится на лейбл «Имя»/«Фамилия»; появляется только в фокусе, ровно
-     на месте всплывшего текста, как в референсе Input label+placeholder */
-  .field .input-float input::placeholder{opacity:0; transition:opacity .18s ease;}
+  .field .input-float input{padding:20px 16px 8px;}
+  /* плейсхолдер-пример («Иван»/«19-1991») скрыт, пока лейбл не всплыл — иначе он
+     наложится на лейбл; появляется только в фокусе. Курсивом — чтобы визуально
+     отличаться от реально введённых данных (не путать пример формата со значением). */
+  .field .input-float input::placeholder{opacity:0; font-style:italic; transition:opacity .18s ease;}
   .field .input-float input:focus::placeholder{opacity:1;}
   .field .input-float label{
-    position:absolute; left:15px; top:50%; transform:translateY(-50%);
-    font-size:14px; line-height:20px; font-weight:400; color:var(--ink-400);
+    position:absolute; left:17px; top:50%; transform:translateY(-50%);
+    /* ink-600, а не ink-400 — на паре ink-400/paper-0 контраст ниже WCAG AA (~2.3:1) */
+    font-size:14px; line-height:20px; font-weight:400; color:var(--ink-600);
     text-transform:none; letter-spacing:0; pointer-events:none; background:transparent; padding:0 2px;
     transition:top .18s ease, transform .18s ease, font-size .18s ease, color .18s ease, left .18s ease, background-color .18s ease;
   }
   .field .input-float input:focus + label,
   .field .input-float input:not(:placeholder-shown) + label{
-    top:0; transform:translateY(-50%); left:13px; font-size:12px; font-weight:400;
+    top:0; transform:translateY(-50%); left:15px; font-size:12px; font-weight:400;
     letter-spacing:0; text-transform:none; color:var(--ink-600); background:var(--paper-0);
     /* сплошной белый ореол со всех сторон текста — надёжнее, чем просто фон:
        гарантированно перекрывает линию рамки под лейблом, без тонких просветов */
     box-shadow:0 0 0 4px var(--paper-0);
   }
   .field .input-float input:focus + label{color:var(--accent-600);}
+  /* короткая подпись-подсказка под полем (формат СПП и т.п.) — не путать с err-msg */
+  .field-hint{font-size:12px; line-height:16px; color:var(--ink-600); margin-top:4px;}
+  /* хинт под карточками ролей относится к центрированному 2-колоночному гриду
+     выше — должен быть по центру, иначе визуально «съезжает» влево */
+  .field[data-field="role"] .field-hint{text-align:center;}
 
   /* Карточки ролей с иконкой сверху и описанием (формат по референсу «Choose Your Role»),
      цвета и иконки — корпоративные ds-2.0 */
-  .role-cards{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
-  .role-card{display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px;
-    border:1px solid var(--line); border-radius:var(--radius-field); padding:16px 14px; cursor:pointer;
+  .role-cards{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .role-card{display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px;
+    border:1px solid var(--line); border-radius:var(--radius-field); padding:16px; cursor:pointer;
     background:var(--paper-0); transition:border-color .25s ease, background-color .25s ease, box-shadow .25s ease, transform .2s ease;}
   .role-card:hover{border-color:var(--accent-100); background:var(--accent-50); transform:translateY(-2px); box-shadow:0 8px 16px -10px rgba(0,23,41,.3);}
   .role-card-icon{width:42px; height:42px; border-radius:50%; background:var(--accent-50); color:var(--accent-600);
@@ -171,22 +178,28 @@
     transition:background-color .25s ease, color .25s ease, transform .3s cubic-bezier(.34,1.56,.64,1);}
   .role-card-icon svg{width:22px; height:22px;}
   .role-card-title{font-size:14px; line-height:20px; font-weight:600; color:var(--ink-900);}
-  .role-card-desc{font-size:12px; line-height:16px; color:var(--ink-600);}
-  .role-card.active{border-color:var(--accent-600); background:var(--accent-50); box-shadow:0 0 0 3px var(--accent-100);}
+  /* min-height на 2 строки — короткие и длинные описания не сбивают высоту соседних карточек */
+  .role-card-desc{font-size:12px; line-height:16px; color:var(--ink-600); min-height:32px; display:flex; align-items:center;}
+  /* активный стейт — граница + заливка + закрашенная иконка уже достаточно сильный сигнал,
+     без отдельного ring — ring теперь означает только клавиатурный фокус инпутов, не выбор */
+  .role-card.active{border-color:var(--accent-600); background:var(--accent-50);}
   .role-card.active:hover{transform:translateY(-2px);}
   .role-card.active .role-card-icon{background:var(--accent-600); color:#fff; transform:scale(1.1);}
 
-  .btn-row{display:flex; gap:12px; margin-top:8px;}
-  .reset-row{display:flex; justify-content:center; margin-top:4px;}
+  .btn-row{display:flex; gap:16px; margin-top:8px;}
+  .reset-row{display:flex; justify-content:center; margin-top:8px;}
   /* Body2-Bold / Body2-Medium (14/20, 700 / 600) */
-  .btn{flex:1; display:inline-flex; align-items:center; justify-content:center; gap:7px; white-space:nowrap;
-    border-radius:var(--radius-field); padding:12px 15px; font-size:14px; line-height:20px; font-weight:700; border:1px solid transparent;
+  .btn{flex:1; display:inline-flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap;
+    border-radius:var(--radius-field); padding:12px 16px; font-size:14px; line-height:20px; font-weight:700; border:1px solid transparent;
     background:transparent; color:var(--ink-600); cursor:pointer; font-family:inherit;
     transition:background-color .2s ease, border-color .2s ease, color .2s ease;}
   .btn:hover{background:var(--canvas); border-color:var(--line); color:var(--ink-900);}
   .btn-primary{background:var(--accent-600); border-color:var(--accent-600); color:#fff; flex:2;}
   .btn-primary:hover{background:var(--accent-500); color:#fff;}
-  .btn-text{flex:none; font-weight:600; padding:8px 4px;}
+  .btn-text{flex:none; font-weight:600; padding:8px 12px; border-radius:var(--radius-field);}
+  /* «Очистить» — сброс формы, действие деструктивное: hover отдельно окрашен в red,
+     а не в нейтральный/accent тон общих кнопок, чтобы намерение читалось до клика */
+  .btn-text:hover{background:var(--red-50); color:var(--red-700); border-color:var(--red-50);}
   /* secondary — как в референсе (variant="secondary"): светло-голубая заливка вместо обводки/прозрачности */
   .btn-secondary{background:var(--accent-50); border-color:var(--accent-50); color:var(--accent-600);}
   .btn-secondary:hover{background:var(--accent-100); border-color:var(--accent-100); color:var(--accent-600);}
@@ -194,7 +207,8 @@
   .success{display:none; text-align:center;}
   .success.show{display:block;}
   .success .check{width:52px; height:52px; border-radius:50%; background:var(--green-50); color:var(--green-700);
-    display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:26px;}
+    display:flex; align-items:center; justify-content:center; margin:0 auto 16px;}
+  .success .check svg{width:24px; height:24px;}
   @keyframes popIn{from{opacity:0; transform:scale(.5);} to{opacity:1; transform:scale(1);}}
   .success.show .check{animation:popIn .35s cubic-bezier(.34,1.56,.64,1);}
   /* Heading4 (20/28, 800) */
@@ -222,13 +236,15 @@
     box-shadow:var(--shadow-modal); padding:24px; transform:scale(.96) translateY(6px);
     transition:transform .22s cubic-bezier(.16,1,.3,1);}
   .modal-overlay.show .modal-card{transform:scale(1) translateY(0);}
-  .modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;}
+  .modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;}
   /* Body1-Bold (16/24, 700) — компактнее прежнего Subheading3 (20/28) */
   .modal-head span{font-family:var(--font-display); font-size:16px; line-height:24px; font-weight:700; color:var(--ink-900);}
-  .modal-close{border:none; background:none; width:28px; height:28px; border-radius:50%; color:var(--ink-400);
-    font-size:20px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  /* ink-600, а не ink-400 — контраст крестика на paper-0 был ниже WCAG AA для интерактивного элемента */
+  .modal-close{border:none; background:none; width:28px; height:28px; border-radius:50%; color:var(--ink-600);
+    padding:0; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;
     transition:background-color .2s ease, color .2s ease, transform .25s ease;}
-  .modal-close:hover{background:var(--canvas); color:var(--ink-700); transform:rotate(90deg);}
+  .modal-close svg{width:16px; height:16px;}
+  .modal-close:hover{background:var(--canvas); color:var(--ink-900); transform:rotate(90deg);}
 </style>
 </head>
 <body>
@@ -269,16 +285,17 @@
         <label>Роль</label>
         <div class="role-cards" id="roleToggle">
           <div class="role-card" data-value="riskmanager">
-            <span class="role-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></span>
+            <span class="role-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></span>
             <span class="role-card-title">Риск-менеджер</span>
             <span class="role-card-desc">Владелец реестра рисков проекта</span>
           </div>
           <div class="role-card" data-value="initiator">
-            <span class="role-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h13l-3 4 3 4H5"/></svg></span>
+            <span class="role-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h13l-3 4 3 4H5"/></svg></span>
             <span class="role-card-title">Инициатор</span>
             <span class="role-card-desc">Предлагает риски по проекту</span>
           </div>
         </div>
+        <div class="field-hint">Выберите роль, чтобы перейти к следующему шагу</div>
         <div class="err-msg">Выберите роль</div>
       </div>
     </form>
@@ -289,7 +306,7 @@
   </div>
 
   <div class="success" id="successPanel">
-    <div class="check">✓</div>
+    <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l5 5L19 7"/></svg></div>
     <h2>Добро пожаловать!</h2>
     <p>Вы вошли в RiskLesson</p>
     <div class="summary" id="summaryBox"></div>
@@ -301,13 +318,16 @@
   <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="sppModalTitle">
     <div class="modal-head">
       <span id="sppModalTitle">Введите СПП проекта</span>
-      <button type="button" class="modal-close" id="sppModalClose" aria-label="Закрыть">×</button>
+      <button type="button" class="modal-close" id="sppModalClose" aria-label="Закрыть">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
     </div>
     <div class="field" data-field="spp">
       <div class="input-float">
         <input type="text" id="spp" placeholder="19-1991" inputmode="numeric" maxlength="7" autocomplete="off">
         <label for="spp">СПП</label>
       </div>
+      <div class="field-hint">Формат: 99-9999</div>
       <div class="err-msg">СПП должен состоять ровно из 6 цифр</div>
     </div>
     <div class="btn-row">
