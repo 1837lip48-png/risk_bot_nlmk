@@ -74,15 +74,17 @@
   :root[data-theme="dark"] .theme-toggle .icon-sun{opacity:0; transform:rotate(-90deg) scale(.5);}
   :root[data-theme="dark"] .theme-toggle .icon-moon{opacity:1; transform:rotate(0deg) scale(1);}
 
-  /* Компактная карточка: пропорции ширины и внутренних отступов приближены к
-     золотому сечению (~1:1.618) при типичной высоте видимого контента формы. */
+  /* Ширина карточки — 400px: стандартный диапазон для логин-форм (~360-440px),
+     достаточно места для двухколоночных полей без избыточных пустых полей. */
   .login-card{
-    width:100%; max-width:340px; background:var(--paper-0); border:1px solid var(--line);
-    border-radius:var(--radius-card); box-shadow:var(--shadow-pop); padding:28px;
+    width:100%; max-width:400px; background:var(--paper-0); border:1px solid var(--line);
+    border-radius:var(--radius-card); box-shadow:var(--shadow-pop); padding:32px;
   }
 
-  .brand{display:flex; align-items:center; justify-content:center; gap:12px; padding-bottom:20px; margin-bottom:24px;
-    border-bottom:1px solid var(--line);}
+  /* лэйбл компании + название системы над «Вход в систему»; разделительная линия
+     растянута на всю ширину карточки (выходит за паддинг карточки) */
+  .brand{display:flex; align-items:center; justify-content:center; gap:12px;
+    padding:0 32px 20px; margin:0 -32px 24px; border-bottom:1px solid var(--line);}
   .brand-mark{width:40px; height:22px; flex-shrink:0;}
   .brand-mark svg{width:100%; height:100%;}
   /* Body1-Bold (16/24, 700) */
@@ -157,41 +159,21 @@
   .login-form.hide, .success.hide{display:none;}
 
   /* модальное окно ввода СПП — открывается поверх страницы, не сдвигая её содержимое */
+  /* модальное окно СПП — плавное появление (350/450мс, ease-out) */
   .modal-overlay{position:fixed; inset:0; background:rgba(0,23,41,.45); display:flex; align-items:center;
-    justify-content:center; padding:24px; z-index:50; opacity:0; pointer-events:none; transition:opacity .2s ease;}
+    justify-content:center; padding:24px; z-index:50; opacity:0; pointer-events:none; transition:opacity .35s ease-out;}
   .modal-overlay.show{opacity:1; pointer-events:auto;}
   .modal-card{width:100%; max-width:340px; background:var(--paper-0); border-radius:var(--radius-card);
-    box-shadow:var(--shadow-modal); padding:28px; transform:scale(.96) translateY(6px); transition:transform .2s ease;}
+    box-shadow:var(--shadow-modal); padding:28px; transform:scale(.94) translateY(10px);
+    transition:transform .45s cubic-bezier(.16,1,.3,1);}
   .modal-overlay.show .modal-card{transform:scale(1) translateY(0);}
-  .modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;}
+  .modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;}
   /* Subheading3-Medium (20/28, 500) */
   .modal-head span{font-family:var(--font-display); font-size:20px; line-height:28px; font-weight:500; color:var(--ink-900);}
   .modal-close{border:none; background:none; width:28px; height:28px; border-radius:50%; color:var(--ink-400);
     font-size:20px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;
     transition:background-color .2s ease, color .2s ease, transform .25s ease;}
   .modal-close:hover{background:var(--canvas); color:var(--ink-700); transform:rotate(90deg);}
-  .modal-sub{font-size:14px; line-height:20px; color:var(--ink-600); margin:0 0 20px;}
-
-  @media (min-width:1025px){
-    .login-card{
-      max-width:640px; padding:0; display:flex; align-items:stretch; overflow:hidden;
-    }
-    .brand{
-      position:relative; overflow:hidden;
-      flex:0 0 auto; width:auto; flex-direction:column; align-items:flex-start; justify-content:center;
-      gap:12px; padding:40px 24px; margin-bottom:0; border-bottom:none; border-right:1px solid var(--line);
-      background:var(--navy-900);
-    }
-    .brand::before{content:''; position:absolute; width:220px; height:220px; border-radius:50%;
-      background:var(--accent-600); opacity:.18; bottom:-110px; left:-70px;}
-    .brand::after{content:''; position:absolute; width:140px; height:140px; border-radius:50%;
-      background:var(--accent-500); opacity:.16; top:-50px; right:-50px;}
-    .brand > *{position:relative;}
-    .brand-mark{width:44px; height:24px;}
-    .brand-text .name{color:#fff;}
-    .login-form, .success{flex:1 1 auto; padding:40px 36px; align-self:center;}
-    h1, .sub{text-align:left;}
-  }
 </style>
 </head>
 <body>
@@ -267,7 +249,6 @@
       <span id="sppModalTitle">СПП проекта</span>
       <button type="button" class="modal-close" id="sppModalClose" aria-label="Закрыть">×</button>
     </div>
-    <p class="modal-sub">Укажите шестизначный номер СПП, чтобы продолжить</p>
     <div class="field" data-field="spp">
       <label>СПП проекта <span class="hint">— 6 цифр</span></label>
       <input type="text" id="spp" placeholder="202401" inputmode="numeric" maxlength="6" autocomplete="off">
@@ -306,7 +287,7 @@
   const sppModalOverlay = document.getElementById('sppModalOverlay');
   function openSppModal(){
     sppModalOverlay.classList.add('show');
-    setTimeout(() => sppInput.focus(), 150);
+    setTimeout(() => sppInput.focus(), 350);
   }
   function closeSppModal(){
     sppModalOverlay.classList.remove('show');
