@@ -25,7 +25,7 @@
     --red-50:#ffedf0;
     --green-700:#0d932b;
     --green-50:#e5f8e8;
-    --logo-blue:#1492ff;
+    --logo-blue:#0b5fc2;
 
     --font-display:'Golos Text','PT Root UI','Segoe UI',Arial,sans-serif;
     --font-body:'Golos Text','PT Root UI','Segoe UI',Arial,sans-serif;
@@ -84,8 +84,13 @@
   :root[data-theme="dark"] .theme-toggle .icon-moon{opacity:1; transform:rotate(0deg) scale(1);}
 
   /* Карточка чуть шире (396px) — под более компактные, приземистые карточки ролей,
-     чтобы пропорции читались приятнее, без ощущения вытянутости по вертикали. */
+     чтобы пропорции читались приятнее, без ощущения вытянутости по вертикали.
+     Как и модальное окно СПП, карточка входа всегда светлая — не переключается
+     на тёмную тему (тёмным остаётся только фон страницы вокруг неё). */
   .login-card{
+    --canvas:#edeeef; --paper-0:#ffffff; --line:#e5e8ea;
+    --ink-900:#001729; --ink-700:#4d5d69; --ink-600:#66747e; --ink-400:#99a2a9;
+    --accent-50:#e8f5ff; --accent-100:#cbe1ff; --red-50:#ffedf0; --green-50:#e5f8e8;
     width:100%; max-width:396px; background:var(--paper-0); border:1px solid var(--line);
     border-radius:var(--radius-card); box-shadow:var(--shadow-pop); padding:28px;
   }
@@ -94,10 +99,14 @@
      чуть короче ширины карточки — со скромным отступом от краёв, стильнее сплошной во всю ширину */
   .brand{display:flex; align-items:center; justify-content:center; gap:12px;
     padding:0 16px 20px; margin:0 -16px 24px; border-bottom:1px solid var(--line);}
-  .brand-mark{width:40px; height:22px; flex-shrink:0;}
+  .brand-mark{width:46px; height:25px; flex-shrink:0;}
   .brand-mark svg{width:100%; height:100%;}
-  /* Body1-Bold (16/24, 700) */
-  .brand-text .name{font-family:var(--font-display); font-weight:700; font-size:16px; line-height:24px; color:var(--ink-900);}
+  /* чуть крупнее прежнего (16→19px), градиентная заливка текста названия */
+  .brand-text .name{
+    font-family:var(--font-display); font-weight:700; font-size:19px; line-height:26px;
+    background:linear-gradient(90deg, var(--navy-900), var(--accent-600));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
 
   form{display:flex; flex-direction:column; gap:16px;}
   .row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
@@ -204,8 +213,8 @@
     transition:transform .22s cubic-bezier(.16,1,.3,1);}
   .modal-overlay.show .modal-card{transform:scale(1) translateY(0);}
   .modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;}
-  /* Subheading3-Medium (20/28, 500) */
-  .modal-head span{font-family:var(--font-display); font-size:20px; line-height:28px; font-weight:500; color:var(--ink-900);}
+  /* Body1-Bold (16/24, 700) — компактнее прежнего Subheading3 (20/28) */
+  .modal-head span{font-family:var(--font-display); font-size:16px; line-height:24px; font-weight:700; color:var(--ink-900);}
   .modal-close{border:none; background:none; width:28px; height:28px; border-radius:50%; color:var(--ink-400);
     font-size:20px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;
     transition:background-color .2s ease, color .2s ease, transform .25s ease;}
