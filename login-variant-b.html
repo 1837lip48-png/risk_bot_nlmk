@@ -82,9 +82,9 @@
   }
 
   /* лэйбл компании + название системы над «Вход в систему»; разделительная линия
-     растянута на всю ширину карточки (выходит за паддинг карточки) */
+     чуть короче ширины карточки — со скромным отступом от краёв, стильнее сплошной во всю ширину */
   .brand{display:flex; align-items:center; justify-content:center; gap:12px;
-    padding:0 32px 20px; margin:0 -32px 24px; border-bottom:1px solid var(--line);}
+    padding:0 16px 20px; margin:0 -16px 24px; border-bottom:1px solid var(--line);}
   .brand-mark{width:40px; height:22px; flex-shrink:0;}
   .brand-mark svg{width:100%; height:100%;}
   /* Body1-Bold (16/24, 700) */
@@ -94,8 +94,7 @@
   h1{font-family:var(--font-display); font-size:20px; line-height:28px; font-weight:800; letter-spacing:-0.1px; text-align:center; margin:0 0 24px;}
 
   form{display:flex; flex-direction:column; gap:16px;}
-  /* gap 16px — как в референсе (grid Имя/Фамилия, gap: '16px') */
-  .row{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
 
   .field{display:flex; flex-direction:column; gap:8px;}
   /* Caption-Medium (12/16, 600) */
@@ -116,6 +115,11 @@
      и уменьшается — так система «реагирует» на ввод данных. */
   .field .input-float{position:relative;}
   .field .input-float input{padding:19px 14px 7px;}
+  /* плейсхолдер («Иван»/«Петров») скрыт, пока лейбл не всплыл — иначе он
+     наложится на лейбл «Имя»/«Фамилия»; появляется только в фокусе, ровно
+     на месте всплывшего текста, как в референсе Input label+placeholder */
+  .field .input-float input::placeholder{opacity:0; transition:opacity .18s ease;}
+  .field .input-float input:focus::placeholder{opacity:1;}
   .field .input-float label{
     position:absolute; left:15px; top:50%; transform:translateY(-50%);
     font-size:14px; line-height:20px; font-weight:400; color:var(--ink-400);
@@ -215,13 +219,13 @@
       <div class="row">
         <div class="field" data-field="firstName">
           <div class="input-float">
-            <input type="text" id="firstName" placeholder=" " autocomplete="given-name">
+            <input type="text" id="firstName" placeholder="Иван" autocomplete="given-name">
             <label for="firstName">Имя</label>
           </div>
         </div>
         <div class="field" data-field="lastName">
           <div class="input-float">
-            <input type="text" id="lastName" placeholder=" " autocomplete="family-name">
+            <input type="text" id="lastName" placeholder="Петров" autocomplete="family-name">
             <label for="lastName">Фамилия</label>
           </div>
         </div>
