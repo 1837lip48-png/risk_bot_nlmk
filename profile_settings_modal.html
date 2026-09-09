@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Настройки профиля · НЛМК ds-2.0</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --navy-900:#112542;
+    --accent-600:#167ffb;
+    --accent-100:#cbe1ff;
+    --ink-900:#001729;
+    --ink-700:#4d5d69;
+    --ink-600:#66747e;
+    --ink-400:#99a2a9;
+    --paper-0:#ffffff;
+    --canvas:#edeeef;
+    --line:#e5e8ea;
+    --font-display:'Golos Text', 'PT Root UI', 'Segoe UI', Arial, sans-serif;
+    --font-body:'Golos Text', 'PT Root UI', 'Segoe UI', Arial, sans-serif;
+    --radius-sm:4px;
+    --radius-card:8px;
+    --shadow-pop: 0 10px 28px -6px rgba(0,23,41,.22), 0 2px 6px rgba(0,23,41,.10);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--canvas); color:var(--ink-900); font-family:var(--font-body); font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; padding:40px;}
+  h1,h2,h3{font-family:var(--font-display); margin:0; color:var(--ink-900);}
+
+  /* ---------- Box (display:flex, flexDirection:column, gap, width) ---------- */
+  .box{display:flex; flex-direction:column; gap:12px; width:100%; max-width:480px;}
+
+  /* ---------- Typography ---------- */
+  .typo-body2-medium{font-size:13px; font-weight:500; line-height:1.5;}
+  .typo-color-secondary{color:var(--ink-600);}
+  .typo-heading3{font-size:19px; font-weight:700;}
+
+  /* ---------- Button ---------- */
+  .btn{appearance:none; border:none; cursor:pointer; font-family:inherit; font-size:14px; font-weight:600; border-radius:var(--radius-sm); padding:10px 18px; line-height:1; transition:background .15s ease;}
+  .btn-primary{background:var(--accent-600); color:#fff;}
+  .btn-primary:hover{background:#0e6fe0;}
+  .btn-secondary{background:var(--paper-0); color:var(--ink-900); border:1px solid var(--line);}
+  .btn-secondary:hover{background:var(--canvas);}
+
+  /* ---------- Modal ---------- */
+  /* isolation: isolate на Modal создаёт новый stacking context —
+     любой z-index внутри (в т.ч. Tabs, z-index:10) не может вылезти
+     поверх контента, находящегося вне Modal. */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(0,23,41,.45);
+    display:none; align-items:center; justify-content:center; z-index:1000;
+    padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    isolation:isolate;
+    background:var(--paper-0);
+    border-radius:var(--radius-card);
+    box-shadow:var(--shadow-pop);
+    padding:24px;
+    max-height:90vh;
+    overflow:auto;
+  }
+  .modal-inner{display:flex; flex-direction:column; width:100%; min-width:480px;}
+  .modal-inner .typo-heading3{padding:0 0 20px;}
+
+  /* ---------- Tabs ---------- */
+  .tabs{display:flex; gap:4px; border-bottom:1px solid var(--line); position:relative; z-index:10;}
+  .tab{appearance:none; background:none; border:none; cursor:pointer; font-family:inherit; font-size:14px; font-weight:600; color:var(--ink-600); padding:10px 14px; position:relative; margin-bottom:-1px;}
+  .tab.active{color:var(--accent-600);}
+  .tab.active::after{content:''; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--accent-600); border-radius:2px 2px 0 0;}
+  .tab:hover:not(.active){color:var(--ink-900);}
+
+  /* ---------- Content box ---------- */
+  .content-box{display:flex; flex-direction:column; gap:16px; width:100%; padding-top:20px;}
+  .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:16px; width:100%;}
+
+  /* ---------- Input ---------- */
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{font-size:12.5px; font-weight:600; color:var(--ink-700);}
+  .field input{font-family:inherit; font-size:14px; color:var(--ink-900); background:var(--paper-0); border:1px solid var(--line); border-radius:var(--radius-sm); padding:9px 12px; width:100%;}
+  .field input::placeholder{color:var(--ink-400);}
+  .field input:focus{outline:none; border-color:var(--accent-600); box-shadow:0 0 0 3px var(--accent-100);}
+
+  /* ---------- Switch ---------- */
+  .switch-row{display:flex; align-items:center; gap:10px;}
+  .switch{position:relative; width:38px; height:22px; flex-shrink:0;}
+  .switch input{position:absolute; opacity:0; width:100%; height:100%; margin:0; cursor:pointer;}
+  .switch .track{position:absolute; inset:0; background:var(--line); border-radius:11px; transition:background .15s ease;}
+  .switch .thumb{position:absolute; top:2px; left:2px; width:18px; height:18px; background:#fff; border-radius:50%; box-shadow:0 1px 2px rgba(0,23,41,.25); transition:transform .15s ease;}
+  .switch input:checked + .track{background:var(--accent-600);}
+  .switch input:checked + .track + .thumb{transform:translateX(16px);}
+  .switch-row label{font-size:14px; color:var(--ink-900); cursor:pointer;}
+
+  .actions-row{display:flex; gap:12px; justify-content:flex-start;}
+</style>
+</head>
+<body>
+
+  <div class="box">
+    <div class="typo-body2-medium typo-color-secondary">
+      isolation: isolate на Modal не даёт Tabs (z-index: 10) вылезти наружу.
+    </div>
+    <button class="btn btn-primary" id="openBtn">Настройки профиля</button>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-inner">
+        <h3 class="typo-heading3" id="modalTitle">Настройки профиля</h3>
+
+        <div class="tabs" id="tabs">
+          <button class="tab active" data-tab="profile">Профиль</button>
+          <button class="tab" data-tab="security">Безопасность</button>
+          <button class="tab" data-tab="notifications">Уведомления</button>
+        </div>
+
+        <div class="content-box">
+          <div class="grid-2">
+            <div class="field">
+              <label for="firstName">Имя</label>
+              <input id="firstName" type="text" placeholder="Иван">
+            </div>
+            <div class="field">
+              <label for="lastName">Фамилия</label>
+              <input id="lastName" type="text" placeholder="Петров">
+            </div>
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" type="text" placeholder="ivan@nlmk.com">
+          </div>
+          <div class="field">
+            <label for="position">Должность</label>
+            <input id="position" type="text" placeholder="Инженер-металлург">
+          </div>
+
+          <div class="switch-row">
+            <span class="switch">
+              <input type="checkbox" id="notifications" checked>
+              <span class="track"></span>
+              <span class="thumb"></span>
+            </span>
+            <label for="notifications">Получать уведомления на email</label>
+          </div>
+
+          <div class="actions-row">
+            <button class="btn btn-primary" id="saveBtn">Сохранить</button>
+            <button class="btn btn-secondary" id="cancelBtn">Отмена</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const overlay = document.getElementById('modalOverlay');
+  const openBtn = document.getElementById('openBtn');
+  const saveBtn = document.getElementById('saveBtn');
+  const cancelBtn = document.getElementById('cancelBtn');
+  const tabs = document.getElementById('tabs');
+
+  function openModal(){ overlay.classList.add('open'); }
+  function closeModal(){ overlay.classList.remove('open'); }
+
+  openBtn.addEventListener('click', openModal);
+  saveBtn.addEventListener('click', closeModal);
+  cancelBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+
+  tabs.addEventListener('click', (e) => {
+    const btn = e.target.closest('.tab');
+    if (!btn) return;
+    tabs.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+  });
+</script>
+
+</body>
+</html>
