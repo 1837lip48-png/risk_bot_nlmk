@@ -33,7 +33,7 @@
 
     --shadow-pop:0 20px 50px -20px rgba(0,23,41,.25);
     --shadow-modal:0 24px 60px -16px rgba(0,23,41,.35);
-    --radius-card:16px;
+    --radius-card:20px;
     --radius-field:8px;
   }
 
@@ -91,18 +91,15 @@
   .brand-text .name{font-family:var(--font-display); font-weight:700; font-size:16px; line-height:24px; color:var(--ink-900);}
 
   /* Heading4 (20/28, 800) */
-  h1{font-family:var(--font-display); font-size:20px; line-height:28px; font-weight:800; letter-spacing:-0.1px; text-align:center; margin:0 0 4px;}
-  /* Body2 (14/20, 400) */
-  .sub{font-size:14px; line-height:20px; color:var(--ink-700); text-align:center; margin:0 0 24px;}
+  h1{font-family:var(--font-display); font-size:20px; line-height:28px; font-weight:800; letter-spacing:-0.1px; text-align:center; margin:0 0 24px;}
 
   form{display:flex; flex-direction:column; gap:16px;}
-  .row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  /* gap 16px — как в референсе (grid Имя/Фамилия, gap: '16px') */
+  .row{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
 
   .field{display:flex; flex-direction:column; gap:8px;}
   /* Caption-Medium (12/16, 600) */
   .field label{font-size:12px; line-height:16px; font-weight:600; color:var(--ink-600); text-transform:uppercase; letter-spacing:.2px;}
-  /* Caption (12/16, 400) */
-  .field .hint{font-size:12px; line-height:16px; color:var(--ink-400); font-weight:400; text-transform:none; letter-spacing:0;}
 
   /* Body2 (14/20, 400) */
   .field input{
@@ -159,13 +156,13 @@
   .login-form.hide, .success.hide{display:none;}
 
   /* модальное окно ввода СПП — открывается поверх страницы, не сдвигая её содержимое */
-  /* модальное окно СПП — плавное появление (350/450мс, ease-out) */
+  /* модальное окно СПП — быстрое, но плавное появление (ease-out, без резкого скачка) */
   .modal-overlay{position:fixed; inset:0; background:rgba(0,23,41,.45); display:flex; align-items:center;
-    justify-content:center; padding:24px; z-index:50; opacity:0; pointer-events:none; transition:opacity .35s ease-out;}
+    justify-content:center; padding:24px; z-index:50; opacity:0; pointer-events:none; transition:opacity .18s ease-out;}
   .modal-overlay.show{opacity:1; pointer-events:auto;}
   .modal-card{width:100%; max-width:340px; background:var(--paper-0); border-radius:var(--radius-card);
-    box-shadow:var(--shadow-modal); padding:28px; transform:scale(.94) translateY(10px);
-    transition:transform .45s cubic-bezier(.16,1,.3,1);}
+    box-shadow:var(--shadow-modal); padding:28px; transform:scale(.96) translateY(6px);
+    transition:transform .22s cubic-bezier(.16,1,.3,1);}
   .modal-overlay.show .modal-card{transform:scale(1) translateY(0);}
   .modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;}
   /* Subheading3-Medium (20/28, 500) */
@@ -195,7 +192,6 @@
 
   <div class="login-form" id="loginForm">
     <h1>Вход в систему</h1>
-    <p class="sub">Укажите себя и роль</p>
 
     <form id="entryForm" novalidate>
       <div class="row">
@@ -250,7 +246,7 @@
       <button type="button" class="modal-close" id="sppModalClose" aria-label="Закрыть">×</button>
     </div>
     <div class="field" data-field="spp">
-      <label>СПП проекта <span class="hint">— 6 цифр</span></label>
+      <label>СПП проекта</label>
       <input type="text" id="spp" placeholder="202401" inputmode="numeric" maxlength="6" autocomplete="off">
       <div class="err-msg">СПП должен состоять ровно из 6 цифр</div>
     </div>
@@ -287,7 +283,7 @@
   const sppModalOverlay = document.getElementById('sppModalOverlay');
   function openSppModal(){
     sppModalOverlay.classList.add('show');
-    setTimeout(() => sppInput.focus(), 350);
+    setTimeout(() => sppInput.focus(), 180);
   }
   function closeSppModal(){
     sppModalOverlay.classList.remove('show');
