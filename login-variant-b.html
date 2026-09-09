@@ -78,11 +78,11 @@
   :root[data-theme="dark"] .theme-toggle .icon-sun{opacity:0; transform:rotate(-90deg) scale(.5);}
   :root[data-theme="dark"] .theme-toggle .icon-moon{opacity:1; transform:rotate(0deg) scale(1);}
 
-  /* Ширина карточки — 400px: стандартный диапазон для логин-форм (~360-440px),
-     достаточно места для двухколоночных полей без избыточных пустых полей. */
+  /* Ширина карточки — 376px: без заголовка «Вход в систему» содержимого стало
+     меньше, поэтому карточка и внутренние отступы уменьшены пропорционально. */
   .login-card{
-    width:100%; max-width:400px; background:var(--paper-0); border:1px solid var(--line);
-    border-radius:var(--radius-card); box-shadow:var(--shadow-pop); padding:32px;
+    width:100%; max-width:376px; background:var(--paper-0); border:1px solid var(--line);
+    border-radius:var(--radius-card); box-shadow:var(--shadow-pop); padding:28px;
   }
 
   /* лэйбл компании + название системы над «Вход в систему»; разделительная линия
@@ -93,9 +93,6 @@
   .brand-mark svg{width:100%; height:100%;}
   /* Body1-Bold (16/24, 700) */
   .brand-text .name{font-family:var(--font-display); font-weight:700; font-size:16px; line-height:24px; color:var(--ink-900);}
-
-  /* Heading4 (20/28, 800) */
-  h1{font-family:var(--font-display); font-size:20px; line-height:28px; font-weight:800; letter-spacing:-0.1px; text-align:center; margin:0 0 24px;}
 
   form{display:flex; flex-direction:column; gap:16px;}
   .row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
@@ -186,13 +183,12 @@
   .modal-overlay{position:fixed; inset:0; background:rgba(0,23,41,.45); display:flex; align-items:center;
     justify-content:center; padding:24px; z-index:50; opacity:0; pointer-events:none; transition:opacity .18s ease-out;}
   .modal-overlay.show{opacity:1; pointer-events:auto;}
-  .modal-card{width:100%; max-width:340px; background:var(--paper-0); border-radius:var(--radius-card);
-    box-shadow:var(--shadow-modal); padding:28px; transform:scale(.96) translateY(6px);
+  .modal-card{width:100%; max-width:308px; background:var(--paper-0); border-radius:var(--radius-card);
+    box-shadow:var(--shadow-modal); padding:24px; transform:scale(.96) translateY(6px);
     transition:transform .22s cubic-bezier(.16,1,.3,1);}
   .modal-overlay.show .modal-card{transform:scale(1) translateY(0);}
-  .modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;}
-  /* Subheading3-Medium (20/28, 500) */
-  .modal-head span{font-family:var(--font-display); font-size:20px; line-height:28px; font-weight:500; color:var(--ink-900);}
+  /* заголовок убран — он дублировал лейбл поля «СПП проекта»; остаётся только закрытие */
+  .modal-head{display:flex; align-items:center; justify-content:flex-end; margin-bottom:12px;}
   .modal-close{border:none; background:none; width:28px; height:28px; border-radius:50%; color:var(--ink-400);
     font-size:20px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;
     transition:background-color .2s ease, color .2s ease, transform .25s ease;}
@@ -217,8 +213,6 @@
   </div>
 
   <div class="login-form" id="loginForm">
-    <h1>Вход в систему</h1>
-
     <form id="entryForm" novalidate>
       <div class="row">
         <div class="field" data-field="firstName">
@@ -268,9 +262,8 @@
 </div>
 
 <div class="modal-overlay" id="sppModalOverlay">
-  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="sppModalTitle">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-label="СПП проекта">
     <div class="modal-head">
-      <span id="sppModalTitle">СПП проекта</span>
       <button type="button" class="modal-close" id="sppModalClose" aria-label="Закрыть">×</button>
     </div>
     <div class="field" data-field="spp">
@@ -309,6 +302,15 @@
     if (sppInput.value.length === 6) clearFieldError('spp');
   });
 
+  // запрет на цифры в имени/фамилии
+  function stripDigits(e){
+    const input = e.target;
+    const cleaned = input.value.replace(/[0-9]/g, '');
+    if (cleaned !== input.value) input.value = cleaned;
+  }
+  firstNameInput.addEventListener('input', stripDigits);
+  lastNameInput.addEventListener('input', stripDigits);
+
   // модальное окно СПП — фиксированный оверлей, не влияет на раскладку страницы
   const sppModalOverlay = document.getElementById('sppModalOverlay');
   function openSppModal(){
@@ -328,15 +330,14 @@
     opt.addEventListener('click', () => {
       const firstName = firstNameInput.value.trim();
       const lastName = lastNameInput.value.trim();
-      let ok = true;
-      if (!firstName){ setFieldError('firstName', true); ok = false; } else clearFieldError('firstName');
-      if (!lastName){ setFieldError('lastName', true); ok = false; } else clearFieldError('lastName');
-      if (!ok) return;
+      // пустое поле не подсвечивается красным — просто не даём продолжить
+      // и мягко возвращаем фокус на то, что нужно заполнить
+      if (!firstName){ firstNameInput.focus(); return; }
+      if (!lastName){ lastNameInput.focus(); return; }
 
       roleOpts.forEach(o => o.classList.remove('active'));
       opt.classList.add('active');
       selectedRole = opt.dataset.value;
-      clearFieldError('role');
       openSppModal();
     });
   });
