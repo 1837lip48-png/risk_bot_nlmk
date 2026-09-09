@@ -60,8 +60,10 @@
   }
 
   *{box-sizing:border-box;}
-  /* переключение темы — мгновенное, без наложения обычных hover/focus-переходов */
+  /* переключение темы — мгновенное для фонов/границ (без наложения hover-переходов),
+     но иконка солнце/луна на кнопке должна анимироваться как обычно, плавно */
   .theme-switching, .theme-switching *{transition:none !important;}
+  .theme-switching .theme-toggle svg{transition:opacity .25s ease, transform .35s ease !important;}
   html,body{margin:0;padding:0;height:100%;}
   body{
     background:var(--canvas); color:var(--ink-900); font-family:var(--font-body);
@@ -85,12 +87,8 @@
 
   /* Карточка чуть шире (396px) — под более компактные, приземистые карточки ролей,
      чтобы пропорции читались приятнее, без ощущения вытянутости по вертикали.
-     Как и модальное окно СПП, карточка входа всегда светлая — не переключается
-     на тёмную тему (тёмным остаётся только фон страницы вокруг неё). */
+     Карточка снова реагирует на тёмную тему как обычно (не закреплена белой). */
   .login-card{
-    --canvas:#edeeef; --paper-0:#ffffff; --line:#e5e8ea;
-    --ink-900:#001729; --ink-700:#4d5d69; --ink-600:#66747e; --ink-400:#99a2a9;
-    --accent-50:#e8f5ff; --accent-100:#cbe1ff; --red-50:#ffedf0; --green-50:#e5f8e8;
     width:100%; max-width:396px; background:var(--paper-0); border:1px solid var(--line);
     border-radius:var(--radius-card); box-shadow:var(--shadow-pop); padding:28px;
   }
