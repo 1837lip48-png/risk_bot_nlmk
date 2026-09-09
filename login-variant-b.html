@@ -83,10 +83,10 @@
   :root[data-theme="dark"] .theme-toggle .icon-sun{opacity:0; transform:rotate(-90deg) scale(.5);}
   :root[data-theme="dark"] .theme-toggle .icon-moon{opacity:1; transform:rotate(0deg) scale(1);}
 
-  /* Ширина карточки — 376px: без заголовка «Вход в систему» содержимого стало
-     меньше, поэтому карточка и внутренние отступы уменьшены пропорционально. */
+  /* Карточка чуть шире (396px) — под более компактные, приземистые карточки ролей,
+     чтобы пропорции читались приятнее, без ощущения вытянутости по вертикали. */
   .login-card{
-    width:100%; max-width:376px; background:var(--paper-0); border:1px solid var(--line);
+    width:100%; max-width:396px; background:var(--paper-0); border:1px solid var(--line);
     border-radius:var(--radius-card); box-shadow:var(--shadow-pop); padding:28px;
   }
 
@@ -142,14 +142,14 @@
   /* Карточки ролей с иконкой сверху и описанием (формат по референсу «Choose Your Role»),
      цвета и иконки — корпоративные ds-2.0 */
   .role-cards{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
-  .role-card{display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px;
-    border:1px solid var(--line); border-radius:var(--radius-field); padding:20px 12px; cursor:pointer;
+  .role-card{display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px;
+    border:1px solid var(--line); border-radius:var(--radius-field); padding:14px 14px; cursor:pointer;
     background:var(--paper-0); transition:border-color .25s ease, background-color .25s ease, box-shadow .25s ease, transform .2s ease;}
   .role-card:hover{border-color:var(--accent-100); transform:translateY(-1px);}
-  .role-card-icon{width:44px; height:44px; border-radius:50%; background:var(--accent-50); color:var(--accent-600);
+  .role-card-icon{width:38px; height:38px; border-radius:50%; background:var(--accent-50); color:var(--accent-600);
     display:flex; align-items:center; justify-content:center;
     transition:background-color .25s ease, color .25s ease, transform .3s cubic-bezier(.34,1.56,.64,1);}
-  .role-card-icon svg{width:22px; height:22px;}
+  .role-card-icon svg{width:19px; height:19px;}
   .role-card-title{font-size:14px; line-height:20px; font-weight:600; color:var(--ink-900);}
   .role-card-desc{font-size:12px; line-height:16px; color:var(--ink-600);}
   .role-card.active{border-color:var(--accent-600); background:var(--accent-50); box-shadow:0 0 0 3px var(--accent-100);}
@@ -191,7 +191,15 @@
   .modal-overlay{position:fixed; inset:0; background:rgba(0,23,41,.45); display:flex; align-items:center;
     justify-content:center; padding:24px; z-index:50; opacity:0; pointer-events:none; transition:opacity .18s ease-out;}
   .modal-overlay.show{opacity:1; pointer-events:auto;}
-  .modal-card{width:100%; max-width:308px; background:var(--paper-0); border-radius:var(--radius-card);
+  .modal-card{
+    /* модальное окно СПП всегда светлое — не переключается на тёмную тему,
+     * локально переопределяем токены цвета в их «светлых» значениях, поэтому
+     * все внутренние правила (var(--paper-0), var(--ink-900) и т.д.) остаются
+     * светлыми независимо от [data-theme="dark"] на <html> */
+    --canvas:#edeeef; --paper-0:#ffffff; --line:#e5e8ea;
+    --ink-900:#001729; --ink-700:#4d5d69; --ink-600:#66747e; --ink-400:#99a2a9;
+    --accent-50:#e8f5ff; --accent-100:#cbe1ff; --red-50:#ffedf0;
+    width:100%; max-width:308px; background:var(--paper-0); border-radius:var(--radius-card);
     box-shadow:var(--shadow-modal); padding:24px; transform:scale(.96) translateY(6px);
     transition:transform .22s cubic-bezier(.16,1,.3,1);}
   .modal-overlay.show .modal-card{transform:scale(1) translateY(0);}
@@ -244,7 +252,7 @@
           <div class="role-card" data-value="riskmanager">
             <span class="role-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></span>
             <span class="role-card-title">Риск-менеджер</span>
-            <span class="role-card-desc">Ведёт реестр и верифицирует данные</span>
+            <span class="role-card-desc">Владелец реестра рисков проекта</span>
           </div>
           <div class="role-card" data-value="initiator">
             <span class="role-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h13l-3 4 3 4H5"/></svg></span>
@@ -314,14 +322,21 @@
     if (digits.length === 6) clearFieldError('spp');
   });
 
-  // запрет на цифры в имени/фамилии
-  function stripDigits(e){
+  function resetRoleSelection(){
+    roleOpts.forEach(o => o.classList.remove('active'));
+    selectedRole = '';
+  }
+
+  // запрет на цифры в имени/фамилии; если имя или фамилию стёрли — выбор роли
+  // сбрасывается, иначе роль выглядит «заблокированной» на старом значении
+  function handleNameInput(e){
     const input = e.target;
     const cleaned = input.value.replace(/[0-9]/g, '');
     if (cleaned !== input.value) input.value = cleaned;
+    if (!input.value.trim()) resetRoleSelection();
   }
-  firstNameInput.addEventListener('input', stripDigits);
-  lastNameInput.addEventListener('input', stripDigits);
+  firstNameInput.addEventListener('input', handleNameInput);
+  lastNameInput.addEventListener('input', handleNameInput);
 
   // модальное окно СПП — фиксированный оверлей, не влияет на раскладку страницы
   const sppModalOverlay = document.getElementById('sppModalOverlay');
@@ -381,8 +396,7 @@
   document.getElementById('resetBtn').addEventListener('click', () => {
     document.getElementById('entryForm').reset();
     sppInput.value = '';
-    roleOpts.forEach(o => o.classList.remove('active'));
-    selectedRole = '';
+    resetRoleSelection();
     closeSppModal();
     ['firstName','lastName','role','spp'].forEach(clearFieldError);
   });
