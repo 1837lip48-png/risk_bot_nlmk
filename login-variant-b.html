@@ -119,13 +119,13 @@
   .field .input-float label{
     position:absolute; left:15px; top:50%; transform:translateY(-50%);
     font-size:14px; line-height:20px; font-weight:400; color:var(--ink-400);
-    text-transform:none; letter-spacing:0; pointer-events:none;
-    transition:top .18s ease, transform .18s ease, font-size .18s ease, color .18s ease, font-weight .18s ease;
+    text-transform:none; letter-spacing:0; pointer-events:none; background:transparent; padding:0 4px;
+    transition:top .18s ease, transform .18s ease, font-size .18s ease, color .18s ease, left .18s ease, background-color .18s ease;
   }
   .field .input-float input:focus + label,
   .field .input-float input:not(:placeholder-shown) + label{
-    top:9px; transform:translateY(0); font-size:10.5px; font-weight:700;
-    letter-spacing:.3px; text-transform:uppercase; color:var(--ink-600);
+    top:0; transform:translateY(-50%); left:11px; font-size:12px; font-weight:400;
+    letter-spacing:0; text-transform:none; color:var(--ink-600); background:var(--paper-0);
   }
   .field .input-float input:focus + label{color:var(--accent-600);}
 
@@ -218,14 +218,12 @@
             <input type="text" id="firstName" placeholder=" " autocomplete="given-name">
             <label for="firstName">Имя</label>
           </div>
-          <div class="err-msg">Укажите имя</div>
         </div>
         <div class="field" data-field="lastName">
           <div class="input-float">
             <input type="text" id="lastName" placeholder=" " autocomplete="family-name">
             <label for="lastName">Фамилия</label>
           </div>
-          <div class="err-msg">Укажите фамилию</div>
         </div>
       </div>
 
@@ -392,6 +390,10 @@
     if (saved){
       firstNameInput.value = saved.firstName || '';
       lastNameInput.value = saved.lastName || '';
+      // установка value через JS не пересчитывает :placeholder-shown сама —
+      // синтетическое input-событие форсирует всплытие лейбла
+      firstNameInput.dispatchEvent(new Event('input'));
+      lastNameInput.dispatchEvent(new Event('input'));
       sppInput.value = saved.spp || '';
       if (saved.role){
         selectedRole = saved.role;
