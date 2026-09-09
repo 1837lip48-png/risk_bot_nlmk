@@ -145,6 +145,9 @@
   .field .input-float input:not(:placeholder-shown) + label{
     top:0; transform:translateY(-50%); left:13px; font-size:12px; font-weight:400;
     letter-spacing:0; text-transform:none; color:var(--ink-600); background:var(--paper-0);
+    /* сплошной белый ореол со всех сторон текста — надёжнее, чем просто фон:
+       гарантированно перекрывает линию рамки под лейблом, без тонких просветов */
+    box-shadow:0 0 0 4px var(--paper-0);
   }
   .field .input-float input:focus + label{color:var(--accent-600);}
 
@@ -434,25 +437,6 @@
     applyTheme(isDark);
     try { localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light'); } catch (err) {}
   });
-
-  // восстановление ранее введённых данных (без автооткрытия модального окна)
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-    if (saved){
-      firstNameInput.value = saved.firstName || '';
-      lastNameInput.value = saved.lastName || '';
-      // установка value через JS не пересчитывает :placeholder-shown сама —
-      // синтетическое input-событие форсирует всплытие лейбла
-      firstNameInput.dispatchEvent(new Event('input'));
-      lastNameInput.dispatchEvent(new Event('input'));
-      sppInput.value = saved.spp || '';
-      sppInput.dispatchEvent(new Event('input'));
-      if (saved.role){
-        selectedRole = saved.role;
-        roleOpts.forEach(o => o.classList.toggle('active', o.dataset.value === saved.role));
-      }
-    }
-  } catch (err) {}
 </script>
 </body>
 </html>
