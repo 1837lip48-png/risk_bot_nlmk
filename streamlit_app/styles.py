@@ -20,6 +20,20 @@ TOKENS_LIGHT = """
   --font-body:'Golos Text','PT Root UI','Segoe UI',Arial,sans-serif;
   --font-mono:'IBM Plex Mono','SFMono-Regular',monospace;
   --radius-card:8px; --radius-chip:4px;
+
+  /* Alias — точные имена переменных severity из ds-2.0/src/components/Alert
+     (Alert.module.scss: --spectrum-<color>-10 = фон, --spectrum-<color>-60 = текст) */
+  --spectrum-green-10:var(--green-50); --spectrum-green-60:var(--green-700);
+  --spectrum-red-10:var(--red-50);     --spectrum-red-60:var(--red-700);
+  --spectrum-yellow-10:var(--gold-50); --spectrum-orange-60:var(--amber-700);
+  --spectrum-sky-10:var(--cyan-50);    --spectrum-sky-60:var(--cyan-700);
+
+  /* Типографика ds-2.0 (Typography.module.scss: heading1-48 … caption-12) */
+  --fs-h1:48px; --lh-h1:56px; --fs-h2:32px; --lh-h2:40px;
+  --fs-h3:24px; --lh-h3:32px; --fs-h4:20px; --lh-h4:28px;
+  --fs-sub1:32px; --lh-sub1:40px; --fs-sub2:24px; --lh-sub2:32px;
+  --fs-body:18px; --lh-body:28px; --fs-body1:16px; --lh-body1:24px;
+  --fs-body2:14px; --lh-body2:20px; --fs-caption:12px; --lh-caption:16px;
 }
 """
 
@@ -76,7 +90,14 @@ html, body, [class*="css"] {{ font-family: var(--font-body); }}
 #MainMenu, footer, header[data-testid="stHeader"] {{ visibility: hidden; height: 0; }}
 .block-container {{ padding-top: 1.2rem; padding-bottom: 2rem; max-width: 1280px; }}
 
-h1,h2,h3,h4 {{ font-family: var(--font-display); color: var(--ink-900); }}
+/* ---------- Типографика (ds-2.0: Heading1-4 / Subheading1-2 / Body / Caption) ---------- */
+h1,h2,h3,h4 {{ font-family: var(--font-display); color: var(--ink-900); font-weight:800; }}
+h1 {{ font-size:var(--fs-h1); line-height:var(--lh-h1); }}
+h2 {{ font-size:var(--fs-h2); line-height:var(--lh-h2); }}
+h3 {{ font-size:var(--fs-h3); line-height:var(--lh-h3); }}
+h4 {{ font-size:var(--fs-h4); line-height:var(--lh-h4); }}
+div[data-testid="stCaptionContainer"] p {{ font-size:var(--fs-caption); line-height:var(--lh-caption); color:var(--ink-600); }}
+p, div[data-testid="stMarkdownContainer"] p {{ font-size:var(--fs-body2); line-height:var(--lh-body2); }}
 
 /* ---------- Карточки/панели (нативные bordered-контейнеры Streamlit) ---------- */
 div[data-testid="stVerticalBlockBorderWrapper"] {{
@@ -90,6 +111,23 @@ div[data-testid="stVerticalBlockBorderWrapper"].login-card,
 .st-key-profile_box div[data-testid="stVerticalBlockBorderWrapper"] {{
   box-shadow: 0 20px 50px -20px rgba(0,23,41,.25);
 }}
+
+/* ---------- Alert (ds-2.0/src/components/Alert): фон = spectrum-X-10, текст = spectrum-X-60,
+   radius 4px, padding 12px, gap 8px, min-height 48px — применено к нативным st.error/
+   st.warning/st.success/st.info и st.toast, которые по умолчанию используют не-НЛМК цвета. */
+div[data-testid="stAlertContainer"] {{
+  border-radius:4px !important; padding:12px !important; min-height:48px; gap:8px; border:none !important;
+}}
+div[data-testid="stAlertContainer"]:has(div[data-testid="stAlertContentSuccess"]) {{ background:var(--spectrum-green-10) !important; }}
+div[data-testid="stAlertContentSuccess"], div[data-testid="stAlertContentSuccess"] * {{ color:var(--spectrum-green-60) !important; fill:var(--spectrum-green-60); }}
+div[data-testid="stAlertContainer"]:has(div[data-testid="stAlertContentError"]) {{ background:var(--spectrum-red-10) !important; }}
+div[data-testid="stAlertContentError"], div[data-testid="stAlertContentError"] * {{ color:var(--spectrum-red-60) !important; fill:var(--spectrum-red-60); }}
+div[data-testid="stAlertContainer"]:has(div[data-testid="stAlertContentWarning"]) {{ background:var(--spectrum-yellow-10) !important; }}
+div[data-testid="stAlertContentWarning"], div[data-testid="stAlertContentWarning"] * {{ color:var(--spectrum-orange-60) !important; fill:var(--spectrum-orange-60); }}
+div[data-testid="stAlertContainer"]:has(div[data-testid="stAlertContentInfo"]) {{ background:var(--spectrum-sky-10) !important; }}
+div[data-testid="stAlertContentInfo"], div[data-testid="stAlertContentInfo"] * {{ color:var(--spectrum-sky-60) !important; fill:var(--spectrum-sky-60); }}
+
+div[data-testid="stToast"] {{ border-radius:4px !important; background:var(--paper-0); border:1px solid var(--line); box-shadow:0 8px 24px -8px rgba(0,23,41,.3); }}
 
 /* ---------- Значки / статусы ---------- */
 .badge {{ display:inline-flex; align-items:center; padding:3px 9px; border-radius:var(--radius-chip); font-size:11.5px; font-weight:700; }}
