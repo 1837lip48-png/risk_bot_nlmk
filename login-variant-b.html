@@ -19,8 +19,9 @@
     --ink-600:#66747e;
     --ink-400:#99a2a9;
     --paper-0:#ffffff;
-    --canvas:#edeeef;
-    --line:#e5e8ea;
+    /* тёплый нейтральный фон (как в интерфейсе Claude), а не холодный серый */
+    --canvas:#f5f4ef;
+    --line:#e5e4dc;
     --red-700:#ee1505;
     --red-50:#ffedf0;
     --green-700:#0d932b;
@@ -45,7 +46,7 @@
      WCAG для тёмных UI (основной текст ~93% белого, не 100% — меньше слепит). */
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
-      --canvas:#1c222a; --paper-0:#363f4c; --line:#576371;
+      --canvas:#262624; --paper-0:#30302e; --line:#3e3d3a;
       --ink-900:#f2f3f4; --ink-700:#ccd2d8; --ink-600:#9aa3ac; --ink-400:#767f89;
       --accent-50:#17233f; --accent-100:#2b4c8c;
       --green-50:#123321; --red-50:#3a1f22;
@@ -58,7 +59,7 @@
     }
   }
   :root[data-theme="dark"]{
-    --canvas:#1c222a; --paper-0:#363f4c; --line:#576371;
+    --canvas:#262624; --paper-0:#30302e; --line:#3e3d3a;
     --ink-900:#f2f3f4; --ink-700:#ccd2d8; --ink-600:#9aa3ac; --ink-400:#767f89;
     --accent-50:#17233f; --accent-100:#2b4c8c;
     --green-50:#123321; --red-50:#3a1f22;
@@ -111,8 +112,9 @@
   /* сплошной var(--logo-blue) — тот же токен, что и у логотипа: раньше лого было
      однотонным, а название градиентным, что давало рассинхрон цветовой логики
      бренд-блока; теперь оба элемента читаются как один цветовой знак */
+  /* Heading3 ds-2.0 (24/32, 800) — было произвольные 23/28 */
   .brand-text .name{
-    font-family:var(--font-display); font-weight:800; font-size:23px; line-height:28px;
+    font-family:var(--font-display); font-weight:800; font-size:24px; line-height:32px;
     color:var(--logo-blue);
   }
 
@@ -262,7 +264,8 @@
   .ws-brand{display:flex; align-items:center; gap:10px; padding:8px 10px 20px;
     border-bottom:1px solid rgba(255,255,255,.12); margin-bottom:12px;}
   .ws-brand .brand-mark{width:36px; height:20px; flex-shrink:0;}
-  .ws-brand .name{font-family:var(--font-display); font-weight:800; font-size:16px; color:#fff;
+  /* Body1-Bold (16/24, 700 — здесь 800 для веса бренд-знака) */
+  .ws-brand .name{font-family:var(--font-display); font-weight:800; font-size:16px; line-height:24px; color:#fff;
     white-space:nowrap; overflow:hidden; opacity:0; max-width:0;
     transition:opacity .2s ease, max-width .32s cubic-bezier(.4,0,.2,1);}
   .ws-sidebar.expanded .ws-brand .name{opacity:1; max-width:160px;}
@@ -287,8 +290,10 @@
   .ws-user-info{min-width:0; overflow:hidden; opacity:0; max-width:0;
     transition:opacity .2s ease, max-width .32s cubic-bezier(.4,0,.2,1);}
   .ws-sidebar.expanded .ws-user-info{opacity:1; max-width:140px;}
-  .ws-user-name{font-size:13px; font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .ws-user-role{font-size:11.5px; color:#8b96aa; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  /* Body2-Bold (14/20, 700) для имени, Caption (12/16) для роли — было
+     произвольные 13px/11.5px без привязки к типографической шкале */
+  .ws-user-name{font-size:14px; line-height:20px; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .ws-user-role{font-size:12px; line-height:16px; color:#8b96aa; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .ws-signout{margin-left:auto; background:none; border:none; color:#8b96aa; cursor:pointer; padding:6px;
     border-radius:6px; display:flex; flex-shrink:0; opacity:0; width:0; padding-left:0; padding-right:0;
     transition:opacity .2s ease, width .32s cubic-bezier(.4,0,.2,1), padding .32s cubic-bezier(.4,0,.2,1),
@@ -304,8 +309,8 @@
   .ws-empty{border:1px dashed var(--line); border-radius:var(--radius-field); padding:48px 24px;
     display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; color:var(--ink-400);}
   .ws-empty svg{width:32px; height:32px; color:var(--ink-400);}
-  .ws-empty strong{font-size:14px; color:var(--ink-600); font-weight:600;}
-  .ws-empty span{font-size:12.5px; max-width:38ch;}
+  .ws-empty strong{font-size:14px; line-height:20px; color:var(--ink-600); font-weight:600;}
+  .ws-empty span{font-size:12px; line-height:16px; max-width:38ch;}
 </style>
 </head>
 <body>
