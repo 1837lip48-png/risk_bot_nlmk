@@ -1,0 +1,1307 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RiskLesson · Вход (вариант B)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+  /* Токены — НЛМК Design System 2.0 (nlmk-group/ds-2.0), согласованы с DESIGN.md проекта.
+     Типографика — реальная шкала Typography ds-2.0 (Heading/Subheading/Body/Body1/Body2/Caption). */
+  :root{
+    --navy-900:#112542;
+    --accent-600:#167ffb;
+    --accent-500:#008fff;
+    --accent-100:#cbe1ff;
+    --accent-50:#e8f5ff;
+    --ink-900:#001729;
+    --ink-700:#4d5d69;
+    --ink-600:#66747e;
+    --ink-400:#99a2a9;
+    --paper-0:#ffffff;
+    /* тёплый нейтральный фон (как в интерфейсе Claude), а не холодный серый */
+    --canvas:#f5f4ef;
+    --line:#e5e4dc;
+    --red-700:#ee1505;
+    --red-50:#ffedf0;
+    --green-700:#0d932b;
+    --green-50:#e5f8e8;
+    /* уровень риска (низкий/средний/высокий) — те же тона, что и в Streamlit-версии */
+    --amber-700:#f97b0f;
+    --amber-50:#fff3e0;
+    --gold-700:#8a6d00;
+    --gold-50:#ffffe6;
+    --logo-blue:#0b5fc2;
+    /* градиент названия «RiskLesson» — корпоративные синие тона НЛМК */
+    --brand-grad-1:var(--navy-900);
+    --brand-grad-2:var(--accent-600);
+
+    --font-display:'Golos Text','PT Root UI','Segoe UI',Arial,sans-serif;
+    --font-body:'Golos Text','PT Root UI','Segoe UI',Arial,sans-serif;
+    --font-mono:'IBM Plex Mono','SFMono-Regular',monospace;
+
+    --shadow-pop:0 20px 50px -20px rgba(0,23,41,.25);
+    --shadow-modal:0 24px 60px -16px rgba(0,23,41,.35);
+    --radius-card:20px;
+    --radius-field:8px;
+  }
+
+  /* Тёмная тема: canvas темнее paper (карточка — «приподнятая» поверхность),
+     line — заметно светлее paper (граница видна), текст — из практики
+     WCAG для тёмных UI (основной текст ~93% белого, не 100% — меньше слепит). */
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --canvas:#262624; --paper-0:#30302e; --line:#3e3d3a;
+      --ink-900:#f2f3f4; --ink-700:#ccd2d8; --ink-600:#9aa3ac; --ink-400:#767f89;
+      --accent-50:#17233f; --accent-100:#2b4c8c;
+      --green-50:#123321; --red-50:#3a1f22; --amber-50:#2e2413; --gold-50:#2c2408;
+      /* в тёмной теме лого и градиент названия светлее — тёмно-синий на тёмном
+         фоне почти не читался */
+      --logo-blue:#5aabff;
+      --brand-grad-1:#5aabff; --brand-grad-2:#a9d6ff;
+      --shadow-pop:0 20px 50px -12px rgba(0,0,0,.6);
+      --shadow-modal:0 24px 60px -12px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"]{
+    --canvas:#262624; --paper-0:#30302e; --line:#3e3d3a;
+    --ink-900:#f2f3f4; --ink-700:#ccd2d8; --ink-600:#9aa3ac; --ink-400:#767f89;
+    --accent-50:#17233f; --accent-100:#2b4c8c;
+    --green-50:#123321; --red-50:#3a1f22; --amber-50:#2e2413; --gold-50:#2c2408;
+    --logo-blue:#5aabff;
+    --brand-grad-1:#5aabff; --brand-grad-2:#a9d6ff;
+    --shadow-pop:0 20px 50px -12px rgba(0,0,0,.6);
+    --shadow-modal:0 24px 60px -12px rgba(0,0,0,.7);
+  }
+
+  *{box-sizing:border-box;}
+  /* переключение темы — мгновенное для фонов/границ (без наложения hover-переходов),
+     но иконка солнце/луна на кнопке должна анимироваться как обычно, плавно */
+  .theme-switching, .theme-switching *{transition:none !important;}
+  .theme-switching .theme-toggle svg{transition:opacity .25s ease, transform .35s ease !important;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:var(--canvas); color:var(--ink-900); font-family:var(--font-body);
+    font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+    -webkit-user-select:none; user-select:none;
+  }
+  /* поля ввода остаются выделяемыми/редактируемыми, всё остальное — нет
+     (лейблы, кнопки, карточки ролей и т.п. не должны вести себя как текст) */
+  .field input{-webkit-user-select:text; user-select:text;}
+
+  .theme-toggle{position:fixed; top:16px; right:16px; z-index:60; width:40px; height:40px; border-radius:50%;
+    border:1px solid var(--line); background:var(--paper-0); cursor:pointer; padding:0;
+    display:flex; align-items:center; justify-content:center;}
+  .theme-toggle svg{position:absolute; width:20px; height:20px; color:var(--ink-700);
+    transition:opacity .25s ease, transform .35s ease;}
+  .theme-toggle .icon-sun{opacity:1; transform:rotate(0deg) scale(1);}
+  .theme-toggle .icon-moon{opacity:0; transform:rotate(90deg) scale(.5);}
+  :root[data-theme="dark"] .theme-toggle .icon-sun{opacity:0; transform:rotate(-90deg) scale(.5);}
+  :root[data-theme="dark"] .theme-toggle .icon-moon{opacity:1; transform:rotate(0deg) scale(1);}
+
+  /* Карточка чуть шире (396px) — под более компактные, приземистые карточки ролей,
+     чтобы пропорции читались приятнее, без ощущения вытянутости по вертикали.
+     Карточка снова реагирует на тёмную тему как обычно (не закреплена белой). */
+  .login-card{
+    width:100%; max-width:396px; background:var(--paper-0); border:1px solid var(--line);
+    border-radius:var(--radius-card); box-shadow:var(--shadow-pop); padding:32px;
+  }
+
+  /* лэйбл компании + название системы над «Вход в систему»; разделительная линия
+     чуть короче ширины карточки — со скромным отступом от краёв, стильнее сплошной во всю ширину */
+  .brand{display:flex; align-items:center; justify-content:center; gap:16px;
+    padding:0 16px 24px; margin:0 -16px 24px; border-bottom:1px solid var(--line);}
+  .brand-mark{width:60px; height:33px; flex-shrink:0;}
+  .brand-mark svg{width:100%; height:100%;}
+  /* сплошной var(--logo-blue) — тот же токен, что и у логотипа: раньше лого было
+     однотонным, а название градиентным, что давало рассинхрон цветовой логики
+     бренд-блока; теперь оба элемента читаются как один цветовой знак */
+  /* Heading3 ds-2.0 (24/32, 800) — было произвольные 23/28 */
+  .brand-text .name{
+    font-family:var(--font-display); font-weight:800; font-size:24px; line-height:32px;
+    color:var(--logo-blue);
+  }
+
+  form{display:flex; flex-direction:column; gap:16px;}
+  .row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+
+  .field{display:flex; flex-direction:column; gap:8px;}
+  /* Caption-Medium (12/16, 600) */
+  .field label{font-size:12px; line-height:16px; font-weight:600; color:var(--ink-600); text-transform:uppercase; letter-spacing:.2px;}
+
+  /* Body2 (14/20, 400) */
+  .field input{
+    border:1px solid var(--line); border-radius:var(--radius-field); padding:12px 16px;
+    font-size:14px; line-height:20px; font-family:inherit; color:var(--ink-900); background:var(--paper-0); width:100%;
+  }
+  .field input:focus{outline:none; border-color:var(--accent-600); box-shadow:0 0 0 3px var(--accent-100);}
+  .field input.err{border-color:var(--red-700);}
+  .field .err-msg{font-size:12px; line-height:16px; color:var(--red-700); background:var(--red-50);
+    padding:4px 8px; border-radius:6px; margin-top:4px; display:none;}
+  .field.invalid .err-msg{display:inline-block;}
+
+  /* Плавающий лейбл — оформление поля Input из референса ds-2.0: лейбл сидит
+     внутри рамки как плейсхолдер, при фокусе/вводе плавно всплывает наверх
+     и уменьшается — так система «реагирует» на ввод данных. */
+  .field .input-float{position:relative;}
+  .field .input-float input{padding:20px 16px 8px;}
+  /* плейсхолдер-пример («Иван»/«19-1991») скрыт, пока лейбл не всплыл — иначе он
+     наложится на лейбл; появляется только в фокусе. Курсивом — чтобы визуально
+     отличаться от реально введённых данных (не путать пример формата со значением). */
+  .field .input-float input::placeholder{opacity:0; font-style:italic; transition:opacity .18s ease;}
+  .field .input-float input:focus::placeholder{opacity:1;}
+  .field .input-float label{
+    position:absolute; left:17px; top:50%; transform:translateY(-50%);
+    /* ink-600, а не ink-400 — на паре ink-400/paper-0 контраст ниже WCAG AA (~2.3:1) */
+    font-size:14px; line-height:20px; font-weight:400; color:var(--ink-600);
+    text-transform:none; letter-spacing:0; pointer-events:none; background:transparent; padding:0 2px;
+    transition:top .18s ease, transform .18s ease, font-size .18s ease, color .18s ease, left .18s ease, background-color .18s ease;
+  }
+  .field .input-float input:focus + label,
+  .field .input-float input:not(:placeholder-shown) + label{
+    top:0; transform:translateY(-50%); left:15px; font-size:12px; font-weight:400;
+    letter-spacing:0; text-transform:none; color:var(--ink-600); background:var(--paper-0);
+    /* сплошной белый ореол со всех сторон текста — надёжнее, чем просто фон:
+       гарантированно перекрывает линию рамки под лейблом, без тонких просветов */
+    box-shadow:0 0 0 4px var(--paper-0);
+  }
+  .field .input-float input:focus + label{color:var(--accent-600);}
+  /* короткая подпись-подсказка под полем — не путать с err-msg */
+  .field-hint{font-size:12px; line-height:16px; color:var(--ink-600); margin-top:4px;}
+  /* хинт под карточками ролей относится к центрированному 2-колоночному гриду
+     выше — должен быть по центру, иначе визуально «съезжает» влево */
+  .field[data-field="role"] .field-hint{text-align:center;}
+
+  /* Карточки ролей с иконкой сверху и описанием (формат по референсу «Choose Your Role»),
+     цвета и иконки — корпоративные ds-2.0 */
+  .role-cards{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .role-card{display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px;
+    border:1px solid var(--line); border-radius:var(--radius-field); padding:16px; cursor:pointer;
+    background:var(--paper-0); transition:border-color .25s ease, background-color .25s ease, box-shadow .25s ease, transform .2s ease;}
+  .role-card:hover{border-color:var(--accent-100); background:var(--accent-50); transform:translateY(-2px); box-shadow:0 8px 16px -10px rgba(0,23,41,.3);}
+  .role-card-icon{width:42px; height:42px; border-radius:50%; background:var(--accent-50); color:var(--accent-600);
+    display:flex; align-items:center; justify-content:center;
+    transition:background-color .25s ease, color .25s ease, transform .3s cubic-bezier(.34,1.56,.64,1);}
+  .role-card-icon svg{width:22px; height:22px;}
+  .role-card-title{font-size:14px; line-height:20px; font-weight:600; color:var(--ink-900);}
+  /* min-height на 2 строки — короткие и длинные описания не сбивают высоту соседних карточек */
+  .role-card-desc{font-size:12px; line-height:16px; color:var(--ink-600); min-height:32px; display:flex; align-items:center;}
+  /* активный стейт — граница + заливка + закрашенная иконка уже достаточно сильный сигнал,
+     без отдельного ring — ring теперь означает только клавиатурный фокус инпутов, не выбор */
+  .role-card.active{border-color:var(--accent-600); background:var(--accent-50);}
+  .role-card.active:hover{transform:translateY(-2px);}
+  .role-card.active .role-card-icon{background:var(--accent-600); color:#fff; transform:scale(1.1);}
+
+  .btn-row{display:flex; gap:16px; margin-top:8px;}
+  .reset-row{display:flex; justify-content:center; margin-top:8px;}
+  /* Body2-Bold / Body2-Medium (14/20, 700 / 600) */
+  .btn{flex:1; display:inline-flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap;
+    border-radius:var(--radius-field); padding:12px 16px; font-size:14px; line-height:20px; font-weight:700; border:1px solid transparent;
+    background:transparent; color:var(--ink-600); cursor:pointer; font-family:inherit;
+    transition:background-color .2s ease, border-color .2s ease, color .2s ease;}
+  .btn:hover{background:var(--canvas); border-color:var(--line); color:var(--ink-900);}
+  .btn-primary{background:var(--accent-600); border-color:var(--accent-600); color:#fff; flex:2;}
+  .btn-primary:hover{background:var(--accent-500); color:#fff;}
+  .btn-text{flex:none; font-weight:600; padding:8px 12px; border-radius:var(--radius-field);}
+  /* «Очистить» — сброс формы, действие деструктивное: hover отдельно окрашен в red,
+     а не в нейтральный/accent тон общих кнопок, чтобы намерение читалось до клика */
+  .btn-text:hover{background:var(--red-50); color:var(--red-700); border-color:var(--red-50);}
+  /* secondary — как в референсе (variant="secondary"): светло-голубая заливка вместо обводки/прозрачности */
+  .btn-secondary{background:var(--accent-50); border-color:var(--accent-50); color:var(--accent-600);}
+  .btn-secondary:hover{background:var(--accent-100); border-color:var(--accent-100); color:var(--accent-600);}
+
+  .success{display:none; text-align:center;}
+  .success.show{display:block;}
+  .success .check{width:52px; height:52px; border-radius:50%; background:var(--green-50); color:var(--green-700);
+    display:flex; align-items:center; justify-content:center; margin:0 auto 16px;}
+  .success .check svg{width:24px; height:24px;}
+  @keyframes popIn{from{opacity:0; transform:scale(.5);} to{opacity:1; transform:scale(1);}}
+  .success.show .check{animation:popIn .35s cubic-bezier(.34,1.56,.64,1);}
+  /* Heading4 (20/28, 800) */
+  .success h2{font-size:20px; line-height:28px; font-weight:800; margin:0 0 8px;}
+  /* Body2 (14/20, 400) */
+  .success p{font-size:14px; line-height:20px; color:var(--ink-600); margin:0 0 24px;}
+  .summary{text-align:left; background:var(--canvas); border-radius:var(--radius-field); padding:16px; margin-bottom:16px;}
+  .summary div{display:flex; justify-content:space-between; font-size:14px; line-height:20px; padding:4px 0;}
+  .summary div span:first-child{color:var(--ink-600);}
+  .summary div span:last-child{font-family:var(--font-mono); color:var(--ink-900); font-weight:600;}
+
+  .login-form.hide, .success.hide{display:none;}
+
+  /* модальное окно ввода СПП — открывается поверх страницы, не сдвигая её содержимое */
+  /* модальное окно СПП — быстрое, но плавное появление (ease-out, без резкого скачка) */
+  .modal-overlay{position:fixed; inset:0; background:rgba(0,23,41,.45); display:flex; align-items:center;
+    justify-content:center; padding:24px; z-index:50; opacity:0; pointer-events:none; transition:opacity .18s ease-out;}
+  .modal-overlay.show{opacity:1; pointer-events:auto;}
+  .modal-card{
+    /* модалка теперь следует теме страницы (var(--paper-0)/var(--ink-900) и т.д.
+     * берутся из :root), а не зафиксирована на светлой — иначе в тёмном режиме
+     * она была бы ярким белым пятном поверх тёмного фона */
+    width:100%; max-width:308px; background:var(--paper-0); border:1px solid var(--line);
+    border-radius:var(--radius-card);
+    box-shadow:var(--shadow-modal); padding:24px; transform:scale(.96) translateY(6px);
+    transition:transform .22s cubic-bezier(.16,1,.3,1);}
+  .modal-overlay.show .modal-card{transform:scale(1) translateY(0);}
+  .modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;}
+  /* Body1-Bold (16/24, 700) — компактнее прежнего Subheading3 (20/28) */
+  .modal-head span{font-family:var(--font-display); font-size:16px; line-height:24px; font-weight:700; color:var(--ink-900);}
+  /* ink-600, а не ink-400 — контраст крестика на paper-0 был ниже WCAG AA для интерактивного элемента */
+  .modal-close{border:none; background:none; width:28px; height:28px; border-radius:50%; color:var(--ink-600);
+    padding:0; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition:background-color .2s ease, color .2s ease, transform .25s ease;}
+  .modal-close svg{width:16px; height:16px;}
+  .modal-close:hover{background:var(--canvas); color:var(--ink-900); transform:rotate(90deg);}
+
+  /* Рабочее пространство проекта — экран после входа риск-менеджера (СПП принят).
+     Полноэкранная раскладка (перекрывает центрированную карточку входа),
+     сайдбар — по референсу ds-2.0 Sidebar (orientation="vertical", MenuItem). */
+  .workspace{position:fixed; inset:0; z-index:10; display:none; background:var(--canvas);}
+  .workspace.show{display:flex;}
+
+  /* сворачивание/разворачивание — по наведению на сайдбар (без клика и без
+     подписи «Свернуть»); ширина и подписи анимируются одновременно одной
+     кривой, чтобы ничего не «прыгало» — раскладка (justify-content/padding)
+     не меняется скачком между состояниями, меняются только width/opacity/max-width */
+  .ws-sidebar{width:76px; flex-shrink:0; background:var(--navy-900); display:flex; flex-direction:column;
+    padding:20px 14px; gap:4px; transition:width .32s cubic-bezier(.4,0,.2,1); overflow:hidden;}
+  .ws-sidebar.expanded{width:248px;}
+  .ws-brand{display:flex; align-items:center; gap:10px; padding:8px 10px 20px;
+    border-bottom:1px solid rgba(255,255,255,.12); margin-bottom:12px;}
+  .ws-brand .brand-mark{width:36px; height:20px; flex-shrink:0;}
+  /* Body1-Bold (16/24, 700 — здесь 800 для веса бренд-знака) */
+  .ws-brand .name{font-family:var(--font-display); font-weight:800; font-size:16px; line-height:24px; color:#fff;
+    white-space:nowrap; overflow:hidden; opacity:0; max-width:0;
+    transition:opacity .2s ease, max-width .32s cubic-bezier(.4,0,.2,1);}
+  .ws-sidebar.expanded .ws-brand .name{opacity:1; max-width:160px;}
+
+  .ws-nav{flex:1; display:flex; flex-direction:column; min-height:0; overflow-y:auto; overflow-x:hidden;}
+  .ws-nav-group{display:flex; flex-direction:column; gap:2px;}
+  .ws-nav-item{display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:8px;
+    border:none; background:none; color:#aab4c4; font-family:inherit; font-size:14px; font-weight:600;
+    cursor:pointer; text-align:left; width:100%; transition:background-color .15s ease, color .15s ease;}
+  .ws-nav-item span{white-space:nowrap; overflow:hidden; opacity:0; max-width:0;
+    transition:opacity .2s ease, max-width .32s cubic-bezier(.4,0,.2,1);}
+  .ws-sidebar.expanded .ws-nav-item span{opacity:1; max-width:160px;}
+  .ws-nav-item svg{width:20px; height:20px; flex-shrink:0;}
+  .ws-nav-item:hover{background:rgba(255,255,255,.06); color:#fff;}
+  .ws-nav-item.active{background:rgba(255,255,255,.1); color:#fff;}
+  .ws-nav-item.active svg{color:var(--accent-500);}
+
+  .ws-user{margin-top:auto; display:flex; align-items:center; gap:10px; padding:12px 10px;
+    border-top:1px solid rgba(255,255,255,.12);}
+  .ws-user-avatar{width:32px; height:32px; border-radius:50%; background:var(--accent-600); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0;}
+  .ws-user-info{min-width:0; overflow:hidden; opacity:0; max-width:0;
+    transition:opacity .2s ease, max-width .32s cubic-bezier(.4,0,.2,1);}
+  .ws-sidebar.expanded .ws-user-info{opacity:1; max-width:140px;}
+  /* Body2-Bold (14/20, 700) для имени, Caption (12/16) для роли — было
+     произвольные 13px/11.5px без привязки к типографической шкале */
+  .ws-user-name{font-size:14px; line-height:20px; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .ws-user-role{font-size:12px; line-height:16px; color:#8b96aa; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .ws-signout{margin-left:auto; background:none; border:none; color:#8b96aa; cursor:pointer; padding:6px;
+    border-radius:6px; display:flex; flex-shrink:0; opacity:0; width:0; padding-left:0; padding-right:0;
+    transition:opacity .2s ease, width .32s cubic-bezier(.4,0,.2,1), padding .32s cubic-bezier(.4,0,.2,1),
+      background-color .2s ease, color .2s ease;}
+  .ws-sidebar.expanded .ws-signout{opacity:1; width:28px; padding-left:6px; padding-right:6px;}
+  .ws-signout svg{width:16px; height:16px; flex-shrink:0;}
+  .ws-signout:hover{background:rgba(255,255,255,.08); color:#fff;}
+
+  .ws-content{flex:1; overflow-y:auto; padding:36px 40px;}
+  .ws-content h1{font-family:var(--font-display); font-size:24px; line-height:32px; font-weight:800;
+    color:var(--ink-900); margin:0 0 6px;}
+  .ws-content .ws-desc{font-size:14px; line-height:20px; color:var(--ink-600); margin:0 0 28px; max-width:52ch;}
+  .ws-empty{border:1px dashed var(--line); border-radius:var(--radius-field); padding:48px 24px;
+    display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; color:var(--ink-400);}
+  .ws-empty svg{width:32px; height:32px; color:var(--ink-400);}
+  .ws-empty strong{font-size:14px; line-height:20px; color:var(--ink-600); font-weight:600;}
+  .ws-empty span{font-size:12px; line-height:16px; max-width:38ch;}
+  .ws-empty[hidden], .lessons-page[hidden]{display:none;}
+
+  /* ===== Выученные уроки: карточный список с тегами-категориями ===== */
+
+  /* select/textarea в том же визуальном языке, что и .field input */
+  .field select, .field textarea{
+    border:1px solid var(--line); border-radius:var(--radius-field); padding:12px 16px;
+    font-size:14px; line-height:20px; font-family:inherit; color:var(--ink-900);
+    background:var(--paper-0); width:100%;
+  }
+  .field select:focus, .field textarea:focus{outline:none; border-color:var(--accent-600); box-shadow:0 0 0 3px var(--accent-100);}
+  .field textarea{resize:vertical; min-height:72px;}
+  .field select{
+    cursor:pointer; appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2399a2a9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 14px center; background-size:16px; padding-right:40px;
+  }
+
+  /* раскладка: слева список тегов-категорий, справа поиск + карточный список уроков —
+     тот же принцип, что и в референсе (Asana-style архив уроков), но на токенах ds-2.0 */
+  .ll-shell{display:flex; align-items:flex-start; gap:28px;}
+  .ll-sidebar{width:196px; flex-shrink:0; display:flex; flex-direction:column; gap:2px; position:sticky; top:0;}
+  .ll-sidebar-title{font-size:11px; line-height:16px; font-weight:700; color:var(--ink-400);
+    text-transform:uppercase; letter-spacing:.3px; padding:0 10px 8px;}
+  .ll-tag-btn{display:flex; align-items:center; gap:8px; width:100%; padding:7px 10px; border-radius:var(--radius-field);
+    border:none; background:none; font-family:inherit; font-size:13px; color:var(--ink-900); text-align:left;
+    cursor:pointer; transition:background-color .15s ease, color .15s ease;}
+  .ll-tag-btn:hover{background:var(--canvas);}
+  .ll-tag-btn.active{background:var(--accent-50); color:var(--accent-600); font-weight:600;}
+  .ll-tag-dot{width:8px; height:8px; border-radius:50%; flex-shrink:0;}
+  .ll-tag-btn .ll-tag-label{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+  .ll-main{flex:1; min-width:0;}
+  .ll-header{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:16px;}
+  .ll-stats{font-size:13px; line-height:18px; color:var(--ink-600); margin:4px 0 0;}
+  .ll-new-btn{display:inline-flex; align-items:center; gap:6px; padding:10px 16px; border-radius:var(--radius-field);
+    border:none; background:var(--accent-600); color:#fff; font-family:inherit; font-size:13.5px; font-weight:700;
+    cursor:pointer; white-space:nowrap; flex-shrink:0; transition:background-color .15s ease;}
+  .ll-new-btn:hover{background:var(--accent-500);}
+  .ll-new-btn svg{width:16px; height:16px;}
+
+  .ll-toolbar{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:16px;}
+  .ll-search{position:relative; flex-shrink:0;}
+  .ll-search svg{position:absolute; left:11px; top:50%; transform:translateY(-50%);
+    width:15px; height:15px; color:var(--ink-400); pointer-events:none;}
+  .ll-search input{width:240px; max-width:60vw; height:36px; padding:0 12px 0 34px; border-radius:999px;
+    border:1px solid var(--line); background:var(--paper-0); color:var(--ink-900); font-family:inherit; font-size:13px;}
+  .ll-search input:focus{outline:none; border-color:var(--accent-500); box-shadow:0 0 0 3px var(--accent-100);}
+  .ll-pills{display:flex; flex-wrap:wrap; gap:6px;}
+  .ll-pill{display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px;
+    border:1px solid var(--line); background:var(--paper-0); color:var(--ink-900); font-family:inherit;
+    font-size:12.5px; font-weight:600; cursor:pointer; white-space:nowrap;
+    transition:background-color .15s ease, color .15s ease, border-color .15s ease;}
+  .ll-pill:hover{background:var(--canvas);}
+  .ll-pill.active{background:var(--ink-900); border-color:var(--ink-900); color:#fff;}
+  .ll-pill-dot{width:6px; height:6px; border-radius:50%; flex-shrink:0;}
+
+  .ll-list{border:1px solid var(--line); border-radius:var(--radius-field); overflow:hidden; background:var(--paper-0);}
+  .ll-item{border-bottom:1px solid var(--line);}
+  .ll-item:last-child{border-bottom:none;}
+  .ll-item-main{display:flex; align-items:center; gap:12px; padding:12px 14px; cursor:pointer;}
+  .ll-item-main:hover{background:var(--canvas);}
+  .ll-status{flex-shrink:0; width:20px; height:20px; padding:0; display:flex; align-items:center;
+    justify-content:center; border:none; background:none; cursor:pointer; color:var(--ink-400);}
+  .ll-status.done{color:var(--green-700);}
+  .ll-status svg{width:19px; height:19px;}
+  .ll-item-title{flex:1; min-width:0;}
+  .ll-item-title .t{font-size:13.5px; line-height:19px; color:var(--ink-900); overflow:hidden;
+    text-overflow:ellipsis; white-space:nowrap;}
+  .ll-item-title .m{font-family:var(--font-mono); font-size:11.5px; color:var(--ink-400); margin-top:2px;}
+  .ll-item-tags{display:flex; gap:4px; flex-shrink:0; max-width:240px; overflow:hidden;}
+  .ll-item-chevron{flex-shrink:0; width:16px; height:16px; color:var(--ink-400); transition:transform .15s ease;}
+  .ll-item.open .ll-item-chevron{transform:rotate(180deg);}
+  .ll-item-detail{padding:0 14px 18px 46px; display:grid; grid-template-columns:1fr 1fr; gap:14px 24px; font-size:13px;}
+  .ll-item-detail .field-block{grid-column:1 / -1;}
+  .ll-item-detail .field-block-label{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.2px;
+    color:var(--ink-600); margin-bottom:4px;}
+  .ll-item-detail .field-block-value{color:var(--ink-900); line-height:19px;}
+  .ll-item-actions{grid-column:1 / -1; display:flex; justify-content:flex-end; margin-top:2px;}
+  .ll-empty{padding:40px 20px; text-align:center; color:var(--ink-400); font-size:13px;}
+
+  .lesson-tag-pill{display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px;
+    font-weight:700; margin:0 4px 4px 0;}
+
+  .risk-action-btn{padding:6px 12px; font-size:12px; font-weight:600; border:1px solid var(--line);
+    border-radius:var(--radius-field); background:var(--paper-0); color:var(--ink-700); cursor:pointer;
+    font-family:inherit; white-space:nowrap; transition:background-color .15s ease;}
+  .risk-action-btn:hover{background:var(--canvas);}
+  .risk-created-link{font-size:12px; font-weight:700; color:var(--green-700); display:inline-flex;
+    align-items:center; gap:4px; cursor:pointer; background:none; border:none; padding:0; font-family:inherit;}
+  .risk-created-link:hover{text-decoration:underline;}
+
+  @media (max-width: 820px){
+    .ll-shell{flex-direction:column;}
+    .ll-sidebar{width:100%; flex-direction:row; flex-wrap:wrap; position:static;}
+  }
+
+  /* модалки создания/просмотра риска */
+  .modal-card--wide{width:100%; max-width:560px; max-height:86vh; overflow-y:auto;}
+  .modal-sub{font-size:12.5px; color:var(--ink-400); margin:0 0 16px;}
+  .source-quote{background:var(--canvas); border-radius:var(--radius-field); padding:10px 12px;
+    margin:0 0 16px; font-size:13px; line-height:19px; color:var(--ink-600);}
+  .source-link{display:flex; align-items:center; gap:8px; width:100%; background:var(--accent-50);
+    border:none; border-radius:var(--radius-field); padding:10px 12px; margin:0 0 16px; font-size:12.5px;
+    font-weight:600; color:var(--accent-600); cursor:pointer; font-family:inherit; text-align:left;}
+  .source-link:hover{background:var(--accent-100);}
+  .source-link svg{width:14px; height:14px; flex-shrink:0;}
+
+  .risk-level-row{display:flex; align-items:center; justify-content:space-between; background:var(--canvas);
+    border-radius:var(--radius-field); padding:12px 16px; margin-bottom:4px;}
+  .risk-level-row .field-caption{font-size:12px; color:var(--ink-600);}
+  .risk-level-value{font-family:var(--font-display); font-size:14px; font-weight:700;}
+
+  .risk-detail-row{display:flex; justify-content:space-between; gap:12px; padding:8px 0;
+    font-size:13.5px; border-bottom:1px solid var(--line);}
+  .risk-detail-row:last-child{border-bottom:none;}
+  .risk-detail-row span:first-child{color:var(--ink-600);}
+  .risk-detail-row span:last-child{font-weight:600; color:var(--ink-900); text-align:right;}
+  .risk-view-desc{font-size:13.5px; line-height:20px; color:var(--ink-900); margin:0 0 14px;}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeBtn" type="button" aria-label="Переключить тему">
+  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.5M12 19v2.5M4.5 12H2M22 12h-2.5M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8"/></svg>
+  <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.4 14.7A8.5 8.5 0 1 1 9.3 3.6a7 7 0 0 0 11.1 11.1z"/></svg>
+</button>
+
+<div class="login-card">
+  <div class="brand">
+    <div class="brand-mark">
+      <svg viewBox="0 0 105 57" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="НЛМК"><path fill-rule="evenodd" clip-rule="evenodd" d="M20.7303 19.0532H15.5128V36.6192H20.7303V29.6627H26.2956V36.6192H31.5164V19.0532H26.2956V25.4881H20.7303V19.0532ZM50.1263 36.6192V19.0532H36.7291V28.2701C36.7291 31.7491 36.0337 32.794 33.2518 32.2708V36.6112C36.2075 37.1328 38.8155 36.6112 40.208 34.8725C41.5989 33.3076 41.7728 30.524 41.7728 28.2621V23.2198H45.0746V36.6192H50.1263ZM59.6905 19.0532H54.4745L52.0324 36.6208H56.9022L58.1193 27.23L60.898 36.6192H64.3752L67.1619 27.23L68.3789 36.6192H73.2551L70.821 19.0532H65.6035L62.6478 29.4888L59.6905 19.0532ZM80.3852 19.0532H75.1676L75.1613 36.6192H80.3788V29.4888L85.0748 36.6192H91.3323L84.5532 27.75L91.1728 19.0532H85.4305L80.3852 26.1836V19.0532ZM0.731079 28.2701C0.731079 11.575 21.4258 0.271667 52.7311 0.271667C84.2054 0.271667 104.731 11.575 104.731 28.2701C104.731 44.7865 84.2086 56.2717 52.7311 56.2717C21.4258 56.2717 0.731079 44.7928 0.731079 28.2701ZM3.68997 28.2701C3.68997 43.4018 23.3415 53.662 52.7311 53.662C82.2945 53.662 101.772 43.4018 101.772 28.2701C101.772 12.966 82.2945 2.87977 52.7311 2.87977C23.3383 2.87977 3.68678 12.966 3.68997 28.2701ZM7.64417 28.2707C7.64417 21.9298 11.8809 16.4671 19.7642 12.536C27.6444 8.60642 38.9979 6.31464 52.7312 6.31464C66.462 6.31464 77.8143 8.60563 85.6939 12.5348C93.5766 16.4655 97.8134 21.9281 97.8134 28.2707C97.8134 34.6134 93.5776 40.0764 85.6956 44.0075C77.8167 47.937 66.4644 50.2284 52.7312 50.2284C38.9979 50.2284 27.6444 47.9362 19.7643 44.0063C11.8809 40.0747 7.64417 34.6117 7.64417 28.2707ZM6.64417 28.2707C6.64417 14.5331 25.0786 5.31464 52.7312 5.31464C80.3789 5.31464 98.8134 14.5299 98.8134 28.2707C98.8134 42.0115 80.3837 51.2284 52.7312 51.2284C25.0786 51.2284 6.64417 42.0083 6.64417 28.2707Z" fill="var(--logo-blue)"/></svg>
+    </div>
+    <div class="brand-text">
+      <div class="name">RiskLesson</div>
+    </div>
+  </div>
+
+  <div class="login-form" id="loginForm">
+    <form id="entryForm" novalidate>
+      <div class="row">
+        <div class="field" data-field="firstName">
+          <div class="input-float">
+            <input type="text" id="firstName" placeholder="Иван" autocomplete="given-name">
+            <label for="firstName">Имя</label>
+          </div>
+        </div>
+        <div class="field" data-field="lastName">
+          <div class="input-float">
+            <input type="text" id="lastName" placeholder="Петров" autocomplete="family-name">
+            <label for="lastName">Фамилия</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="field" data-field="role">
+        <label>Роль</label>
+        <div class="role-cards" id="roleToggle">
+          <div class="role-card" data-value="riskmanager">
+            <span class="role-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></span>
+            <span class="role-card-title">Риск-менеджер</span>
+            <span class="role-card-desc">Владелец реестра рисков проекта</span>
+          </div>
+          <div class="role-card" data-value="initiator">
+            <span class="role-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h13l-3 4 3 4H5"/></svg></span>
+            <span class="role-card-title">Инициатор</span>
+            <span class="role-card-desc">Предлагает риски по проекту</span>
+          </div>
+        </div>
+        <div class="field-hint">Выберите роль, чтобы перейти к следующему шагу</div>
+        <div class="err-msg">Выберите роль</div>
+      </div>
+    </form>
+
+    <div class="reset-row">
+      <button type="button" class="btn btn-text" id="resetBtn">Очистить</button>
+    </div>
+  </div>
+
+  <div class="success" id="successPanel">
+    <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l5 5L19 7"/></svg></div>
+    <h2>Добро пожаловать!</h2>
+    <p>Вы вошли в RiskLesson</p>
+    <div class="summary" id="summaryBox"></div>
+    <button class="btn btn-primary" id="changeBtn" style="width:100%">Изменить данные</button>
+  </div>
+</div>
+
+<!-- Рабочее пространство проекта — открывается после входа риск-менеджера
+     (СПП принят). Сайдбар — по референсу ds-2.0 Sidebar (orientation="vertical",
+     MenuItem с иконкой). Разделы пока заглушки — важна структура навигации. -->
+<div class="workspace" id="workspace">
+  <aside class="ws-sidebar">
+    <div class="ws-brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 105 57" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="НЛМК"><path fill-rule="evenodd" clip-rule="evenodd" d="M20.7303 19.0532H15.5128V36.6192H20.7303V29.6627H26.2956V36.6192H31.5164V19.0532H26.2956V25.4881H20.7303V19.0532ZM50.1263 36.6192V19.0532H36.7291V28.2701C36.7291 31.7491 36.0337 32.794 33.2518 32.2708V36.6112C36.2075 37.1328 38.8155 36.6112 40.208 34.8725C41.5989 33.3076 41.7728 30.524 41.7728 28.2621V23.2198H45.0746V36.6192H50.1263ZM59.6905 19.0532H54.4745L52.0324 36.6208H56.9022L58.1193 27.23L60.898 36.6192H64.3752L67.1619 27.23L68.3789 36.6192H73.2551L70.821 19.0532H65.6035L62.6478 29.4888L59.6905 19.0532ZM80.3852 19.0532H75.1676L75.1613 36.6192H80.3788V29.4888L85.0748 36.6192H91.3323L84.5532 27.75L91.1728 19.0532H85.4305L80.3852 26.1836V19.0532ZM0.731079 28.2701C0.731079 11.575 21.4258 0.271667 52.7311 0.271667C84.2054 0.271667 104.731 11.575 104.731 28.2701C104.731 44.7865 84.2086 56.2717 52.7311 56.2717C21.4258 56.2717 0.731079 44.7928 0.731079 28.2701ZM3.68997 28.2701C3.68997 43.4018 23.3415 53.662 52.7311 53.662C82.2945 53.662 101.772 43.4018 101.772 28.2701C101.772 12.966 82.2945 2.87977 52.7311 2.87977C23.3383 2.87977 3.68678 12.966 3.68997 28.2701ZM7.64417 28.2707C7.64417 21.9298 11.8809 16.4671 19.7642 12.536C27.6444 8.60642 38.9979 6.31464 52.7312 6.31464C66.462 6.31464 77.8143 8.60563 85.6939 12.5348C93.5766 16.4655 97.8134 21.9281 97.8134 28.2707C97.8134 34.6134 93.5776 40.0764 85.6956 44.0075C77.8167 47.937 66.4644 50.2284 52.7312 50.2284C38.9979 50.2284 27.6444 47.9362 19.7643 44.0063C11.8809 40.0747 7.64417 34.6117 7.64417 28.2707ZM6.64417 28.2707C6.64417 14.5331 25.0786 5.31464 52.7312 5.31464C80.3789 5.31464 98.8134 14.5299 98.8134 28.2707C98.8134 42.0115 80.3837 51.2284 52.7312 51.2284C25.0786 51.2284 6.64417 42.0083 6.64417 28.2707Z" fill="#fff"/></svg>
+      </div>
+      <div class="name">RiskLesson</div>
+    </div>
+    <nav class="ws-nav" id="wsNav">
+      <div class="ws-nav-group">
+        <button type="button" class="ws-nav-item active" data-page="dashboard" title="Дэшборд">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
+          <span>Дэшборд</span>
+        </button>
+
+        <!-- «Реестр рисков» — плоский пункт, без вложенных разделов -->
+        <button type="button" class="ws-nav-item" data-page="register" title="Реестр рисков">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6z"/><path d="M15 3v3h3"/><path d="M9 12h6M9 16h6"/></svg>
+          <span>Реестр рисков</span>
+        </button>
+
+        <button type="button" class="ws-nav-item" data-page="matrix" title="Матрица рисков">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+          <span>Матрица рисков</span>
+        </button>
+
+        <button type="button" class="ws-nav-item" data-page="lessons" title="Выученные уроки">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H12v16H5.5C4.7 20 4 19.3 4 18.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H12v16h6.5c.8 0 1.5-.7 1.5-1.5z"/></svg>
+          <span>Выученные уроки</span>
+        </button>
+      </div>
+    </nav>
+
+    <div class="ws-user">
+      <div class="ws-user-avatar" id="wsAvatar"></div>
+      <div class="ws-user-info">
+        <div class="ws-user-name" id="wsUserName"></div>
+        <div class="ws-user-role" id="wsUserRole"></div>
+      </div>
+      <button type="button" class="ws-signout" id="wsSignOut" aria-label="Выйти">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      </button>
+    </div>
+  </aside>
+  <main class="ws-content">
+    <h1 id="wsTitle">Дэшборд</h1>
+    <p class="ws-desc" id="wsDesc">Общая сводка по рискам программы: количество, критичность, статус мероприятий.</p>
+    <div class="ws-empty" id="wsEmpty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      <strong>Раздел в разработке</strong>
+      <span>СПП проекта принят, вход выполнен — содержимое этого раздела появится на следующем этапе.</span>
+    </div>
+
+    <!-- Уроки — архив выученных уроков: фильтр по тегам, карточный список, создание риска из урока -->
+    <div class="lessons-page" id="wsLessonsPage" hidden>
+      <div class="ll-shell">
+        <aside class="ll-sidebar">
+          <div class="ll-sidebar-title">Теги</div>
+          <div id="llTagNav"></div>
+        </aside>
+
+        <div class="ll-main">
+          <div class="ll-header">
+            <div>
+              <p class="ll-stats" id="llStats"></p>
+            </div>
+            <button type="button" class="ll-new-btn" id="llNewBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+              Новый урок
+            </button>
+          </div>
+
+          <div class="ll-toolbar">
+            <div class="ll-search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+              <input type="text" id="lessonsSearchInput" placeholder="Поиск по тексту урока">
+            </div>
+            <div class="ll-pills" id="llPills"></div>
+          </div>
+
+          <div class="ll-list" id="llList"></div>
+          <p class="ll-empty" id="lessonsEmpty" hidden>Ничего не найдено — измените запрос или выберите другой тег.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="sppModalOverlay">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="sppModalTitle">
+    <div class="modal-head">
+      <span id="sppModalTitle">Введите СПП проекта</span>
+      <button type="button" class="modal-close" id="sppModalClose" aria-label="Закрыть">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    </div>
+    <div class="field" data-field="spp">
+      <div class="input-float">
+        <input type="text" id="spp" placeholder="19-1991" inputmode="numeric" maxlength="7" autocomplete="off">
+        <label for="spp">СПП</label>
+      </div>
+      <div class="err-msg">СПП должен состоять ровно из 6 цифр</div>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn btn-secondary" id="sppCancel">Отмена</button>
+      <button type="button" class="btn btn-primary" id="sppSubmit">Войти в систему</button>
+    </div>
+  </div>
+</div>
+
+<!-- Создание риска на основе урока -->
+<div class="modal-overlay" id="createRiskOverlay">
+  <div class="modal-card modal-card--wide" role="dialog" aria-modal="true" aria-labelledby="createRiskTitle">
+    <div class="modal-head" style="margin-bottom:4px;">
+      <span id="createRiskTitle">Новый риск</span>
+      <button type="button" class="modal-close" id="createRiskClose" aria-label="Закрыть">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <p class="modal-sub" id="createRiskSub"></p>
+    <div class="source-quote" id="createRiskQuote"></div>
+
+    <div class="field" data-field="riskTitle">
+      <label>Название риска</label>
+      <input type="text" id="riskTitleInput">
+    </div>
+    <div class="field" data-field="riskDesc">
+      <label>Описание</label>
+      <textarea id="riskDescInput"></textarea>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Категория</label>
+        <select id="riskCategoryInput">
+          <option>Технологические/Технические</option>
+          <option>Процессные</option>
+          <option>Экономические</option>
+          <option>ПИР</option>
+          <option>Снабжение</option>
+          <option>СМР/ПНР</option>
+          <option>Регуляторные</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Этап проекта</label>
+        <select id="riskStageInput">
+          <option>Фаза 1 — Инициация</option>
+          <option>Фаза 2 — Проектирование</option>
+          <option>Фаза 3 — Закупки</option>
+          <option>Фаза 4 — Строительство</option>
+          <option>Фаза 5 — Ввод в эксплуатацию</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Вероятность</label>
+        <select id="riskProbInput">
+          <option value="1">Низкая</option>
+          <option value="2" selected>Средняя</option>
+          <option value="3">Высокая</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Влияние</label>
+        <select id="riskImpactInput">
+          <option value="1">Низкое</option>
+          <option value="2">Среднее</option>
+          <option value="3" selected>Высокое</option>
+        </select>
+      </div>
+    </div>
+    <div class="risk-level-row">
+      <span class="field-caption">Уровень риска (RRA = P×I)</span>
+      <span class="risk-level-value" id="riskLevelPreview"></span>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn btn-secondary" id="createRiskCancel">Отменить</button>
+      <button type="button" class="btn btn-primary" id="createRiskSubmit">Создать риск</button>
+    </div>
+  </div>
+</div>
+
+<!-- Просмотр созданного риска -->
+<div class="modal-overlay" id="viewRiskOverlay">
+  <div class="modal-card modal-card--wide" role="dialog" aria-modal="true" aria-labelledby="viewRiskTitle">
+    <div class="modal-head" style="margin-bottom:4px;">
+      <span id="viewRiskTitle">Риск</span>
+      <button type="button" class="modal-close" id="viewRiskClose" aria-label="Закрыть">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <p class="modal-sub">карточка риска</p>
+    <button type="button" class="source-link" id="viewRiskSourceLink">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+      <span id="viewRiskSourceText"></span>
+    </button>
+    <p class="risk-view-desc" id="viewRiskDesc"></p>
+    <div class="risk-detail-row"><span>Категория</span><span id="viewRiskCategory"></span></div>
+    <div class="risk-detail-row"><span>Этап проекта</span><span id="viewRiskStage"></span></div>
+    <div class="risk-detail-row"><span>Вероятность</span><span id="viewRiskProb"></span></div>
+    <div class="risk-detail-row"><span>Влияние</span><span id="viewRiskImpact"></span></div>
+    <div class="risk-detail-row"><span>Уровень риска</span><span id="viewRiskLevel"></span></div>
+    <div class="btn-row" style="margin-top:16px;">
+      <button type="button" class="btn btn-secondary" id="viewRiskCloseBtn" style="width:100%">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- Новый урок — добавление записи в архив выученных уроков -->
+<div class="modal-overlay" id="newLessonOverlay">
+  <div class="modal-card modal-card--wide" role="dialog" aria-modal="true" aria-labelledby="newLessonTitle">
+    <div class="modal-head">
+      <span id="newLessonTitle">Новый урок</span>
+      <button type="button" class="modal-close" id="newLessonClose" aria-label="Закрыть">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
+    <div class="field" data-field="nlTitle">
+      <label>Название урока</label>
+      <input type="text" id="nlTitleInput" placeholder="Например: Позднее подключение команды реализации">
+    </div>
+    <div class="row">
+      <div class="field" data-field="nlCode">
+        <label>СПП проекта</label>
+        <input type="text" id="nlCodeInput" placeholder="12-2152">
+      </div>
+      <div class="field" data-field="nlProject">
+        <label>Проект</label>
+        <input type="text" id="nlProjectInput" placeholder="Название проекта">
+      </div>
+    </div>
+    <div class="field" data-field="nlTags">
+      <label>Теги</label>
+      <input type="text" id="nlTagsInput" placeholder="Через запятую, например: Персонал и команда, Сроки реализации">
+    </div>
+    <div class="field" data-field="nlWhat">
+      <label>Что произошло</label>
+      <textarea id="nlWhatInput"></textarea>
+    </div>
+    <div class="field" data-field="nlCause">
+      <label>Причина</label>
+      <textarea id="nlCauseInput"></textarea>
+    </div>
+    <div class="field" data-field="nlLesson">
+      <label>Урок / рекомендация</label>
+      <textarea id="nlLessonInput"></textarea>
+    </div>
+
+    <div class="btn-row">
+      <button type="button" class="btn btn-secondary" id="newLessonCancel">Отменить</button>
+      <button type="button" class="btn btn-primary" id="newLessonSubmit">Сохранить урок</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'riskassess_session';
+  const roleOpts = document.querySelectorAll('.role-card');
+  const firstNameInput = document.getElementById('firstName');
+  const lastNameInput = document.getElementById('lastName');
+  const sppInput = document.getElementById('spp');
+  let selectedRole = '';
+
+  function setFieldError(name, isInvalid){
+    const el = document.querySelector(`.field[data-field="${name}"]`);
+    if (!el) return;
+    el.classList.toggle('invalid', isInvalid);
+    const control = el.querySelector('input');
+    if (control) control.classList.toggle('err', isInvalid);
+  }
+  function clearFieldError(name){ setFieldError(name, false); }
+
+  // формат СПП — «19-1991» (2 цифры, дефис, 4 цифры), автоматически проставляем дефис
+  sppInput.addEventListener('input', () => {
+    const digits = sppInput.value.replace(/\D/g, '').slice(0, 6);
+    sppInput.value = digits.length > 2 ? digits.slice(0, 2) + '-' + digits.slice(2) : digits;
+    if (digits.length === 6) clearFieldError('spp');
+  });
+
+  function resetRoleSelection(){
+    roleOpts.forEach(o => o.classList.remove('active'));
+    selectedRole = '';
+  }
+
+  // запрет на цифры в имени/фамилии; если имя или фамилию стёрли — выбор роли
+  // сбрасывается, иначе роль выглядит «заблокированной» на старом значении
+  function handleNameInput(e){
+    const input = e.target;
+    const cleaned = input.value.replace(/[0-9]/g, '');
+    if (cleaned !== input.value) input.value = cleaned;
+    if (!input.value.trim()) resetRoleSelection();
+  }
+  firstNameInput.addEventListener('input', handleNameInput);
+  lastNameInput.addEventListener('input', handleNameInput);
+
+  // модальное окно СПП — фиксированный оверлей, не влияет на раскладку страницы
+  const sppModalOverlay = document.getElementById('sppModalOverlay');
+  function openSppModal(){
+    sppModalOverlay.classList.add('show');
+    setTimeout(() => sppInput.focus(), 180);
+  }
+  function closeSppModal(){
+    sppModalOverlay.classList.remove('show');
+  }
+  document.getElementById('sppModalClose').addEventListener('click', closeSppModal);
+  document.getElementById('sppCancel').addEventListener('click', closeSppModal);
+  sppModalOverlay.addEventListener('click', (e) => {
+    if (e.target === sppModalOverlay) closeSppModal();
+  });
+
+  roleOpts.forEach(opt => {
+    opt.addEventListener('click', () => {
+      const firstName = firstNameInput.value.trim();
+      const lastName = lastNameInput.value.trim();
+      // пустое поле не подсвечивается красным — просто не даём продолжить
+      // и мягко возвращаем фокус на то, что нужно заполнить
+      if (!firstName){ firstNameInput.focus(); return; }
+      if (!lastName){ lastNameInput.focus(); return; }
+
+      roleOpts.forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      selectedRole = opt.dataset.value;
+      openSppModal();
+    });
+  });
+
+  document.getElementById('sppSubmit').addEventListener('click', () => {
+    const spp = sppInput.value.trim();
+    if (spp.replace(/\D/g, '').length !== 6){ setFieldError('spp', true); return; }
+    clearFieldError('spp');
+
+    const data = {
+      firstName: firstNameInput.value.trim(),
+      lastName: lastNameInput.value.trim(),
+      role: selectedRole,
+      spp,
+    };
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (err) {}
+
+    const roleLabel = data.role === 'riskmanager' ? 'Риск-менеджер' : 'Инициатор';
+    closeSppModal();
+
+    // риск-менеджер — сразу в пространство проекта (сайдбар с разделами);
+    // остальные роли пока используют прежний экран-подтверждение
+    if (data.role === 'riskmanager'){
+      document.getElementById('wsUserName').textContent = `${data.firstName} ${data.lastName}`;
+      document.getElementById('wsUserRole').textContent = roleLabel;
+      document.getElementById('wsAvatar').textContent = ((data.firstName[0] || '') + (data.lastName[0] || '')).toUpperCase();
+      document.getElementById('workspace').classList.add('show');
+      return;
+    }
+
+    document.getElementById('summaryBox').innerHTML = `
+      <div><span>ФИО</span><span>${data.firstName} ${data.lastName}</span></div>
+      <div><span>Роль</span><span>${roleLabel}</span></div>
+      <div><span>СПП проекта</span><span>${data.spp}</span></div>
+    `;
+    document.getElementById('loginForm').classList.add('hide');
+    document.getElementById('successPanel').classList.add('show');
+  });
+
+  // навигация рабочего пространства — переключение раздела (пока заглушки)
+  const WS_PAGES = {
+    dashboard: {title:'Дэшборд', desc:'Общая сводка по рискам программы: количество, критичность, статус мероприятий.'},
+    register: {title:'Реестр рисков', desc:'Полный список зарегистрированных рисков проекта с владельцем, оценкой и статусом.'},
+    matrix: {title:'Матрица рисков', desc:'Визуализация рисков по вероятности и влиянию (P×I).'},
+    lessons: {title:'Выученные уроки', desc:'База знаний по прошлым проектам — риски, которые уже случались, и как их избежать.'},
+  };
+
+  // база уроков (lessons learned) — реальные 84 записи, теги по ключевым словам
+  const LESSONS = [{"id":1,"t":"Увеличение сроков проработки проекта в связи с геополитической обстановкой","c":"12-2152","p":"Кислородный цех. Строительство кислородно-регуляторного пункта» (КРП-1.1)","pr":"Длительность проработки","rc":"Геополитическая обстановка. Привлечение дополнительных компаний к проработке","l":"Привлекать к обсуждению максимум заинтересованных лиц. Поиск альтернативных проектировщиков.","tg":["Проектирование и ТЗ","Геополитика и санкции","Претензии и юридическое сопровождение"]},{"id":2,"t":"Позднее подключение команды реализации","c":"12-2189","p":"ЦГП. Модернизация системы осевого перемещения рабочих валков клетей №№ 7-12 чистовой группы с установкой системы на клети №6 В","pr":"Позднее подключение команды реализации","rc":"Высокая загрузка специалистов УРП","l":"Привлечение специалистов в сроки установленные нормативными документами","tg":["Персонал и команда","Сроки реализации"]},{"id":3,"t":"Временные ограничения при выполнении работ","c":"12-2189","p":"ЦГП. Модернизация системы осевого перемещения рабочих валков клетей №№ 7-12 чистовой группы с установкой системы на клети №6 В","pr":"Сложность в одновременном выполнении работ по замене системы осевого перемещения валков на клетях 7-12 и устройстве новой системы на клети 6 в остановочный период с сохранением гарантии по качеству со стороны поставщика.","rc":"Сложность и длительность работ по замене. Ограниченность остановочного периода.","l":"","tg":["Поставщики и подрядчики","Логистика и склад"]},{"id":4,"t":"Отсутствие информации об исходном состоянии объекта модернизации","c":"","p":"В","pr":"Отсутствие информации о фактическом износе станины клетей, отклонении габаритов подвижных и неподвижных блоков от соответствующих размеров в чертежах","rc":"Высокая сложность и длительность процесса демонтажа неподвижного блока системы осевого перемещения валков","l":"На начальном этапе вести проработку проекта с привлечением поставщика к выполнению работ по фрезеровке станины","tg":["Поставщики и подрядчики","Проектирование и ТЗ","Регламенты и процессы"]},{"id":5,"t":"Сложности интеграции АСУ ТП поставщика в систему АСУ ТП Стана 2000","c":"12-2189","p":"ЦГП. Модернизация системы осевого перемещения рабочих валков клетей №№ 7-12 чистовой группы с установкой системы на клети №6 В","pr":"Сложность интеграции систем АСУ ТП разработки поставщика в систему АСУ ТП Стана 2000","rc":"Наличие большого количества входных сигналов от смежного оборудования Стана 2000. Сложность в получении полной информации по работе системы АСУ ТП.","l":"На начальном этапе проработки предлагать в качестве исполнителя работ и интегратора системы российского поставщика, имеющего опыт работы с системами стана 2000 ЦГП","tg":["Поставщики и подрядчики","Проектирование и ТЗ","Оборудование и АСУ ТП"]},{"id":6,"t":"Сложности интеграции технических решений поставщика в систему АСУ ТП НЛМК","c":"12-2189","p":"ЦГП. Модернизация системы осевого перемещения рабочих валков клетей №№ 7-12 чистовой группы с установкой системы на клети №6 В","pr":"Совместная работа модели управления системой осевого перемещения валков PCFC поставки фирмы и второго уровня АСУ ТП разработки ПАО \"НЛМК\"","rc":"Сложность интеграции системы PCFC поставщиком в существующую систему второго уровня.","l":"","tg":["Поставщики и подрядчики","Оборудование и АСУ ТП"]},{"id":7,"t":"Проведение тендера только на первый этап","c":"12-1957","p":"НЛМК. КХЦ. Техническое перевооружение пылегазоочистных установок УСТК-2 В","pr":"Проведение тендера только на этап 1.","rc":"Ограниченное финансирование.","l":"Если финансирование ограничено и проект может реализовываться поэтапно, то ТЧК готовить отдельные по каждому этапу, не предполагать, что тендер будет проведён сразу на все этапы.","tg":["Тендер и контракты","Бюджет и стоимость"]},{"id":8,"t":"Дробление проекта на этапы","c":"12-1957","p":"НЛМК. КХЦ. Техническое перевооружение пылегазоочистных установок УСТК-2 В","pr":"Разбивка проекта на этапы: 10 аспирационных установок, реализация в 2 этапа и затем ещё одна разбивка на 5 этапов.","rc":"Ограниченное финансирование.","l":"Если проект состоит из независимых элементов (этапов), то изначально планировать разбивку крупного проекта на этапы или подпроекты, и в дальнейшем моделировать проведение тендера (предпочтительно отдельный тендер по каждому этапу).","tg":["Тендер и контракты","Бюджет и стоимость"]},{"id":9,"t":"Увеличение срока проработки вследствие недостаточной проработки пула поставщиков ОТО","c":"12-1957","p":"НЛМК. КХЦ. Техническое перевооружение пылегазоочистных установок УСТК-2 В","pr":"Привлечение дополнительных поставщиков ОТО в середине Фазы-2.","rc":"Отказ от участия европейских поставщиков (из 7 отказались 5). Отсутствие в панели поставщиков аспирационных установок китайских компаний/","l":"Направлять ТЗ на поставку оборудования в китайский офис для раннего поиска дополнительных поставщиков в КНР.","tg":["Поставщики и подрядчики","Китайские партнёры","Проектирование и ТЗ"]},{"id":10,"t":"Увеличение объемов реализации за счёт недостаточной детализации WBS","c":"11-0356","p":"НЛМК. ФН Логистика. Строительство сухого порта В","pr":"Дополнительное выделение подобъектов реализации","rc":"Укрупнённое выделение подобъектов (WBS структуры) при формировании ТЗП","l":"При формировании ТЗП максимально разбивать WBS структуру","tg":["Проектирование и ТЗ"]},{"id":11,"t":"Изменение срока проработки в связи с изменением цели и концепции проекта","c":"11-0356","p":"НЛМК. ФН Логистика. Строительство сухого порта В","pr":"Изменение цели и концепции проекта","rc":"Некорректное определение границ проекта.","l":"Привлекать к обсуждению максимум заинтересованных лиц","tg":["Проектирование и ТЗ","Сроки реализации"]},{"id":12,"t":"Увеличение сроков разработки ОПР в связи с длительным сроков выдачи ТУ","c":"11-0446","p":"НЛМК. КХЦ. Строительство установки по производству гранулированного сульфата аммония В","pr":"Долгий ответ на запрос ТУ на подключение привело к увеличению срока разработки ОПР.","rc":"Личные загрузки у отделов, которые выдают ТУ на подключение.","l":"Отдельно ускорять службы, ответственные за выдачу ТУ. Отдельно контролировать сроки выдачи ТУ.","tg":["Проектирование и ТЗ","Сроки реализации"]},{"id":13,"t":"Рост стоимости прокладки сетей","c":"11-0446","p":"НЛМК. КХЦ. Строительство установки по производству гранулированного сульфата аммония В","pr":"Увеличилась стоимость прокладки сетей связи более чем в 10 раз (по Липецкой площадке).","rc":"Низкое качество проработки ТУ.","l":"На Фазе-1 детально прорабатывать выданные ТУ, материалы и оборудование.","tg":["Проектирование и ТЗ","Оборудование и АСУ ТП","Бюджет и стоимость"]},{"id":14,"t":"Увеличение срока проработки из-за попадания на действующие сети","c":"11-0446","p":"НЛМК. КХЦ. Строительство установки по производству гранулированного сульфата аммония В","pr":"Отсутствие актуального генплана привело к переносу места строительства из-из попадания на действующие сети, которые не были учтены в генплане","rc":"Генплан не обновляется должным образом.","l":"На Фазе-1 детально прорабатывать Генплан и закладывать средства на изыскания.","tg":["Проектирование и ТЗ","Сроки реализации"]},{"id":15,"t":"Поставщики ОТО не хотят предоставлять детальную информацию","c":"11-0446","p":"НЛМК. КХЦ. Строительство установки по производству гранулированного сульфата аммония В","pr":"Поставщики ОТО не хотят предоставлять детальную информацию без частичной оплаты. Это ведет к увеличению срока разработки ТЧК и ОПР.","rc":"Поставщик ОТО не замотивирован в заполнении ТЧК. В следствии чего приоритизирует свои работы на более важные и с действующими договорными отношениями.","l":"Рассмотреть возможность финансирования на Фазе-2 для подготовки ТЧК.","tg":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":16,"t":"Отсутствие опыта подготовки ТЧК у вновь привлекаемых китайских фирм","c":"12-2187","p":"НЛМК. Кислородный цех. Строительство ВРУ 20 А","pr":"Работа с китайскими фирмами","rc":"Длительная процедура заключения договора NDA. Отсутствие опыта подготовки ТЧК в соответствии с требованиями НЛМК у вновь привлекаемых китайских фирм.","l":"Проведение установочных совещаний с фирмами для разъяснения требований НЛМК при подготовке проектов ТЧК.","tg":["Китайские партнёры","Тендер и контракты","Регламенты и процессы"]},{"id":17,"t":"Избыточное количество вариантов проработки","c":"12-2187","p":"НЛМК. Кислородный цех. Строительство ВРУ 20 А","pr":"Вариативность","rc":"Большое количество вариантов реализации и проработки","l":"Применение АБК при инициации проекта","tg":["Проектирование и ТЗ"]},{"id":18,"t":"Недостаточность экспертизы при проработке ТЗО","c":"12-1715","p":"НЛМК. АГЦ. Реконструкция ЦАС-1 на агломашине №2 А","pr":"Первоначально ТЗО проработано не в полном объеме.","rc":"Внесение дополнений и изменений в период проработки на Фазе-2","l":"Привлечение внешних экспертов","tg":["Тендер и контракты","Проектирование и ТЗ"]},{"id":19,"t":"Отсутствие согласованного с заказчиком пула поставщиков ОТО","c":"12-1715","p":"НЛМК. АГЦ. Реконструкция ЦАС-1 на агломашине №2 А","pr":"Нет детального согласования с Заказчиком о привлечении фирм","rc":"Не согласован пул поставщиков ОТО","l":"Привлечение большего количества лиц, еженедельные совещания РГ, с оформлением протокола","tg":["Поставщики и подрядчики"]},{"id":20,"t":"Недостаточность критериев проработки тендерных процедур","c":"12-1715","p":"НЛМК. АГЦ. Реконструкция ЦАС-1 на агломашине №2 А","pr":"По результату тендерных процедур не выбран поставщик ОТО (выбраны два лидера)","rc":"Ответственность ТК","l":"Расшить список оценок и критерий проработки результатов ТК","tg":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":21,"t":"Увеличение сроков проработки в связи с недостаточным объемом вовлечения ЦК","c":"12-1715","p":"НЛМК. АГЦ. Реконструкция ЦАС-1 на агломашине №2 А","pr":"Длительность проработки","rc":"Загрузка проектной организации, проведение 4-х предварительных заседаний ТК (привлечение доп. фирм, внесение изм. в ТЗО, уточнение срока пуска). Увеличение стоимости.","l":"Привлекать к обсуждению максимум заинтересованных лиц. Согласование поставщиков ОТО до рассылки ТЗО. Поиск альтернативных проектировщиков.","tg":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":22,"t":"Неспецифичное оборудование в проекте. Необходимость индивидуального инжиниринга","c":"12-1810","p":"НЛМК. АГЦ. Установка систем водяного пылеподавления С","pr":"Подготовка фирмами ТЧК, т.к. предлагаемое оборудование не является серийным и предусматривает разработку инжиниринга под конкретный проект. Изначально разработка ТЧК не планировалась.","rc":"МП/РГ не в полном объёме разобралась со спецификой оборудования в проекте: по итогам Ф-1 проекта не было понятно, что оборудование систем пылеподавления требует индивидуального инжиниринга под конкретный проект.","l":"Все проекты изначально рассматривать по наихудшему сценарию с точки зрения трудоёмкости работ: разработка ТЗО, подготовка ТЧК.","tg":["Тендер и контракты","Оборудование и АСУ ТП"]},{"id":23,"t":"Исключение Фазы-1 из проработки в связи со сжатыми сроками реализации проекта","c":"11-0356","p":"НЛМК. ФН Логистика. Строительство сухого порта В","pr":"Длительная проработка значительного количества вариантов реализации проекта","rc":"В связи с необходимостью в сжатые сроки проработать мероприятия по развитию ж/д инфраструктуры, связанные с увеличением производства, было принято решение приступить к проработке проекта на Фазе-2, минуя Фазу-1. Из-за этого, на Фазе-2 было затрачено значительное время на проработку альтернативных вариантов конфигурации объекта с разными площадями и границами с целью оптимизации технических/логистических решений и получения максимального экономического эффекта.","l":"При переходе \"не зрелого\" проекта на следующую Фазу необходимо оценить возможные риски и запланировать мероприятия по их снижению.","tg":["Проектирование и ТЗ","Логистика и склад","Претензии и юридическое сопровождение"]},{"id":24,"t":"Отсутствие чертежей действующего производства","c":"11-0415","p":"НЛМК. ОГЦ. Техническое перевооружение системы подачи воздуха вращающихся печей №9 и 10 В","pr":"Трудности в сборе исходных данных из-за отсутствия чертежей существующих зданий горячих концов печей, привело к задержке в разработке ОПР, и как следствие, к возможному увеличению срока проекта.","rc":"Отсутствие проработки на Фазе-1. Отсутствие необходимых чертежей в архиве комбината и в архиве ОГЦ.","l":"Проверку наличия необходимых чертежей для выдачи исх. данных проектной организации осуществлять на Фазе-1 до подготовки ТЗ на ППР.","tg":["Проектирование и ТЗ","Сроки реализации"]},{"id":25,"t":"Неполный объём исследований на этапе ОПР","c":"12-1294","p":"НЛМК. ЦГП. Реконструкция НП-2 А","pr":"Отсутствие данных о состоянии фундаментов на отм. -8…-14,8 м - позднее проведение обследования и инструментального определения несущей способности. На этапе ОПР ограничились визуальным осмотром. Пришлось вносить изменения в проект, усиливать конструкции","rc":"Не проведено своевременно инструментальное обследование. Совмещенные фазы.","l":"Выполнять обследования на фазе ОПР","tg":["Проектирование и ТЗ"]},{"id":26,"t":"Увеличение сроков проработки ТЧК в связи с некорректно определённым маршрутом визирования","c":"12-1718","p":"НЛМК. АГЦ. Рециркуляция отходящих газов агломашин №№1-4 В","pr":"После проработки ТЧК с поставщиками и службами был разослан лист визирования для согласования руководителями специалистов, участвовавших в проработке. Появились дополнительные замечания, которые пришлось согласовывать с поставщиком ОТО и вносить изменение в ТЧК.","rc":"У согласовывавших руководителей не было достаточно информации и уверенности в качестве проработки ТЧК.","l":"При рассылке на согласование технической части контракта указывать кто от службы принимал участие в проработке. Вовлекать в процесс согласования сотрудников службы участвовавших в проработке.","tg":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":27,"t":"Смещение сроков выдачи БИ","c":"12-1900","p":"АГЦ. Строительство пыле- и сероочистки агломашины № 3 А","pr":"Недостаточный срок для согласования предварительной компоновки оборудования На что повлияла проблема: Произошло смещение сроков выдачи БИ","rc":"Недостаточная информация по размещению оборудования. Отсутствие опыта работы китайских поставщиков ОТО с российскими компаниями по российским нормативным документам.","l":"Необходимо было закладывать больше времени на согласование компоновки оборудования","tg":["Поставщики и подрядчики","Китайские партнёры","Оборудование и АСУ ТП"]},{"id":28,"t":"Технологический риск несовместимости контроллеров в поставке","c":"12-1900","p":"АГЦ. Строительство пыле- и сероочистки агломашины № 3 А","pr":"Ответственность за поставку контроллеров необходимо было возложить на Продавца (с учетом информации от ДАТП о том, что для ПАО \"НЛМК\" приемлемо использовать контроллеры из бренд-листа CIE, но информация почему-то появилась после подписания Договора) На что повлияла проблема: Риск несвоевременной поставки контроллеров европейского производства Технологический риск несовместимости контроллеров в поставке Покупателя со шкафами в поставке Продавца","rc":"Геополитическая ситуация в мире. Консервативный взгляд Недостаточная гибкость политики применения АСУТП адаптирование ДАТП к сложившейся обстановке","l":"Уделять больше внимания разделу разделение поставок, опираясь на имеющийся опыт","tg":["Тендер и контракты","Геополитика и санкции","Оборудование и АСУ ТП"]},{"id":29,"t":"Изменение объёма и стоимости контракта в силу позднего поступления замечаний к ТЧК","c":"12-1900","p":"АГЦ. Строительство пыле- и сероочистки агломашины № 3 А","pr":"Проектный институт выдал замечания к ТЧК после парафирования и подписания Договора, влияющие на объём поставки оборудования в сторону увеличения На что повлияла проблема: Изменение стоимости контракта","rc":"Проработка ОПР по предложению другого поставщика ОТО, сжатые сроки проработки.","l":"Проектному институту необходимо выдавать замечания и рекомендации в ходе проведения переговоров. Фиксировать согласование с проектировщиком в ходе переговоров.","tg":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":30,"t":"Высокие риски увеличения стоимости на Фазе 3,4","c":"12-1900","p":"АГЦ. Строительство пыле- и сероочистки агломашины № 3 А","pr":"Высокие риски увеличения стоимости на Фазе 3,4 На что повлияла проблема: Увеличение бюджета проекта","rc":"Сжатые сроки проработки Фазы-1, 2","l":"Уведомить Заказчика и ИК о том, что при сжатых сроках проработки возможно увеличение бюджета проекта. Выстраивать коммуникацию для ИК о существующих рисках.","tg":["Проектирование и ТЗ","Претензии и юридическое сопровождение","Бюджет и стоимость"]},{"id":31,"t":"Неточная оценка бюджета проекта на Фазе-1","c":"12-1900","p":"АГЦ. Строительство пыле- и сероочистки агломашины № 3 А","pr":"Неточная оценка бюджета проекта на Фазе-1 На что повлияла проблема: Увеличился бюджет на Фазе-2","rc":"1. Новая технология, не используется в Группе НЛМК 2. Не выполнены в полном объеме работы Фазы-1","l":"Чётко выстраивать коммуникацию с Заказчиком и ИК , когда выдаем оценки стоимости с высоким риском","tg":["Претензии и юридическое сопровождение","Бюджет и стоимость"]},{"id":32,"t":"Отсутствие процедуры проверки референций по китайским компаниям","c":"12-1900","p":"АГЦ. Строительство пыле- и сероочистки агломашины № 3 А","pr":"Риски фальсификации референций со стороны контрагентов На что повлияла проблема: Выбор поставщика ОТО с более высокой стоимостью","rc":"Отсутствует процедура проверки по китайским компаниям","l":"При помощи специалистов AVAXA проводить дополнительную проверку референций контрагентов из КНР: 1. Проводить проверку компаний на этапе формирования long list. 2. Проводить проверку компаний на этапе формирования short list до тендера.","tg":["Поставщики и подрядчики","Китайские партнёры","Тендер и контракты"]},{"id":33,"t":"Сложности проработки панели поставщиков проекта R&D","c":"11-0509","p":"КЦ-2. Устройство детектирования дефектов слябов на МНЛЗ-9 С","pr":"Проект был передан со Stage Gate на инвестиционный трек (Фаза-1,2) с максимальным объемом данных без ее сортировки, включая перечень потенциальных поставщиков, в том числе которые не являлись поставщиками того оборудования какое нужно было под проект. Команда потратила много времени на поиск поставщиков (18 фирм), проработку с ними предложений и формирование актуальной панели поставщиков для тендера. Было потрачено дополнительное время на проработку панели поставщиков для проекта R&D, связанного с внедрением новой технологии. Увеличение срока подготовки ТКП без смещения срока проработки проекта","rc":"Наличие новой технологии в проектах R&D","l":"При проработке проектов R&D, связанных с внедрением новой технологии либо если технология не определена при передаче проекта со Stage Gate на инвестиционный трек, учитывать дополнительное время в графике проработки Фазы -1,2 на проработку панели поставщиков. В этом случае проработка панели поставщиков на Фазе -1,2 потребует больших временных ресурсов.","tg":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":34,"t":"Коммуникационные проблемы с китайскими фирмами","c":"11-0507","p":"ДЦ-1. Техническое перевооружение системы ПУТ (подключение к ДП № 3) В","pr":"В ходе работы с китайскими фирмами были выявлены проблемы в коммуникациях, связанные с трудностями перевода, разной интерпретацией одной и той же технической информации. Потребовалось достаточно много времени чтобы прийти к единому пониманию предлагаемых технических решений. Увеличение срока подготовки ТЧК","rc":"Недостаточный опыт взаимодействия с китайскими фирмами, слабый уровень переводческих услуг, отсутствие базы данных по соответствию между НД КНР и РФ.","l":"1) При подготовке ТЧК с китайскими фирмами использовать обновленные шаблоны Приложений №№1-12 ТЧК (в новые шаблоны включены рекомендации и примеры по оформлению документов, шаблоны с примерами переведены на английский язык). 2) В случае отказа китайских фирм работать в соответствии со стандартами РФ, рекомендовать китайским Поставщикам привлекать фирмы, оказывающие посреднические услуги в получении разрешительной документации и прохождении необходимых сертификаций.","tg":["Поставщики и подрядчики","Китайские партнёры","Тендер и контракты"]},{"id":35,"t":"Изменение условий контракта","c":"11-0507","p":"ДЦ-1. Техническое перевооружение системы ПУТ (подключение к ДП № 3) В","pr":"На финишном этапе проработки, после завершения тендера и определения лидера, на ТИС было принято решение о подготовке двухэтапного контракта. Изначально данный тип контрактования не рассматривался применительно к этому проекту и Поставщики ОТО к нему не были готовы. Это повлекло увеличение сроков проработки, а также возник риск срыва контракта с Поставщиком. Риск срыва был обусловлен тем, что двухэтапный контракт, как правило, выше по стоимости одноэтапного, т.к. включает не только поставку оборудования, но и базисного инжиниринга. Путем длительных переговоров с Поставщиком удалось перейти на двухэтапное контрактование при условии сохранения первоначальной стоимости договора","rc":"Двухэтапный контракт в проекте изначально не рассматривался. Поставщики не были готовы к двухэтапной реализации проекта.","l":"При разработке контрактной стратегии на Фазе-1 / совмещенной Фазе-1,2 оценивать возможность применения двухэтапной схемы контрактования в соответствии с действующей методологией контрактного моделирования. Прорабатывать с потенциальными поставщиками возможность заключения двухэтапного контракта. Рассчитывать КПЭ проекта по одноэтапной и двухэтапной схемам контрактования. Учитывать готовность поставщиков работать по двухэтапной схеме при проведении тендера.","tg":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":36,"t":"Длительная разработка ТЧК поставщиками оборудования","c":"11-0507","p":"ДЦ-1. Техническое перевооружение системы ПУТ (подключение к ДП № 3) В","pr":"Проектные решения (ПР), разработанные ф. Paul Wurth 10 лет назад, были направлены китайским поставщикам для учёта при разработке ТЧК. Китайские специалисты, изучив ПР, высказали мнение о нежизнеспособности технических решений, заложенных в ПР. И одновременно предложили свои техн. решения (причем у каждой из 6-ти привлечённых фирм было свое техн. решение). Специалисты НЛМК, изучив вопрос, в конечном итоге согласились с выводами китайских специалистов. При этом, потребовалось достаточно много времени чтобы изучить предложенные тех. решения и сформировать единое оптимальное тех. решение. В результате были внесены необходимые корректировки в ПР, после чего были подговлены фирмами ТЧК.","rc":"Специалистами НЛМК не были своевременно проверены технические решения ф. Paul Wurth в части подключения ДП-3 на предмет реализуемости схемы вдувания ПУТ (по одной трубе в две ДП).","l":"Технические решения, разработанные несколько лет назад, проверять на предмет актуальности и реализуемости в текущих условиях перед их использованием в ходе проработки. Например, целесообразно организовать проведение тех. аудита на предмет реализуемости проекта (в данном случае в части возможности прокладки сетей по существующим эстакадам).","tg":["Поставщики и подрядчики","Китайские партнёры","Тендер и контракты"]},{"id":37,"t":"Отсутствие конкурентной среды при закупке оборудования","c":"12-2518","p":"ЦХПП. Установка электроразрядного текстурирования прокатных валков С","pr":"В связи с существующей геополитической обстановкой невозможна работа с двумя фирмами-производителями аналогичного оборудования из Европы: Herkules (Германия), Sarclad (Великобритания). Известен один поставщик оборудования из КНР: Hebei Bojan (контракт через Lanzhou). В ходе проработки был выполнен сорсинг рынка поставщиков, в т.ч. с привлечением Avaxa - альтернативные поставщики не найдены. Произведен анализ используемого аналогичного оборудования на крупнейших предприятиях КНР - преимущественно используются установки Herkules. Проведены тендерные процедуры с одним участником из КНР: Lanzhou. Для снижения рисков (недоверие к фирме со стороны эксплуатации) и подтверждения возможности достижения гарантийных показателей возникла необходимость повторного референс-визита на все предприятия, на которых размещено оборудование производителя.","rc":"Геополитическая обстановка и ввод санкций ограничили сотрудничество с проверенными европейскими поставщиками оборудования.","l":"","tg":["Поставщики и подрядчики","Китайские партнёры","Тендер и контракты"]},{"id":38,"t":"Изменение Заказчиком границ проекта","c":"12-2518","p":"ЦХПП. Установка электроразрядного текстурирования прокатных валков С","pr":"На Фазе-1 Заказчик определил месторасположение оборудования и принял решение не проводить проработку альтернатив проекта по месторасположению установки. В конце Фазы-2 в ходе планового обхода Заказчик по предложению ГИЗ пересмотрел свое решение по месторасположению установки, что привело к необходимости разработки материалов ОПР по варианту нового месторасположения.","rc":"В принятии решения по месторасположению оборудования без проработки альтернатив ГИЗ не участвовал, т.к. на момент проработки проекта на Фазе-1 роль ГИЗ отсутствовала как сущность.","l":"Привлекать ГИЗ на Фазе-1 при согласовании рассмотренных альтернатив и концепций предлагаемых для дальнейшей проработки. Сверять все технические решения с ГИЗ на всем жизненном цикле проработки проекта в т.ч. организовывать встречи Заказчика, Куратора и ГИЗ для рассмотрения требований, заложенных в ТЗО и ТЗП.","tg":["Тендер и контракты","Проектирование и ТЗ","Оборудование и АСУ ТП"]},{"id":39,"t":"Систематическое невыполнение поставщиком оборудования обязательств по предоставлению информации при формировании ТЧК","c":"11-0496","p":"КХП. Установка грохотов в отделении окончательного дробления № 1 С","pr":"После проведения тендера поставщик оборудования систематически нарушал сроки предоставления информации для заключения контракта в соответствии с ТЗО. Длительное предоставление проекта договора с технической спецификацией (около 2-х месяцев). Невыполнение обязательств по предоставлению исходных данных по гарантийному письму. Длительное перечисление аванса субпоставщику грохотов в Китай. Отсутствие контроля и эскалации со стороны отв. за снабжение и руководителя проекта за сроками оформления договорных обязательств поставщиком.","rc":"На момент проработки проекта происходила частая смена команды поставщика. Договоренности, достигнутые ранее с прежней командой поставщика, не фиксировались.","l":"1. С целью снижения рисков несоблюдения сроков или некачественного предоставления информации поставщиком ОТО при формировании ТЧК, рекомендуется оформлять дорожную карту разработки ТЧК и уведомлять поставщика о контрольных точках данной карты, закрепленных в ответственности поставщика (в случае изменения контрольных точек своевременно информировать поставщика ОТО). 2. В случае систематического невыполнения поставщиком сроков, указанных в дорожной карте, своевременно эскалировать проблемные вопросы взаимодействия с поставщиком ответственному за снабжение или руководителю профильной службы закупок для организации переговоров или проведения УК непосредственно с руководителями поставщика.","tg":["Поставщики и подрядчики","Китайские партнёры","Тендер и контракты"]},{"id":40,"t":"Перед проведением тендерных процедур проекта, учитывая высокий IRR, не были устранены замечания к ТБ и были не согласованы тех. части контракта с поставщиками","c":"11-0496","p":"С","pr":"В связи с высоким IRR предлагалось пойти по fast-track, при этом закупку оборудования планировали осуществить по техническому предложению и техническому балансу. В утвержденном ТЗО и согласованном ТБ отсутствовали важные технические характеристики: гарантийные показатели производительности с учетом коэффициента размолоспособности, в явном виде не были учтены требования к габаритам поставляемого оборудования (ТЗО), требования к оборудованию по взрывозащищенности, требования к количеству пыли (фракции 0-0.5). Отсутствие в ТБ и ТЗО критически важных c т.з. реализации характеристик оборудования привели к увеличению срока реализации проекта.","rc":"Идентификация / категорирование оборудования как КВО не предполагала согласование технической части контракта с поставщиками","l":"1. В случае проработки проектов по fast-track (проекты с высоким IRR) необходимо перед проведением тендерных процедур согласовывать техническую часть контракта на закупку оборудования (в т.ч. на закупку КВО) с поставщиками оборудования и заказчиками. 2. Приглашать на ТК представителей команды реализации в качестве экспертов в случае проработки проектов по fast-track для снижения рисков заключения договоров с техническими частями контракта, в которых будут не учтены важные с точки зрения реализации характеристики к закупаемому оборудованию.","tg":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":41,"t":"Невозможность заключить договор закупки грохота и дробилки на Фазе-3 по рамочному договору закупки КВО","c":"11-0496","p":"КХП. Установка грохотов в отделении окончательного дробления № 1 С","pr":"В начале Фазы-2 закупку оборудования (грохот и дробилка) идентифицировали / категорировали как КВО. Закупку планировали осуществлять по техническому предложению и техническому балансу. Подготовлен технический баланс. В связи с высоким IRR предлагалось пойти по fast-track (нормативные регламенты по категорированию проектов и возможности исключения ТЧК отсутствуют). Решение о закупке по тех. решению и тех. балансу отображено в материалах для ТИС на входе в Фазу-3-4 (указано, что ТЧК не разрабатывалось). На Фазе-3 при согласовании контракта на закупку КВО, возникли сложности: юристы не согласовали контракт, в связи с тем, что нужен контракт на закупку ОТО с сформированной частью ТЧК и КЧК. Пришлось формировать ТЧК на Фазе-3, что привело к увеличению срока заключения контракта поставки ОТО).","rc":"Недооценка сложности закупаемого оборудования, принятие решения о закупке оборудования с недостаточными техническими требованиями","l":"1. В случае закупки такого оборудования, как подъемные сооружения, грохоты, дробильные установки, решение о его категорировании (ОТО или КВО) в начале Фазы-2, необходимо принимать коллегиально с привлечением профильных специалистов и юристов с формализацией решения протоколом РГ. 2. Разрабатывать ТЧК на Фазе-2 на оборудование, даже если оборудование не было первоначально категорировано как ОТО, и закупка предусматривает : - наличие требований по гарантийным испытаниям и включение санкций к поставщику за несоблюдение требований по гарантийным испытаниям; - сроки монтажа оборудования с привязкой к графику остановочного периода основного технологического оборудования.","tg":["Поставщики и подрядчики","Тендер и контракты","Геополитика и санкции"]},{"id":42,"t":"Организация дополнительного фронта зачистки вагонов АГЦ","c":"2-2839","p":"1 НЛМК. УЖДТ/АГЦ. Организация дополнительного фронта зачистки вагонов АГЦ. C","pr":"Фактическая компетенция и вовлеченность привлеченной сторонней проектной организации не соответствовали заявленным. Несмотря на формальное наличие у подрядчика необходимой квалификации и опыта, в ходе работы выявились критические недостатки: Низкая вовлеченность ключевых специалистов: Главный инженер проекта (ГИП) систематически отсутствовал на рабочих группах (РГ) и не выезжал на площадку для ее обследования. Игнорирование исходных данных: Материалы проекта производства работ (ППР) на первом этапе были разработаны без учета Технических условий (ТУ) и требований от поставщиков оборудования. Незнание стандартов: Проектная организация оказалась плохо ознакомлена со специфическими корпоративными требованиями к разработке ППР. Следствие: КУП был вынужден тратить значительное дополнительное время не на контроль, а на разъяснение базовых требований и «доучивание» подрядчика при формировании документации ПИР.","rc":"• Формальный подход к предквалификации: Стандартный набор квалификационных критериев проверял только наличие общих признаков (лицензии, общий стаж компании), но не оценивал релевантный опыт выполнения именно таких задач и не гарантировал закрепление конкретных ключевых специалистов (в т.ч. ГИПа) в договоре. • Отсутствие использования исторических данных: При выборе подрядчика не была запрошена или не была учтена внутренняя оценка (рейтинг/обратная связь) от структурных подразделений (КУП), ранее работавших с данной организацией. • Отсутствие четкого старта работ: Не была проведена формализованная установочная встреча с передачей полного и актуального пакета корпоративных стандартов и требований.","l":"•Углубить критерии предквалификации •Внедрить рейтинговую систему подрядчиков •Проводить обязательный стартовый брифинг (Kick-off meeting): •Усилить договорные механизмы: Прописать в договоре право Заказчика требовать замены ключевых специалистов (в т.ч. ГИПа) в случае их низкой вовлеченности или некомпетентности, с применением штрафных санкций или удержанием части оплаты до устранения замечаний.","tg":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":43,"t":"Срыв срока поставки критического оборудования","c":"","p":"н/д НЛМК. УЖДТ/АГЦ. Организация дополнительного фронта зачистки вагонов АГЦ В","pr":"Срыв срока поставки критического оборудования Несмотря на заявленный процесс дистанционного мониторинга изготовления оборудования, фактический срок поставки был сорван на 1 месяц. Практика показала, что дистанционный контроль, основанный преимущественно на самоотчетах поставщика, не позволил выявить отставание от графика на ранних стадиях и своевременно применить корректирующие или превентивные меры.","rc":"Неэффективность выбранной модели контроля для данного типа оборудования. А именно: • Отсутствие физической верификации • Низкая детализация контрольных точек: График изготовления в договоре не был декомпозирован до уровня конкретных, измеримых этапов, что позволяло поставщику маскировать локальные задержки до самого момента плановой отгрузки. • Отсутствие рычагов влияния: Промежуточные платежи или условия договора не были жестко привязаны к подтвержденному (доказательному) выполнению конкретных этапов изготовления, а не просто к календарным датам.","l":"Для исключения срывов сроков при закупке сложного или длительного в изготовлении оборудования необходимо: • Внедрить гибридный или физический контроль.","tg":["Поставщики и подрядчики","Тендер и контракты","Оборудование и АСУ ТП"]},{"id":44,"t":"Дополнительные затраты на закупку тепловоза","c":"11-0356","p":"НЛМК. ФН Логистика. Строительство сухого порта В","pr":"","rc":"Изменение рынка сбыта в период реализации проекта","l":"Осуществление интегрированного планирования (кросс-функциональное взаимодействие со всеми заинтересованными службами) с пересчётом технических эффектов для постоянного мониторинга и прогнозирования структуры рынка с привлечением профильных экспертов от ФН «Продажи» Положительный урок: реализация проекта управлялась гибко - состав проекта корректировался в соответствии с изменениями рынка сбыта, а технические эффекты оптимизировались для повышения экономических показателей проекта","tg":["Бюджет и стоимость"]},{"id":45,"t":"Дополнительные затраты на MES-систему","c":"11-0356","p":"НЛМК. ФН Логистика. Строительство сухого порта В","pr":"oизменение маршрутов отгрузки в процессе производства;\noработа с сертификатами, замена сертификатов;\noтаможенное декларирование","rc":"Неверное предположение о достаточности минимального IT - решения (аналог \"Логосклад\") для передачи данных в системы НЛМК","l":"","tg":["Логистика и склад","Бюджет и стоимость","Регламенты и процессы"]},{"id":46,"t":"Дополнительные затраты из-за увеличения площади АБК","c":"11-0356","p":"НЛМК. ФН Логистика. Строительство сухого порта В","pr":"","rc":"Изменение рынка сбыта в период реализации проекта","l":"реализация проекта управлялась гибко - состав проекта корректировался в соответствии с изменениями рынка сбыта, а технические эффекты оптимизировались для повышения экономических показателей проекта","tg":["Бюджет и стоимость"]},{"id":47,"t":"Влияние качества входного сырья на характеристики окатышей и производительность отдельных агрегатов","c":"21-0009","p":"СГОК. Фабрика окомкования А","pr":"Влияние качества входного сырья на характеристики окатышей и производительность отдельных агрегатов (окомкователей) В проекте были закуплены все необходимые приборы для проведения качественного анализа сырья. Для достижения качества входного сырья необходимо снижать объемы производства на ОФ, что приводит к потерям.","rc":"","l":"Необходимо особое внимание уделять всем параметрам входного сырья и энергоносителей. В контракт необходимо закладывать параметры, которые 100%-но достижимы (а лучше с запасом)","tg":["Тендер и контракты"]},{"id":48,"t":"Недостаточная проработка сервисного обеспечения до запуска Фабрики","c":"21-0009","p":"СГОК. Фабрика окомкования А","pr":"Недостаточная проработка сервисного обеспечения до запуска Фабрики. Необеспеченность запасными частями.","rc":"Недостаточная проработка сервисного обеспечения до запуска Фабрики","l":"В проекте получен как положительный, так и отрицательный опыт. В части выбора решений по некоторым видам оборудования. Как результат задержка в выводе на проектную мощность, дополнительные операционные затраты. Урок: в крупных проектах организация сервисного обслуживания необходимо организовывать отдельным подпроектом с отдельным ответственным.","tg":["Проектирование и ТЗ","Оборудование и АСУ ТП","Бюджет и стоимость"]},{"id":49,"t":"Сложность управления больших по стоимости контрактов","c":"21-0009","p":"СГОК. Фабрика окомкования А","pr":"Сложность управления больших по стоимости контрактов. Подрядчики несколько раз выходили с инициативами увеличить стоимость контрактов. Также срывали сроки работ по контрактам В целом был получен положительный опыт. Урок: цена любого контракта должна быть разумной (заниженная стоимость контракта также негативно скажется на интересах Заказчика). Обязательно необходимо организовать специальное юридическое сопровождение крупных контрактов. Включать в объем контракта гарантию исполнения и систему премий и штрафов по ходу работ. Спорные вопросы по крупным договорам необходимо принимать с учетом размеров доходности и эффективности проектов.","rc":"","l":"В целом был получен положительный опыт. Урок: цена любого контракта должна быть разумной (заниженная стоимость контракта также негативно скажется на интересах Заказчика). Обязательно необходимо организовать специальное юридическое сопровождение крупных контрактов. Включать в объем контракта гарантию исполнения и систему премий и штрафов по ходу работ. Спорные вопросы по крупным договорам необходимо принимать с учетом размеров доходности и эффективности проектов.","tg":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":50,"t":"Недостаток знаний и опыта у участников проекта по отдельным направлениям технологии или отдельным элементам и системам оборудования","c":"21-0009","p":"СГОК. Фабрика окомкования А","pr":"Недостаток знаний и опыта у участников проекта по отдельным направлениям технологии или отдельным элементам и системам оборудования. Как следствие выбор неоптимальной технологии. Пример: оборудование ГБФ, системы пневмотранспортировки пыли","rc":"Недостаток знаний и опыта у участников проекта по отдельным направлениям технологии","l":"В проекте получен отрицательный опыт в части выбора решений по некоторым видам оборудования. Как результат задержка в выводе на проектную мощность, и повышенные эксплуатационные затраты. Урок: особое внимание уделить технологии и оборудованию, с которым нет опыта работы.","tg":["Тендер и контракты","Проектирование и ТЗ","Геополитика и санкции"]},{"id":51,"t":"Обеспечение Фабрики окомкования квалифицированным технологическим и обслуживающим персоналом","c":"21-0009","p":"СГОК. Фабрика окомкования А","pr":"Задача: Обеспечение Фабрики окомкования квалифицированным технологическим и обслуживающим персоналом","rc":"-","l":"В проекте по строительству ФОК был организован отдельный подпроект по найму и обучению персонала для ФОК. В целом был получен положительный результат. В крупных проектах при появлении значительного количества новых рабочих мест необходимо отдельное внимание уделять найму и обучению нового персонала. Лучше реализовывать в виде подпроекта.","tg":["Проектирование и ТЗ","Персонал и команда","Бюджет и стоимость"]},{"id":52,"t":"Недостаточные и не оборудованные надлежащим образом складские мощности на стороне Заказчика","c":"11-0250","p":"Строительство электростанции УТЭЦ-2 А+","pr":"Недостаточные и не оборудованные надлежащим образом складские мощности на стороне Заказчика не позволили обеспечить безопасное хранение ТМЦ/оборудования (хранение турбин на улице и т. п.), что привело к дополнительным затратам на их повторную закупку или восстановление.","rc":"Недостаточные и не оборудованные надлежащим образом складские мощности на стороне Заказчика","l":"Развивать собственное складское хозяйство, в т. ч. обеспечивать приобъектовые склады силами НЛМК (надувные склады и и пр.) Усилить контроль за соблюдением требований производителя к хранению поставляемого оборудования.","tg":["Оборудование и АСУ ТП","Логистика и склад","Бюджет и стоимость"]},{"id":53,"t":"Управление бюджетом проекта","c":"11-0250","p":"Строительство электростанции УТЭЦ-2 А+","pr":"Недостаточная численность аналитиков (1 человек на проект), отсутствие бюджетных комитетов, ошибки и отставание актуализации бюджета от выдачи смет, возникновение фактических обязательств (леса, транспорт) привели к некорректному планированию бюджета и позднему выявлению удорожания проекта.","rc":"Недостаточная численность аналитиков (1 человек на проект)","l":"Пересмотреть численность и функционал аналитиков на крупных проектах. Внедрить необходимые процессы на всех крупных проектах (бюджетные комитеты, контроль смет и т. п.). Развивать ИТ системы для контроля и актуализации бюджета проекта.","tg":["Проектирование и ТЗ","Логистика и склад","Бюджет и стоимость"]},{"id":54,"t":"Работа с претензиями","c":"","p":"А+","pr":"Отсутствие контрактного менеджера привело к недостаточному контролю соблюдения условий контракта, как следствие невозможности/сложности выставления претензий по формальным признакам (актирование брака, ненадлежащего хранения и проч.). Выставление претензий в объёме договорного лимита может не восприниматься подрядчиком серьёзно: отказ по формальным признакам, при значительном объёме обоснованных претензий проще уйти в банкротство, чем платить.","rc":"Отсутствие контрактного менеджера","l":"Назначать в команде проекта выделенного контрактного менеджера. Особое внимание уделять клейм менеджменту Управлять договорным «потолком» претензий как инструментом снижения стоимости вести претензионную работу с направлением предпретензионных писем, не дожидаясь завершения контракта. Фиксировать неисполнение договорных обязательств с обеих сторон в постоянном режиме на протяжении исполнения всего проекта; информировать подрядчика о ближайших договорных вехах, вести реестр претензий с указанием вероятности их признания судом (арбитражем), использовать претензии для « расторговки » с контрагентами в части неисполнения встречных обязательств со стороны Заказчика.","tg":["Поставщики и подрядчики","Тендер и контракты","Логистика и склад"]},{"id":55,"t":"Дефицит подрядчиков","c":"11-0250","p":"Строительство электростанции УТЭЦ-2 А+","pr":"Отсутствие достаточного количества работников, невозможность быстрой мобилизации при открытии фронтов работ. Затраты времени для возможности допуска на площадку, обучение, подготовку ППР и пр. Длительные процедуры выбора подрядных организаций, отсутствие достаточных панелей.","rc":"Дефицит подрядчиков","l":"Использовать контракты на условиях «твёрдой» цены для некрупных и технологически несложных проектов ( (<500 млн.) со сроком реализации 1 2 года (риски значительного роста цен минимальны). Более гибко реагировать на изменение рыночных цен, определить порядок и регулярность их пересмотра, перекладывать риски на Подрядчика в ограниченном объёме ( (±10%10%)","tg":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":56,"t":"Потери времени на разработку и согласование «нестандартных» схем работы с подрядчиком","c":"","p":"А+","pr":"Потери времени на разработку и согласование «нестандартных» схем работы с подрядчиком (изменение схем авансирования с уходом от банковской гарантии на ОБС, раскрытие твёрдой цены, частичное изъятие работ и прочее). С учётом опыта работы с Трест СЗЭМ на проекте ТВД, в договор были включены дополнительные контроли со стороны НЛМК и ковенанты его досрочного расторжения, что стало фактором отказа банков в выдаче БГ. В отсутствие БГ была применена схема финансирования через ОБС счёт. С одной стороны, она страховала нас от нецелевого использования средств, с другой значительно замедляла взаиморасчёты с субподрядчиками и поставщиками. Частичное изъятие работ в рамках ДС 12 и раскрытие твёрдой цены привели к увеличению сроков реализации проекта: фактически на площадке появилось два генподрядчика, не синхронизированные между собой.","rc":"Потери времени на разработку и согласование «нестандартных» схем работы с подрядчиком (изменение схем авансирования с уходом от банковской гарантии на ОБС, раскрытие твёрдой цены, частичное изъятие работ и прочее)","l":"Разработать перечень «ковенант»/« алармов », при достижении которых НЛМК безусловно принимает решение о досрочном расторжении договора. Выполнить переоценку необходимости запроса у контрагентов банковских гарантий на выданные авансы (фактически, этот инструмент мы почти никогда не применяем, но платим за БГ в цене контракта), проработать альтернативные варианты более «быстрого» использования ОБС.","tg":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":57,"t":"Замедление работ, перенос срока пуска проекта на Ф 3,4 из за ухудшения рыночной ситуации, приостановка платежей","c":"11-0250","p":"Строительство электростанции УТЭЦ-2 А+","pr":"Замедление работ, перенос срока пуска проекта на Ф 3,4 из за ухудшения рыночной ситуации, приостановка платежей при ухудшении денежного потока НЛМК привели к дестабилизации подрядчика, потере ключевых членов его команды, разрыву (ухудшению) его отношений с субподрядчиками, банками и т.д. Длительные переговоры об условиях переноса сроков в условиях роста цен на СМР привели к остановке работ без надлежащей консервации объекта, что привело к частичной потере ТМЦ и необходимости повторного выполнения ранее выполненных работ.","rc":"Замедление работ, перенос срока пуска проекта на Ф 3,4 из за ухудшения рыночной ситуации, приостановка платежей","l":"Заходить в крупные инвестиционные проекты с открытой линией финансирования (возможно, использовать проектное финансирование). Прибегать к замедлению проектов на Ф 4 в исключительных случаях, когда привлечение заёмных средств невозможно, т.к. альтернативы могут иметь худшие последствия. Разработать типовые решения и «калькулятор» затрат на проекты консервации, определить порядок принятия решений о консервации за счёт НЛМК, несмотря на возможные споры с подрядчиком.","tg":["Поставщики и подрядчики","Проектирование и ТЗ","Претензии и юридическое сопровождение"]},{"id":58,"t":"Некорректный акцент на сроки без учета финансовых рисков","c":"","p":"А+","pr":"Некорректный акцент на сроки без учета финансовых рисков Первоначальный акцент на сроки предопределил выбор варианта контрактации подрядчика по человеко часам. Возобновить проект с выходом подрядной организации по сметам или даже ЕР не было возможности из за отсутствия фактически выполненных и остаточных объемов к реализации. Впоследствии при увеличении бюджета акцент сместился в сторону управления бюджетом, что привело к смещению сроков","rc":"Некорректный акцент на сроки без учета финансовых рисков","l":"Действовать последовательно, понимать, что невозможно одновременное достижение агрессивных сроков, удержания стоимости и качества, особенно в таких сложных проектах При смене приоритетов выделять соответствующие ресурсы, в частности в настоящем проекте целесообразно было бы согласиться на сдвиг сроков. Использовать привлечение подрядных организаций по варианту контрактации подрядчика по человеко часам только в исключительных случаях.","tg":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":59,"t":"Недостаток квалифицированной рабочей силы подрядных организаций в регионе","c":"11-0250","p":"Строительство электростанции УТЭЦ-2 А+","pr":"В момент перехвата в регионе не было подрядных организаций с рабочей силой, готовой выставить 1300 чел. Реализовавшиеся геополитические риски уже по ходу проекта привели к оттоку людей и к сдвигу сроков строительства (атаки БПЛА, теракт в Крокус Сити).","rc":"Недостаток квалифицированной рабочей силы подрядных организаций в регионе","l":"Развивать панели подрядных организаций. Развивать стратегические партнерства с подрядными организациями. Развивать СМТ (собственный ресурс).","tg":["Геополитика и санкции","Претензии и юридическое сопровождение","Сроки реализации"]},{"id":60,"t":"Отсутствие контроля освоения физ. объемов","c":"11-0250","p":"Строительство электростанции УТЭЦ-2 А+","pr":"Отсутствие контроля освоения физ. объемов и, как следствие, искажение данных о реальном прогрессе, прогнозе бюджета и сроков завершения стройки","rc":"Отсутствие контроля освоения физ. объемов","l":"Внедрить систему планирования освоения и факта в формате МСГ Реализовано на больших проектах. Автоматизировать процесс планирования строительных работ и стройконтроля. Организовать процесс отслеживания техзапросов с площадки (коллизия по МУЗам ) и получения техрешений с целью своевременной актуализации в графике. Организовать дополнительный контроль открытия и закрытия фронтов работ с определением ответственных, кто отвечает за организацию открытие фронта ПИР, МТО, СМР.","tg":["Проектирование и ТЗ","Претензии и юридическое сопровождение","Бюджет и стоимость"]},{"id":61,"t":"Деградация EPC подрядчика","c":"11-0250","p":"Строительство электростанции УТЭЦ-2. А+","pr":"Деградация EPC подрядчика из за смены собственников и ухода продуктивной части команды в 2020 2021 г.г . компанию покинула значительная часть компетентной команды, при этом риски дальнейшей работы с СЗЭМ не были объективно оценены.","rc":"Деградация EPC подрядчика","l":"Оперативно реагировать на изменения в ресурсе / компетенциях / структуре Подрядчика, анализировать риски, реагировать соответствующим образом. Уже в 2021 г. можно было сделать вывод, что стройка под риском и нужно перехватывать управление, но это не было предложено и сделано.","tg":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":62,"t":"Отсутствие приемки по качеству","c":"11-0250","p":"Строительство электростанции УТЭЦ-2 А+","pr":"НЛМК осуществлял приёмку по объёмам и качеству, но представители Заказчика в недостаточной мере контролировали результаты работ, опираясь на заключенный ЕРС контракт и то, что все риски лежат на Подрядчике. При расторжении договора и перехвате управления проектом Заказчиком был выявлен брак в работах, а также невыполненные, но оплаченные работы и пр.","rc":"Отсутствие приемки по качеству","l":"Усилить контроль за качеством и объёмами выполненных работ, возможно, с привлечением сторонних организаций.","tg":["Поставщики и подрядчики","Тендер и контракты","Претензии и юридическое сопровождение"]},{"id":63,"t":"Качество проектирования и документация","c":"11-0250","p":"Строительство электростанции УТЭЦ-2 А+","pr":"Со стороны Заказчика не был обеспечен необходимый контроль за качеством выдаваемой документации, очередностью проектирования, применением 3D модели для идентификации коллизий. Частично, это обусловлено структурой контракта: во избежание излишних объёмов в условиях твёрдой цены ЗАО «Трест СЗЭМ» остановил прямое взаимодействие Заказчика с Проектировщиком, что ухудшило логистику документации и привело к потере части комплектов, замечаний и пр. Впоследствии, отсутствие полного комплекта документации у Заказчика стало серьёзным рычагом давления на Заказчика в переговорах об изменении цены и, далее, о расторжении договора.","rc":"Качество проектирования и документация","l":"Задавать требования к качеству и контролю проектирования на стадии согласования контракта, в т. ч. ЕРС. Развивать компетенции НЛМК Инжиниринг или привлекать специализированные организации для поддержания 3 D модели в актуальном состоянии. НИ выступать «единым окном», в том числе для приемки проектной продукции в рамках проектов ЕРС. Обеспечивать проактивное участие КУП и НИ в процессе проектирования у внешнего проектировщика. Формировать группу из инженеров по дисциплинам в КУП для приемки ПД и РД.","tg":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":64,"t":"Выбор контрактной стратегии ЕРС","c":"11-0250","p":"Строительство электростанции УТЭЦ-2 А+","pr":"Данная стратегия предусматривала найм специализированного EPC подрядчика на условиях твёрдой цены. ЕРС в России достаточно редкая контрактная стратегия, не регулируется законодательством, не позволяет Заказчику полноценно контролировать проект, использовать инструменты правовой и финансовой защиты своих интересов. Эта стратегия приемлема для некрупных и технологически несложных проектов, но риски изменения цены в любом случае лежат на Заказчике.","rc":"Выбор контрактной стратегии ЕРС","l":"Применение данной стратегии на крупные проекты EPC возможно только в случае наличия безболезненного переформатирования проекта (страховки), с резервированием дополнительного CAPEX и с запасом по срокам.","tg":["Поставщики и подрядчики","Тендер и контракты","Персонал и команда"]},{"id":65,"t":"Недостаточный ресурс команды управления проектом (КУП)","c":"11-0250","p":"Строительство электростанции УТЭЦ-2. А+","pr":"В процессе реализации контракта Заказчиком¹ был выделен ресурс, недостаточный для контроля за Подрядчиком. КУП была выделенной, но в основном контролировала проектные решения и выбор оборудования. Инструменты контроля со стороны Заказчика были прописаны в договоре, но, в силу недостаточности ресурса КУП, реализовывались не полностью. Контрактный менеджер в КУП отсутствовал. Штатные единицы специалистов, способных контролировать закупки, планирование строительства, достаточность и квалификацию субподрядных организаций и пр., в КУП вводились уже на этапе расторжения договора с Генеральным подрядчиком.","rc":"Недостаточный ресурс команды управления проектом (КУП)","l":"1. При реализации проекта «под ключ» или с «твёрдой ценой» требуется создание КУП, по численности / компетенциям аналогичной команде Подрядчика. 2. Менеджер проектов, аналогичных по масштабу и стратегической важности, должен быть выделенным 100% загрузка в одном проекте ) и иметь уровень корпоративного 3. При проработке контрактной стратегии по крупным и масштабным проектам не следует брать на НЛМК функционал ген. подрядчика, т.к. НЛМК не обладает достаточными для этого компетенциями и опытом (развивать данные компетенции не планируется","tg":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":66,"t":"Отсутствие единого центра планирования работ в ремонтах и инвестициях с учётом загрузки подрядчиков","c":"","p":"Программа поддержания (высокоприоритетные проекты)","pr":"Увеличение срока выполнения СМР\nДля выполнения электромонтажных работ определили квалифицированного субподрядчика – ЮВЭМ-1, согласовали срок выполнения СМР и ПНР окт.-ноя. 2025 г. В сентябре выяснилось, что в октябре ЮВЭМ-1 приступить не сможет связи с высокой загрузкой на капитальных ремонтах","rc":"Отсутствие единого центра планирования работ в ремонтах и инвестициях с учётом загрузки подрядчиков","l":"Разрабатывать план привлечения персонала с учётом загрузки всех исполнителей СМР, включая субподрядчиков. По возможности, не планировать ключевые работы на период КР основных агрегатов НЛМК","tg":["Поставщики и подрядчики","Проектирование и ТЗ","Персонал и команда"]},{"id":67,"t":"Недостаточно проработан риск ресурсных ограничений подрядчика, его финансового состояния, не разработана стратегия оперативной замены/усиления подрядчика","c":"","p":"Программа поддержания (высокоприоритетные проекты)","pr":"Увеличение срока выполнения СМР\nПраймтек приступил к СМР 08.05.2025. В течение 2х месяцев были выполнены демонтажные и земляные работы. С 14.07.2025 работы остановлены по причине увольнения персонала Праймтек. Подрядчик заявил о невозможности продолжать СМР","rc":"Недостаточно проработан риск ресурсных ограничений подрядчика, его финансового состояния, не разработана стратегия оперативной замены/усиления подрядчика","l":"Оценивать финансовое состояние, загрузку и риски при привлечении подрядчиков на проекты с малым объёмом СМР","tg":["Поставщики и подрядчики","Проектирование и ТЗ","Персонал и команда"]},{"id":68,"t":"Недостаточно проработан риск ресурсных ограничений подрядчика, его финансового состояния, не разработана стратегия оперативной замены/усиления подрядчика","c":"","p":"Программа поддержания (высокоприоритетные проекты)","pr":"Увеличение срока выполнения СМР\nНизкий темп производства работ подрядчиком Праймтек из-за недостаточного количества персонала подрядчика (+3 мес.) Приостановка работ в период с декабря 2025 г. по февраль 2026 г. из-за отсутствия персонала (+3 мес.)","rc":"Недостаточно проработан риск ресурсных ограничений подрядчика, его финансового состояния, не разработана стратегия оперативной замены/усиления подрядчика","l":"Своевременно эскалировать на ТК вопрос замены подрядчика","tg":["Поставщики и подрядчики","Проектирование и ТЗ","Персонал и команда"]},{"id":69,"t":"Недостаточная проверка подрядной организации на соответствие требованиям по квалификации и и наличию персонала","c":"","p":"Программа поддержания (высокоприоритетные проекты)","pr":"Длительная квалификация и обучения персонала подрядчика\nПри заключении договора выяснилось, что у МСК не завершена процедура квалификации. МСК небольшая компания, впервые заключающая прямой договор с НЛМК, для завершения квалификации, укомплектования бригад и обучения по ОТиПБ потребовалось доп. время","rc":"Недостаточная проверка подрядной организации на соответствие требованиям по квалификации и и наличию персонала","l":"Допускать до тендерных процедур только квалифицированные подрядные организации с обученным персоналом по ОТиПБ","tg":["Поставщики и подрядчики","Тендер и контракты","Персонал и команда"]},{"id":70,"t":"Лотирование без выделения узкоспециализированных работ, некорректная контрактная стратегия","c":"","p":"Программа поддержания (высокоприоритетные проекты)","pr":"Длительный выбор исполнителей СМР\nВ рамках тендера направлен запрос в 17 подрядных организаций, от которых получили отказ в связи с наличием в объёме работ врезки под давлением. В ноябре 2024 г. врезку в действующий трубопровод Ду 250 мм под давлением выделили в отдельную работу, привлекли специализированную компанию","rc":"Лотирование без выделения узкоспециализированных работ, некорректная контрактная стратегия","l":"При разработке контрактной стратегии специализированные работы выделать в отдельные лоты","tg":["Тендер и контракты","Проектирование и ТЗ"]},{"id":71,"t":"Заказчиком на этапе формирования ТЗ не включено требование об установке расходомерных узлов","c":"","p":"Программа поддержания (высокоприоритетные проекты)","pr":"Дополнительное требование Заказчика об установке расходомерных узлов:\nВключение в проект работ по монтажу трёх расходомерных узлов ультразвукового действия на новом и двух существующих напорных трубопроводах чистого цикла потребителей КЦ-2 взамен изношенных старых расходомеров","rc":"Заказчиком на этапе формирования ТЗ не включено требование об установке расходомерных узлов","l":"Разработан чек-лист с типовым составом работ и элементов трубопроводов (применяется при разработке ТЗ)","tg":["Проектирование и ТЗ","Оборудование и АСУ ТП"]},{"id":72,"t":"Упрощенный подход к оценке стоимости по тоннажу монтируемого оборудования, не учитывающий объемы обвязки колпаковых печей и модернизации инфраструктуры","c":"12-2105","p":"ЦХПП. Перевод печей отделения колпакового отжига на природный газ B","pr":"•Н-И и КУП передали в УСИ ВОР без детализации видов монтажных работ и проверки соответствия Методике применения корпоративных сметных нормативов •Сметная стоимость по печам рассчитана упрощенно по тоннажу оборудования, что нарушает требования методики •Работы (монтаж горелок, футеровка и др.) объединены в одну статью «КСЦ 20-12-001-01», хотя методика требует их раздельного учета •Уровень детализации ОПР не позволял рассчитать бюджет с требуемым уровнем достоверности","rc":"Упрощенный подход к оценке стоимости по тоннажу монтируемого оборудования, не учитывающий объемы обвязки колпаковых печей и модернизации инфраструктуры","l":"•Оценку стоимости проекта выполнять по BoQ/BoE/BoM с поэтапным повышением точности бюджета от фазы к фазе •Выдачу физ. объемов проекта производить в едином формате в модуле IDP","tg":["Проектирование и ТЗ","Оборудование и АСУ ТП","Бюджет и стоимость"]},{"id":73,"t":"Оптимизационная инициатива по демонтажу 22 стендов принята без достаточной проработки ее целесообразности и эффективности (без опоры на цифры), с включением в границы проекта объемов СМР из другого проекта","c":"12-2105","p":"ЦХПП. Перевод печей отделения колпакового отжига на природный газ В","pr":"•По решению ТИС в проект включили демонтаж 22 стендов печей для обеспечения безопасности при СМР на действующем производстве •КУП не проработал объемы и стоимость этих работ. Решение принято без оценки рисков и реальной необходимости площади. В границы включены объемы СМР из другого проекта •Демонтаж выполнили, но площади не использовали, что привело к необоснованным затратам и отсутствию заявленного эффекта","rc":"Оптимизационная инициатива по демонтажу 22 стендов принята без достаточной проработки ее целесообразности и эффективности (без опоры на цифры), с включением в границы проекта объемов СМР из другого проекта","l":"•Обязательная процедура оценки и утверждения изменений границ проекта: включение новых объемов возможно только после подтверждения их проработки, оценки рисков и пересчета последствий решений до принятия изменений •Вовлечение команд начальных Фаз в аналитику причин изменений в проектах на Фазах 3,4,5","tg":["Проектирование и ТЗ","Претензии и юридическое сопровождение","Бюджет и стоимость"]},{"id":74,"t":"Неэффективность / отсутствие процесса актуализации документов, определяющих содержание проекта","c":"12-2105","p":"ЦХПП. Перевод печей отделения колпакового отжига на природный газ В","pr":"•После выпуска ТЗО изм. 1 с обновленными границами и объемами (число печей, вентиляторов и др.) ОПР не был актуализирован •Н-И разрабатывал документацию по устаревшему ТЗП, не соответствующему текущим требованиям Заказчика •Объемы работ по обвязке печей были утеряны, и их требования не вошли в ТЗП •Изменения в ТЗО и потерянные объемы требовали выпуска нового ТЗП, но КУП не инициировал его доработку","rc":"Неэффективность / отсутствие процесса актуализации документов, определяющих содержание проекта","l":"•Внедрить процедуру синхронизации документов на основе сравнения версий •Внедрить процесс сверки всех документов: ТЗ, ТЧК, ОПР, смета и 3B по итогам проработки","tg":["Тендер и контракты","Проектирование и ТЗ","Регламенты и процессы"]},{"id":75,"t":"Техническая ошибка проектировщика в расчете объемов кабельной продукции","c":"12-2105","p":"ЦХПП. Перевод печей отделения колпакового отжига на природный газ В","pr":"•Проектировщик (Н-И) при разработке РД неверно определил объемы кабельной продукции для автоматизации печей «Стальпроект»: 3-я очередь (50 печей), 1-я очередь (100 печей) •Фактическое состояние объекта (цех, печи) отличалось от данных ТЗ для РД и не было учтено при проектировании: расположение кабельных каналов и печей •Проектировщик выезжал на площадку, но из-за больших объемов работ ограничился минимумом (визуальный осмотр нескольких печей). Следовало провести 3D-сканирование или привлечь дополнительных проектировщиков •При сравнении объемов РД 3-й очереди (после СМР) с 1-й выявлено: объемы автоматизации сопоставимы 1:1, хотя логично ожидалось соотношение 1:2 (50 vs 100 печей). Это технически невозможно и создает риск корректировки бюджета в сторону увеличения из-за упущенных объемов","rc":"Техническая ошибка проектировщика в расчете объемов кабельной продукции (длин кабелей) раздела автоматизации РД для печей «Стальпроект» из-за несоответствия исходных данных фактическому состоянию объекта (расположение печей) и влияния человеческого фактора","l":"•Проводить детальное обследование существующих кабельных конструкций и трасс с применением 3D-сканирования объекта перед началом проектирования, а также 3D-проектирование для выявления коллизий особенно для объектов на высоте, где визуальный осмотр затруднен •Перед утверждением бюджета проекта проводить верификацию объемов и стоимости работ, отраженных в локальных сметах / BoQ на соответствие актуальным проектным решениям","tg":["Проектирование и ТЗ","Претензии и юридическое сопровождение","Бюджет и стоимость"]},{"id":76,"t":"Отсутствие обязательной эскалации на управляющие органы проекта при приближении или исчерпании лимита по статьям бюджета","c":"12-2105","p":"ЦХПП. Перевод печей отделения колпакового отжига на природный газ А+","pr":"•В 2024 стало известно, что сметная стоимость СМР по Этапу 1 «ГРПБ» достигла ~370 млн ₽, что составило 80% от утвержденного бюджета на СМР, в т.ч. из-за ошибки в применении коэф. стесненности •При исчерпании лимита СМР не была проведена необходимая эскалация на ТИС для расчета смет по Этапу 1 «ГРПБ» •Работы по проекту продолжались, а превышение бюджета нивелировалось за счет утверждения «прогнозных» увеличений","rc":"Отсутствие обязательной эскалации на управляющие органы проекта при приближении или исчерпании лимита по статьям бюджета","l":"•Внедрить критерии эскалации на ИКД/ИК при превышении бюджетных лимитов с возможностью приостановки проекта для переоценки •Актуализировать ОПР после получения БИ для подтверждения бюджета проекта •При достижении критического лимита (например, 80% затрат), пересмотр КПЭ и базового бюджета •Регулярное сопоставление объемов работ по проекту при выпуске каждого этапа РД с объемами ППР / ОПР (с предыдущим этапом)","tg":["Проектирование и ТЗ","Бюджет и стоимость"]},{"id":77,"t":"Отсутствие механизмов контроля изменений ТЧК","c":"12-2105","p":"ЦХПП. Перевод печей отделения колпакового отжига на природный газ В","pr":"•После проведения тендера КУП добавил в разделительную ведомость упущенные позиции оборудования и новые требования цеха (шланги, клапаны), которые были описаны в текстовой части ТЧК, но отсутствовали в таблице поставки •Стоимость контракта осталась без изменений, увеличился объем СМР","rc":"Отсутствие механизмов контроля изменений ТЧК","l":"•Запретить внесение дополнений в разделительную ведомость после проведения тендера без пересмотра контрактной цены и подписания дополнительного соглашения","tg":["Тендер и контракты","Оборудование и АСУ ТП","Бюджет и стоимость"]},{"id":78,"t":"Отсутствие преемственности результатов при передаче проекта между менеджерами реализации (Фаза 3,4). Выбор МП без учета сложности проекта","c":"12-2105","p":"ЦХПП. Перевод печей отделения колпакового отжига на природный газ В","pr":"","rc":"Отсутствие преемственности результатов при передаче проекта между менеджерами реализации (Фаза 3,4). Выбор МП без учета сложности проекта","l":"•МП Фазы 3 (Титов Д.) принял проект от КУП Фазы 2 (Алферов А.), но не приступил к работе из-за орг. изм. •На Бюджетном комитете МП Фазы 3 задал вопрос о достаточности объемов трубопроводов для внутренней части; МП Фазы 2 сообщил о заложенном запасе на внешнюю часть (ГРПБ), пообещав уточнить вопрос, но не сделал этого. Возник риск недооценки объемов работ •Проект передан новому МП Фазы 3 (Иванову Ю.) без формальной процедуры передачи •МП тратил ресурсы и принимал решения без полного понимания системных рисков проекта","tg":["Проектирование и ТЗ","Персонал и команда","Претензии и юридическое сопровождение"]},{"id":79,"t":"Менеджер проекта проигнорировал замечание БК по объемам модернизации печей, не убедившись в полноте выявления критических рисков проекта","c":"12-2105","p":"ЦХПП. Перевод печей отделения колпакового отжига на природный газ В","pr":"•КУП проработки представил бюджет, рассчитанный упрощенно по общему тоннажу оборудования, без детализации по видам работ •Из-за нехватки технической и строительной экспертизы, а также поверхностной проверки объемов смету ошибочно приняли за достоверную","rc":"Менеджер проекта проигнорировал замечание БК по объемам модернизации печей, не убедившись в полноте выявления критических рисков проекта (анализ управления рисками приведен в Приложении 7)","l":"•Раннее вовлечение КУП реализации в проекты на Фазе 2 •Закрепить персональную ответственность за передачу и приемку результатов проекта","tg":["Проектирование и ТЗ","Оборудование и АСУ ТП","Персонал и команда"]},{"id":80,"t":"Отсутствует механизм синхронизации бюджета с объемами работ. Итоговый бюджет проекта рассчитан на разных базисах: тендерных данных ОТО и укрупненных объемов СМР без детализации объемов модернизации","c":"12-2105","p":"ЦХПП. Перевод печей отделения колпакового отжига на природный газ В","pr":"•Итоговый бюджет проекта рассчитан на разных базисах: стоимость ОТО определена из результатов тендера (лидер – Hengyuan), а стоимость СМР из укрупненного ССР ОПР, не отражавшего реальные объемы работ","rc":"Отсутствует механизм синхронизации бюджета с объемами работ. Итоговый бюджет проекта рассчитан на разных базисах: тендерных данных ОТО и укрупненных объемов СМР без детализации объемов модернизации","l":"•Перед утверждением бюджета проекта проводить верификацию объемов и стоимости работ отраженных в локальных сметах / BoQ на соответствие актуальным проектным решениям •Внедрение практики Критического обзора проекта для систематизации процесса рассмотрения и согласования материалов проекта","tg":["Тендер и контракты","Проектирование и ТЗ","Бюджет и стоимость"]},{"id":81,"t":"Рабочая группа ограничилась формальной проверкой наличия текстовой информации в ОПР при прохождении тех. аудита (отсутствует «хозяйский» подход к работе)","c":"12-2105","p":"ЦХПП. Перевод печей отделения колпакового отжига на природный газ В","pr":"•Заказчик (ЦХПП) сосредоточился на анализе ТЧК и качественно не проводил тех. аудит ОПР •МП не эскалировал расхождения ОПР и ТЧК, а РГ формально согласовала некорректную документацию","rc":"Рабочая группа ограничилась формальной проверкой наличия текстовой информации в ОПР при прохождении тех. аудита (отсутствует «хозяйский» подход к работе)","l":"•Формализовать процесс проведения тех. аудита предпроектных материалов с назначением ответственных и закреплением персональных KPI •Внедрить процесс кодирования и тегирования, обязывающий при изменении базисных документов (ТЗО, ТЧК) проводить сквозную актуализацию ППР/ОПР и всех связанных разделов","tg":["Тендер и контракты","Проектирование и ТЗ","Персонал и команда"]},{"id":82,"t":"В ТЗП на ОПР нечетко определены границы проектирования, что привело к разработке ОПР без детальных проектных решений и проработки СМР по обвязке печей","c":"12-2105","p":"ЦХПП. Перевод печей отделения колпакового отжига на природный газ В","pr":"•ОПР не содержал детальных проектных решений по модернизации печей, входящих в границы проекта •ТЗП на ОПР содержало двусмысленные формулировки в части работ по переводу печей на природный газ. Объем модернизации предполагалось уточнить в отдельных ТЗ на поставку ОТО и инжиниринга, но с обязательным учетом в ОПР •Н-И формально учел только текстовую часть предложений по печам поставщиков ОТО без проработки тех. решений и СМР •РГ согласовала неполный ОПР","rc":"В ТЗП на ОПР нечетко определены границы проектирования, что привело к разработке ОПР без детальных проектных решений и проработки СМР по обвязке печей","l":"•Внедрить практику Критического обзора проекта для систематизации процесса рассмотрения и согласования материалов проекта •Сформировать критерии качества содержания продуктов для оценки зрелости фазы проекта","tg":["Поставщики и подрядчики","Проектирование и ТЗ","Оборудование и АСУ ТП"]},{"id":83,"t":"Недостаточная оценка фактического состояния оборудования для определения объемов работ по проекту","c":"12-2105","p":"ЦХПП. Перевод печей отделения колпакового отжига на природный газ В","pr":"На этапе проработки из проекта исключен кап. ремонт печей: восстановление футеровки и замена конструкций При реализации выяснилось, что без этих мероприятий замена горелок приведет к разрушению футеровки, что вынудило повторно включить указанные работы в проект Риски состояния футеровки и м/к не были идентифицированы, оценены и включены в план управления рисками","rc":"Недостаточная оценка фактического состояния оборудования для определения объемов работ по проекту","l":"•Корректировка критериев минимального технического решения и АБК, рассмотрение на КОП итоговых границ проекта •Границы проекта утверждать на управляющих органах, в т.ч. ввести сквозной реестр требований •Переход к количественной оценке рисков с их учетом в бюджете и графике проекта. Исключенные технические / технологические опции оценивать и отражать в реестре рисков","tg":["Проектирование и ТЗ","Оборудование и АСУ ТП","Претензии и юридическое сопровождение"]},{"id":84,"t":"Недооценка технической сложности проекта (отказ от работ) и отсутствие критериев допустимости пропуска начальных Фаз","c":"12-2105","p":"ЦХПП. Перевод печей отделения колпакового отжига на природный газ В","pr":"•На этапе инициации рассматривались 2 варианта: (1) перевод участка ОКО на природный газ, (2) модернизация ГПС-3. Выбран (1), исключающий кап. затраты на модернизацию ГПС-3 •Несмотря на высокую сложность работ проекта (внутренней обвязке печей), из-за ограничений по срокам ЭПБ, ТИС (заочный ИК) принял решение пропустить Фазу 1 и сразу перевести проект на Фазу 2 •Оценка проекта проведена без разработки ППР, из-за чего не удалось объективно оценить риски и границы","rc":"Недооценка технической сложности проекта (отказ от работ) и отсутствие критериев допустимости пропуска начальных Фаз","l":"Выносить на управляющие органы стоимостную оценку рисков, закладывать резервы на митигацию в бюджете и графике проекта","tg":["Претензии и юридическое сопровождение","Бюджет и стоимость","Сроки реализации"]}];
+  // ===== Выученные уроки: подбор по тегам + таблица + создание риска =====
+  // теги — эвристика по ключевым словам (в реестре нет отдельного поля
+  // «статус/тег риска» с такими значениями — см. README сиблинг-проекта
+  // на Streamlit: «модель полей — по чек-листу будет отдельный шаблон»)
+
+  const TAG_COLORS_LIGHT = ['#167ffb', '#037963', '#803be0', '#8a6d00', '#0096e2', '#0b3461'];
+  const TAG_COLORS_DARK  = ['#5aabff', '#2bbf9c', '#b48af0', '#e0b400', '#5ecbf5', '#6f9bd6'];
+
+  function tagPalette() {
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark'
+      || (document.documentElement.getAttribute('data-theme') !== 'light'
+          && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    return dark ? TAG_COLORS_DARK : TAG_COLORS_LIGHT;
+  }
+
+  function escapeHtml(s) {
+    return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function pluralLessons(n) {
+    const m10 = n % 10, m100 = n % 100;
+    if (m10 === 1 && m100 !== 11) return 'урок';
+    if ([2, 3, 4].includes(m10) && ![12, 13, 14].includes(m100)) return 'урока';
+    return 'уроков';
+  }
+
+  const SEV = {
+    low:    { label: 'Низкий',  fg: 'var(--green-700)', bg: 'var(--green-50)' },
+    medium: { label: 'Средний', fg: 'var(--gold-700)',  bg: 'var(--gold-50)'  },
+    high:   { label: 'Высокий', fg: 'var(--amber-700)', bg: 'var(--amber-50)' },
+  };
+  function severityOf(score) {
+    if (score >= 6) return 'high';
+    if (score >= 3) return 'medium';
+    return 'low';
+  }
+
+  // созданные риски живут только в этой сессии (демонстрация механики —
+  // реального риск-регистра со сквозным ID в прототипе нет)
+  const createdRisks = {};
+  let riskSeq = 1;
+  let lessonsInitialized = false;
+  let riskModalLessonId = null;
+
+  let activeTag = '';
+  let openLessonId = null;
+  let tagColorMap = {};
+
+  // пересчитывает порядок и цвета тегов (по частоте встречаемости в LESSONS) —
+  // вызывается при инициализации и при добавлении нового урока с новыми тегами
+  function computeTagOrder() {
+    const tagCounts = new Map();
+    LESSONS.forEach(l => l.tg.forEach(t => tagCounts.set(t, (tagCounts.get(t) || 0) + 1)));
+    const tagOrder = Array.from(tagCounts.keys()).sort((a, b) => tagCounts.get(b) - tagCounts.get(a));
+    const colors = tagPalette();
+    tagColorMap = {};
+    tagOrder.forEach((t, i) => { tagColorMap[t] = colors[i % colors.length]; });
+    return tagOrder;
+  }
+
+  function initLessonsPage() {
+    if (lessonsInitialized) return;
+    lessonsInitialized = true;
+
+    document.getElementById('lessonsSearchInput').addEventListener('input', renderLessonsList);
+
+    document.getElementById('llTagNav').addEventListener('click', (e) => {
+      const btn = e.target.closest('.ll-tag-btn');
+      if (btn) setActiveTag(btn.dataset.tag);
+    });
+    document.getElementById('llPills').addEventListener('click', (e) => {
+      const pill = e.target.closest('.ll-pill');
+      if (pill) setActiveTag(pill.dataset.tag);
+    });
+
+    document.getElementById('llList').addEventListener('click', (e) => {
+      const createBtn = e.target.closest('.risk-action-btn');
+      const viewBtn = e.target.closest('.risk-created-link');
+      if (createBtn) { openCreateRisk(+createBtn.dataset.lessonId); return; }
+      if (viewBtn) { openViewRisk(viewBtn.dataset.riskId); return; }
+      const main = e.target.closest('.ll-item-main');
+      if (main) toggleLessonOpen(+main.dataset.lessonId);
+    });
+
+    // модалка создания риска
+    document.getElementById('createRiskClose').addEventListener('click', closeCreateRisk);
+    document.getElementById('createRiskCancel').addEventListener('click', closeCreateRisk);
+    document.getElementById('createRiskOverlay').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('createRiskOverlay')) closeCreateRisk();
+    });
+    document.getElementById('riskProbInput').addEventListener('change', updateRiskLevelPreview);
+    document.getElementById('riskImpactInput').addEventListener('change', updateRiskLevelPreview);
+    document.getElementById('createRiskSubmit').addEventListener('click', submitRisk);
+
+    // модалка просмотра риска
+    document.getElementById('viewRiskClose').addEventListener('click', closeViewRisk);
+    document.getElementById('viewRiskCloseBtn').addEventListener('click', closeViewRisk);
+    document.getElementById('viewRiskOverlay').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('viewRiskOverlay')) closeViewRisk();
+    });
+
+    // модалка нового урока
+    document.getElementById('llNewBtn').addEventListener('click', openNewLesson);
+    document.getElementById('newLessonClose').addEventListener('click', closeNewLesson);
+    document.getElementById('newLessonCancel').addEventListener('click', closeNewLesson);
+    document.getElementById('newLessonOverlay').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('newLessonOverlay')) closeNewLesson();
+    });
+    document.getElementById('newLessonSubmit').addEventListener('click', submitNewLesson);
+
+    renderTagNav();
+    renderLessonsList();
+  }
+
+  function setActiveTag(tag) {
+    activeTag = tag || '';
+    renderTagNav();
+    renderLessonsList();
+  }
+
+  function renderTagNav() {
+    const tagOrder = computeTagOrder();
+    const navItem = (tag, label) => `
+      <button type="button" class="ll-tag-btn${activeTag === tag ? ' active' : ''}" data-tag="${escapeHtml(tag)}">
+        ${tag ? `<span class="ll-tag-dot" style="background:${tagColorMap[tag]}"></span>` : ''}
+        <span class="ll-tag-label">${escapeHtml(label)}</span>
+      </button>`;
+    document.getElementById('llTagNav').innerHTML =
+      navItem('', 'Все теги') + tagOrder.map(t => navItem(t, t)).join('');
+
+    const pillItem = (tag, label) => `
+      <button type="button" class="ll-pill${activeTag === tag ? ' active' : ''}" data-tag="${escapeHtml(tag)}">
+        ${tag ? `<span class="ll-pill-dot" style="background:${tagColorMap[tag]}"></span>` : ''}${escapeHtml(label)}
+      </button>`;
+    document.getElementById('llPills').innerHTML =
+      pillItem('', 'Все') + tagOrder.map(t => pillItem(t, t)).join('');
+  }
+
+  function matchingLessons() {
+    const q = document.getElementById('lessonsSearchInput').value.trim().toLowerCase();
+    return LESSONS.filter(l => {
+      if (activeTag && !l.tg.includes(activeTag)) return false;
+      if (!q) return true;
+      const hay = (l.t + ' ' + l.p + ' ' + l.pr + ' ' + l.rc + ' ' + l.l).toLowerCase();
+      return hay.includes(q);
+    });
+  }
+
+  function toggleLessonOpen(lessonId) {
+    openLessonId = openLessonId === lessonId ? null : lessonId;
+    renderLessonsList();
+  }
+
+  function renderLessonsList() {
+    const filtered = matchingLessons();
+    const n = filtered.length;
+    const riskCount = Object.keys(createdRisks).length;
+    document.getElementById('llStats').textContent =
+      n + ' ' + pluralLessons(n) + ' из ' + LESSONS.length + ' · рисков создано: ' + riskCount;
+
+    const list = document.getElementById('llList');
+    const empty = document.getElementById('lessonsEmpty');
+
+    if (!filtered.length) {
+      list.hidden = true;
+      empty.hidden = false;
+      list.innerHTML = '';
+      return;
+    }
+    list.hidden = false;
+    empty.hidden = true;
+
+    list.innerHTML = filtered.map(renderLessonItem).join('');
+  }
+
+  function renderLessonItem(l) {
+    const isOpen = openLessonId === l.id;
+    const risk = createdRisks[l.id];
+    const tagsHtml = l.tg.map(t => {
+      const c = tagColorMap[t] || 'var(--ink-600)';
+      return `<span class="lesson-tag-pill" style="background:${c}1a;color:${c}">${escapeHtml(t)}</span>`;
+    }).join('');
+
+    const actionHtml = risk
+      ? `<button type="button" class="risk-created-link" data-risk-id="${risk.id}">
+           <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+           риск создан</button>`
+      : `<button type="button" class="risk-action-btn" data-lesson-id="${l.id}">создать риск</button>`;
+
+    const detailHtml = isOpen ? `
+      <div class="ll-item-detail">
+        <div class="field-block">
+          <div class="field-block-label">Проект</div>
+          <div class="field-block-value">${l.c ? escapeHtml(l.c) + ' · ' : ''}${escapeHtml(l.p || '—')}</div>
+        </div>
+        <div class="field-block">
+          <div class="field-block-label">Что произошло</div>
+          <div class="field-block-value">${escapeHtml(l.pr || '—')}</div>
+        </div>
+        <div class="field-block">
+          <div class="field-block-label">Причина</div>
+          <div class="field-block-value">${escapeHtml(l.rc || '—')}</div>
+        </div>
+        <div class="field-block">
+          <div class="field-block-label">Урок / рекомендация</div>
+          <div class="field-block-value">${escapeHtml(l.l || '—')}</div>
+        </div>
+        <div class="ll-item-actions">${actionHtml}</div>
+      </div>` : '';
+
+    return `<div class="ll-item${isOpen ? ' open' : ''}">
+      <div class="ll-item-main" data-lesson-id="${l.id}">
+        <span class="ll-status${risk ? ' done' : ''}" aria-hidden="true">
+          ${risk
+            ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>'
+            : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>'}
+        </span>
+        <div class="ll-item-title">
+          <div class="t">${escapeHtml(l.t)}</div>
+          <div class="m">#${String(l.id).padStart(3, '0')}${l.c ? ' · ' + escapeHtml(l.c) : ''}</div>
+        </div>
+        <div class="ll-item-tags">${tagsHtml}</div>
+        <svg class="ll-item-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      ${detailHtml}
+    </div>`;
+  }
+
+  function openNewLesson() {
+    document.getElementById('newLessonOverlay').classList.add('show');
+    setTimeout(() => document.getElementById('nlTitleInput').focus(), 180);
+  }
+
+  function closeNewLesson() {
+    document.getElementById('newLessonOverlay').classList.remove('show');
+  }
+
+  function submitNewLesson() {
+    const title = document.getElementById('nlTitleInput').value.trim();
+    if (!title) { document.getElementById('nlTitleInput').focus(); return; }
+
+    const tags = document.getElementById('nlTagsInput').value.split(',').map(t => t.trim()).filter(Boolean);
+    const nextId = LESSONS.reduce((max, l) => Math.max(max, l.id), 0) + 1;
+
+    LESSONS.unshift({
+      id: nextId,
+      t: title,
+      c: document.getElementById('nlCodeInput').value.trim(),
+      p: document.getElementById('nlProjectInput').value.trim(),
+      pr: document.getElementById('nlWhatInput').value.trim(),
+      rc: document.getElementById('nlCauseInput').value.trim(),
+      l: document.getElementById('nlLessonInput').value.trim(),
+      tg: tags.length ? tags : ['Без тега'],
+    });
+
+    ['nlTitleInput', 'nlCodeInput', 'nlProjectInput', 'nlTagsInput', 'nlWhatInput', 'nlCauseInput', 'nlLessonInput']
+      .forEach(id => { document.getElementById(id).value = ''; });
+
+    closeNewLesson();
+    activeTag = '';
+    openLessonId = nextId;
+    renderTagNav();
+    renderLessonsList();
+  }
+
+  function updateRiskLevelPreview() {
+    const p = +document.getElementById('riskProbInput').value;
+    const i = +document.getElementById('riskImpactInput').value;
+    const sev = SEV[severityOf(p * i)];
+    const el = document.getElementById('riskLevelPreview');
+    el.textContent = sev.label + ' (' + (p * i) + ')';
+    el.style.color = sev.fg;
+  }
+
+  function openCreateRisk(lessonId) {
+    const l = LESSONS.find(x => x.id === lessonId);
+    if (!l) return;
+    riskModalLessonId = lessonId;
+    document.getElementById('createRiskSub').textContent = l.c
+      ? 'создан на основе урока · проект ' + l.c
+      : 'создан на основе урока';
+    document.getElementById('createRiskQuote').textContent = l.pr || l.t;
+    document.getElementById('riskTitleInput').value = l.t;
+    document.getElementById('riskDescInput').value = [l.rc, l.l].filter(Boolean).join(' ');
+    document.getElementById('riskProbInput').value = '2';
+    document.getElementById('riskImpactInput').value = '3';
+    updateRiskLevelPreview();
+    document.getElementById('createRiskOverlay').classList.add('show');
+  }
+
+  function closeCreateRisk() {
+    document.getElementById('createRiskOverlay').classList.remove('show');
+    riskModalLessonId = null;
+  }
+
+  function submitRisk() {
+    if (riskModalLessonId === null) return;
+    const p = +document.getElementById('riskProbInput').value;
+    const i = +document.getElementById('riskImpactInput').value;
+    const id = 'r' + (riskSeq++);
+    createdRisks[riskModalLessonId] = {
+      id,
+      lessonId: riskModalLessonId,
+      title: document.getElementById('riskTitleInput').value.trim() || 'Риск без названия',
+      desc: document.getElementById('riskDescInput').value.trim(),
+      category: document.getElementById('riskCategoryInput').value,
+      stage: document.getElementById('riskStageInput').value,
+      probLabel: document.getElementById('riskProbInput').selectedOptions[0].textContent,
+      impactLabel: document.getElementById('riskImpactInput').selectedOptions[0].textContent,
+      score: p * i,
+    };
+    closeCreateRisk();
+    renderLessonsList();
+  }
+
+  function openViewRisk(riskId) {
+    const entry = Object.values(createdRisks).find(r => r.id === riskId);
+    if (!entry) return;
+    const l = LESSONS.find(x => x.id === entry.lessonId);
+    document.getElementById('viewRiskTitle').textContent = entry.title;
+    document.getElementById('viewRiskSourceText').textContent = 'источник: ' + (l ? l.t : 'урок');
+    document.getElementById('viewRiskSourceLink').onclick = () => { closeViewRisk(); jumpToLesson(entry.lessonId); };
+    document.getElementById('viewRiskDesc').textContent = entry.desc || '—';
+    document.getElementById('viewRiskCategory').textContent = entry.category;
+    document.getElementById('viewRiskStage').textContent = entry.stage;
+    document.getElementById('viewRiskProb').textContent = entry.probLabel;
+    document.getElementById('viewRiskImpact').textContent = entry.impactLabel;
+    const sev = SEV[severityOf(entry.score)];
+    const lvlEl = document.getElementById('viewRiskLevel');
+    lvlEl.textContent = sev.label + ' (' + entry.score + ')';
+    lvlEl.style.color = sev.fg;
+    document.getElementById('viewRiskOverlay').classList.add('show');
+  }
+
+  function closeViewRisk() {
+    document.getElementById('viewRiskOverlay').classList.remove('show');
+  }
+
+  function jumpToLesson(lessonId) {
+    document.getElementById('lessonsSearchInput').value = '';
+    activeTag = '';
+    openLessonId = lessonId;
+    renderTagNav();
+    renderLessonsList();
+    requestAnimationFrame(() => {
+      const el = document.querySelector(`.ll-item-main[data-lesson-id="${lessonId}"]`);
+      if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    });
+  }
+
+
+  const wsEmpty = document.getElementById('wsEmpty');
+  const wsLessonsPage = document.getElementById('wsLessonsPage');
+
+  document.getElementById('wsNav').addEventListener('click', (e) => {
+    const btn = e.target.closest('.ws-nav-item');
+    if (!btn || btn.disabled) return;
+    const pageKey = btn.dataset.page;
+    const page = WS_PAGES[pageKey];
+    if (!page) return;
+
+    document.querySelectorAll('.ws-nav-item').forEach(o => o.classList.remove('active'));
+    btn.classList.add('active');
+
+    document.getElementById('wsTitle').textContent = page.title;
+    document.getElementById('wsDesc').textContent = page.desc;
+
+    const showLessons = pageKey === 'lessons';
+    wsEmpty.hidden = showLessons;
+    wsLessonsPage.hidden = !showLessons;
+    if (showLessons) initLessonsPage();
+  });
+  document.getElementById('wsSignOut').addEventListener('click', () => {
+    document.getElementById('workspace').classList.remove('show');
+    document.getElementById('successPanel').classList.remove('show');
+    document.getElementById('loginForm').classList.remove('hide');
+    // при выходе поля «Имя»/«Фамилия» и выбор роли должны обнуляться,
+    // иначе на экране входа остаются данные предыдущего пользователя
+    document.getElementById('entryForm').reset();
+    sppInput.value = '';
+    resetRoleSelection();
+    closeSppModal();
+    ['firstName', 'lastName', 'role', 'spp'].forEach(clearFieldError);
+  });
+
+  // сайдбар раскрывается по наведению и сворачивается обратно при уходе курсора
+  const wsSidebar = document.querySelector('.ws-sidebar');
+  wsSidebar.addEventListener('mouseenter', () => wsSidebar.classList.add('expanded'));
+  wsSidebar.addEventListener('mouseleave', () => wsSidebar.classList.remove('expanded'));
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    document.getElementById('entryForm').reset();
+    sppInput.value = '';
+    resetRoleSelection();
+    closeSppModal();
+    ['firstName','lastName','role','spp'].forEach(clearFieldError);
+  });
+
+  document.getElementById('changeBtn').addEventListener('click', () => {
+    document.getElementById('successPanel').classList.remove('show');
+    document.getElementById('loginForm').classList.remove('hide');
+  });
+
+  // тема — иконка солнца/луны, без текстовой подписи (как переключатель внешнего вида в Apple)
+  const themeBtn = document.getElementById('themeBtn');
+  const THEME_KEY = 'riskassess-theme';
+  function applyTheme(isDark){
+    // на время смены темы отключаем все CSS-transition — иначе цвета карточек/
+    // границ плавно «перетекают» из светлой темы в тёмную (видимое затухание)
+    const root = document.documentElement;
+    root.classList.add('theme-switching');
+    root.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('theme-switching')));
+  }
+  let storedTheme = null;
+  try { storedTheme = localStorage.getItem(THEME_KEY); } catch (err) {}
+  applyTheme(storedTheme === 'dark');
+  themeBtn.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'dark';
+    applyTheme(isDark);
+    try { localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light'); } catch (err) {}
+  });
+</script>
+</body>
+</html>
