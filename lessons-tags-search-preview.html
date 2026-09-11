@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Подбор по тегам — превью (не подключено к «Выученные уроки»)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&display=swap">
+<style>
+  /* Токены — те же, что в login-variant-b.html (НЛМК ds-2.0 + тёплый
+     нейтральный фон в духе интерфейса Claude). Это отдельное превью
+     механики «поиск по тегам» для страницы «Выученные уроки» —
+     в саму страницу пока не встроено. */
+  :root{
+    --accent-600:#167ffb; --accent-500:#008fff; --accent-100:#cbe1ff; --accent-50:#e8f5ff;
+    --ink-900:#001729; --ink-700:#4d5d69; --ink-600:#66747e; --ink-400:#99a2a9;
+    --paper-0:#ffffff; --canvas:#f5f4ef; --line:#e5e4dc;
+    --red-700:#ee1505; --red-50:#ffedf0;
+    --mint-700:#037963; --violet-700:#803be0; --gold-700:#8a6d00;
+    --cyan-700:#0096e2; --navycat-700:#0b3461;
+    --font-display:'Golos Text','PT Root UI','Segoe UI',Arial,sans-serif;
+    --font-body:'Golos Text','PT Root UI','Segoe UI',Arial,sans-serif;
+    --shadow-pop:0 20px 50px -20px rgba(0,23,41,.25);
+    --radius-card:20px; --radius-field:8px;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --canvas:#262624; --paper-0:#30302e; --line:#3e3d3a;
+      --ink-900:#f2f3f4; --ink-700:#ccd2d8; --ink-600:#9aa3ac; --ink-400:#767f89;
+      --accent-50:#17233f; --accent-100:#2b4c8c; --red-50:#3a1f22;
+    }
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--canvas); color:var(--ink-900); font-family:var(--font-body);
+    font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
+    padding:40px 20px;
+  }
+
+  .card{
+    max-width:640px; margin:0 auto; background:var(--paper-0);
+    border:1px solid var(--line); border-radius:var(--radius-card);
+    box-shadow:var(--shadow-pop); padding:24px;
+  }
+
+  .header{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:20px;}
+  /* Body1-Bold ds-2.0 (16/24, 700) */
+  .header .title{font-family:var(--font-display); font-size:16px; line-height:24px; font-weight:700; margin:0; color:var(--ink-900);}
+  /* Caption (12/16) */
+  .header .hint{font-size:12px; line-height:16px; color:var(--ink-400); white-space:nowrap;}
+
+  /* Caption-Medium (12/16, 600) — как подписи полей на экране входа */
+  .section-label{font-size:12px; line-height:16px; font-weight:600; color:var(--ink-600);
+    text-transform:uppercase; letter-spacing:.2px; margin:0 0 10px;}
+
+  /* скругление «таблиц»/панелей — var(--radius-field), как у карточек ролей и полей ввода */
+  #pool{
+    display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px;
+    padding:16px; background:var(--canvas); border:1px solid var(--line);
+    border-radius:var(--radius-field); min-height:60px;
+  }
+  .tag{
+    font-family:var(--font-body); font-weight:600; line-height:1.3;
+    padding:3px 5px; border-radius:6px; cursor:grab; user-select:none;
+    background:none; border:none; transition:background-color .15s ease, opacity .15s ease;
+  }
+  .tag:hover{background:var(--paper-0);}
+  .tag.dragging{opacity:.4;}
+  .tag:focus-visible{outline:2px solid var(--accent-500); outline-offset:2px;}
+
+  .drop-header{display:flex; align-items:center; justify-content:space-between; margin:20px 0 10px;}
+  /* Body1-Bold (16/24, 700) — число результатов важнее подписи рядом */
+  #result-count{font-family:var(--font-display); font-size:16px; line-height:24px; font-weight:700; color:var(--accent-600);}
+
+  #drop{
+    display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+    padding:12px; background:var(--paper-0); border:1.5px dashed var(--line);
+    border-radius:var(--radius-field); min-height:48px;
+    transition:background-color .15s ease, border-color .15s ease;
+  }
+  #drop.over{background:var(--accent-50); border-color:var(--accent-500);}
+  #placeholder{font-size:13px; color:var(--ink-400);}
+
+  .drop-pill{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:5px 8px 5px 12px; border-radius:999px; font-size:13px; font-weight:600;
+    background:var(--accent-50); border:1px solid var(--accent-100); color:var(--accent-600);
+    cursor:grab; user-select:none;
+  }
+  .remove-x{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:16px; height:16px; border-radius:50%; font-size:11px; line-height:1;
+    color:var(--accent-600); opacity:.7; cursor:pointer; flex-shrink:0;
+    transition:background-color .15s ease, opacity .15s ease;
+  }
+  .remove-x:hover{background:var(--accent-100); opacity:1;}
+
+  .footnote{margin-top:16px; font-size:12px; line-height:16px; color:var(--ink-400);}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="header">
+    <p class="title">Поиск по тегам</p>
+    <span class="hint">перетащите тег вниз или кликните по нему</span>
+  </div>
+
+  <p class="section-label">Облако тегов</p>
+  <div id="pool"></div>
+
+  <div class="drop-header">
+    <p class="section-label" style="margin:0;">Фильтр уроков</p>
+    <span id="result-count"></span>
+  </div>
+  <div id="drop">
+    <span id="placeholder">перетащите теги сюда, чтобы отфильтровать уроки</span>
+  </div>
+
+  <p class="footnote">Превью механики для раздела «Выученные уроки» — в саму страницу пока не встроено.
+    Теги и число уроков реальные (84 урока, теги — по ключевым словам из текста);
+    при выборе нескольких тегов считаются уроки, у которых есть <b>все</b> выбранные теги.</p>
+</div>
+
+<script>
+  // реальные теги 84 уроков (см. базу lessons learned) — только id и теги,
+  // без текста, этого достаточно для честного пересечения по тегам
+  const LESSON_TAGS = [{"id":1,"tags":["Проектирование и ТЗ","Геополитика и санкции","Претензии и юридическое сопровождение"]},{"id":2,"tags":["Персонал и команда","Сроки реализации"]},{"id":3,"tags":["Поставщики и подрядчики","Логистика и склад"]},{"id":4,"tags":["Поставщики и подрядчики","Проектирование и ТЗ","Регламенты и процессы"]},{"id":5,"tags":["Поставщики и подрядчики","Проектирование и ТЗ","Оборудование и АСУ ТП"]},{"id":6,"tags":["Поставщики и подрядчики","Оборудование и АСУ ТП"]},{"id":7,"tags":["Тендер и контракты","Бюджет и стоимость"]},{"id":8,"tags":["Тендер и контракты","Бюджет и стоимость"]},{"id":9,"tags":["Поставщики и подрядчики","Китайские партнёры","Проектирование и ТЗ"]},{"id":10,"tags":["Проектирование и ТЗ"]},{"id":11,"tags":["Проектирование и ТЗ","Сроки реализации"]},{"id":12,"tags":["Проектирование и ТЗ","Сроки реализации"]},{"id":13,"tags":["Проектирование и ТЗ","Оборудование и АСУ ТП","Бюджет и стоимость"]},{"id":14,"tags":["Проектирование и ТЗ","Сроки реализации"]},{"id":15,"tags":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":16,"tags":["Китайские партнёры","Тендер и контракты","Регламенты и процессы"]},{"id":17,"tags":["Проектирование и ТЗ"]},{"id":18,"tags":["Тендер и контракты","Проектирование и ТЗ"]},{"id":19,"tags":["Поставщики и подрядчики"]},{"id":20,"tags":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":21,"tags":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":22,"tags":["Тендер и контракты","Оборудование и АСУ ТП"]},{"id":23,"tags":["Проектирование и ТЗ","Логистика и склад","Претензии и юридическое сопровождение"]},{"id":24,"tags":["Проектирование и ТЗ","Сроки реализации"]},{"id":25,"tags":["Проектирование и ТЗ"]},{"id":26,"tags":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":27,"tags":["Поставщики и подрядчики","Китайские партнёры","Оборудование и АСУ ТП"]},{"id":28,"tags":["Тендер и контракты","Геополитика и санкции","Оборудование и АСУ ТП"]},{"id":29,"tags":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":30,"tags":["Проектирование и ТЗ","Претензии и юридическое сопровождение","Бюджет и стоимость"]},{"id":31,"tags":["Претензии и юридическое сопровождение","Бюджет и стоимость"]},{"id":32,"tags":["Поставщики и подрядчики","Китайские партнёры","Тендер и контракты"]},{"id":33,"tags":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":34,"tags":["Поставщики и подрядчики","Китайские партнёры","Тендер и контракты"]},{"id":35,"tags":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":36,"tags":["Поставщики и подрядчики","Китайские партнёры","Тендер и контракты"]},{"id":37,"tags":["Поставщики и подрядчики","Китайские партнёры","Тендер и контракты"]},{"id":38,"tags":["Тендер и контракты","Проектирование и ТЗ","Оборудование и АСУ ТП"]},{"id":39,"tags":["Поставщики и подрядчики","Китайские партнёры","Тендер и контракты"]},{"id":40,"tags":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":41,"tags":["Поставщики и подрядчики","Тендер и контракты","Геополитика и санкции"]},{"id":42,"tags":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":43,"tags":["Поставщики и подрядчики","Тендер и контракты","Оборудование и АСУ ТП"]},{"id":44,"tags":["Бюджет и стоимость"]},{"id":45,"tags":["Логистика и склад","Бюджет и стоимость","Регламенты и процессы"]},{"id":46,"tags":["Бюджет и стоимость"]},{"id":47,"tags":["Тендер и контракты"]},{"id":48,"tags":["Проектирование и ТЗ","Оборудование и АСУ ТП","Бюджет и стоимость"]},{"id":49,"tags":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":50,"tags":["Тендер и контракты","Проектирование и ТЗ","Геополитика и санкции"]},{"id":51,"tags":["Проектирование и ТЗ","Персонал и команда","Бюджет и стоимость"]},{"id":52,"tags":["Оборудование и АСУ ТП","Логистика и склад","Бюджет и стоимость"]},{"id":53,"tags":["Проектирование и ТЗ","Логистика и склад","Бюджет и стоимость"]},{"id":54,"tags":["Поставщики и подрядчики","Тендер и контракты","Логистика и склад"]},{"id":55,"tags":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":56,"tags":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":57,"tags":["Поставщики и подрядчики","Проектирование и ТЗ","Претензии и юридическое сопровождение"]},{"id":58,"tags":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":59,"tags":["Геополитика и санкции","Претензии и юридическое сопровождение","Сроки реализации"]},{"id":60,"tags":["Проектирование и ТЗ","Претензии и юридическое сопровождение","Бюджет и стоимость"]},{"id":61,"tags":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":62,"tags":["Поставщики и подрядчики","Тендер и контракты","Претензии и юридическое сопровождение"]},{"id":63,"tags":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":64,"tags":["Поставщики и подрядчики","Тендер и контракты","Персонал и команда"]},{"id":65,"tags":["Поставщики и подрядчики","Тендер и контракты","Проектирование и ТЗ"]},{"id":66,"tags":["Поставщики и подрядчики","Проектирование и ТЗ","Персонал и команда"]},{"id":67,"tags":["Поставщики и подрядчики","Проектирование и ТЗ","Персонал и команда"]},{"id":68,"tags":["Поставщики и подрядчики","Проектирование и ТЗ","Персонал и команда"]},{"id":69,"tags":["Поставщики и подрядчики","Тендер и контракты","Персонал и команда"]},{"id":70,"tags":["Тендер и контракты","Проектирование и ТЗ"]},{"id":71,"tags":["Проектирование и ТЗ","Оборудование и АСУ ТП"]},{"id":72,"tags":["Проектирование и ТЗ","Оборудование и АСУ ТП","Бюджет и стоимость"]},{"id":73,"tags":["Проектирование и ТЗ","Претензии и юридическое сопровождение","Бюджет и стоимость"]},{"id":74,"tags":["Тендер и контракты","Проектирование и ТЗ","Регламенты и процессы"]},{"id":75,"tags":["Проектирование и ТЗ","Претензии и юридическое сопровождение","Бюджет и стоимость"]},{"id":76,"tags":["Проектирование и ТЗ","Бюджет и стоимость"]},{"id":77,"tags":["Тендер и контракты","Оборудование и АСУ ТП","Бюджет и стоимость"]},{"id":78,"tags":["Проектирование и ТЗ","Персонал и команда","Претензии и юридическое сопровождение"]},{"id":79,"tags":["Проектирование и ТЗ","Оборудование и АСУ ТП","Персонал и команда"]},{"id":80,"tags":["Тендер и контракты","Проектирование и ТЗ","Бюджет и стоимость"]},{"id":81,"tags":["Тендер и контракты","Проектирование и ТЗ","Персонал и команда"]},{"id":82,"tags":["Поставщики и подрядчики","Проектирование и ТЗ","Оборудование и АСУ ТП"]},{"id":83,"tags":["Проектирование и ТЗ","Оборудование и АСУ ТП","Претензии и юридическое сопровождение"]},{"id":84,"tags":["Претензии и юридическое сопровождение","Бюджет и стоимость","Сроки реализации"]}];
+
+  // тёмная тема: -700-тона (особенно navycat) на тёмном фоне почти не видны,
+  // поэтому для тёмной темы — более светлые варианты тех же корпоративных оттенков
+  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const TAG_COLORS = isDark
+    ? ['#5aabff', '#2bbf9c', '#b48af0', '#e0b400', '#5ecbf5', '#6f9bd6']
+    : ['#167ffb', '#037963', '#803be0', '#8a6d00', '#0096e2', '#0b3461'];
+
+  const tagCounts = new Map();
+  LESSON_TAGS.forEach(l => l.tags.forEach(t => tagCounts.set(t, (tagCounts.get(t) || 0) + 1)));
+  const tagOrder = Array.from(tagCounts.entries()).sort((a, b) => b[1] - a[1]);
+  const maxCount = tagOrder[0][1];
+
+  const pool = document.getElementById('pool');
+  const drop = document.getElementById('drop');
+  const placeholder = document.getElementById('placeholder');
+  const resultCount = document.getElementById('result-count');
+  let dragged = null;
+
+  function pluralLessons(n) {
+    const mod10 = n % 10, mod100 = n % 100;
+    if (mod10 === 1 && mod100 !== 11) return 'урок';
+    if ([2, 3, 4].includes(mod10) && ![12, 13, 14].includes(mod100)) return 'урока';
+    return 'уроков';
+  }
+
+  tagOrder.forEach(([tag, count], i) => {
+    const size = Math.round(12 + (count / maxCount) * 8);
+    const el = document.createElement('span');
+    el.className = 'tag';
+    el.textContent = tag;
+    el.draggable = true;
+    el.tabIndex = 0;
+    el.dataset.tag = tag;
+    el.style.fontSize = size + 'px';
+    el.style.color = TAG_COLORS[i % TAG_COLORS.length];
+    pool.appendChild(el);
+  });
+
+  function selectedTags() {
+    return [...drop.querySelectorAll('.drop-pill')].map(p => p.dataset.tag);
+  }
+
+  // честное пересечение по реальным тегам уроков — без выдуманных коэффициентов
+  function updateCount() {
+    const selected = selectedTags();
+    const matched = selected.length
+      ? LESSON_TAGS.filter(l => selected.every(t => l.tags.includes(t))).length
+      : LESSON_TAGS.length;
+    resultCount.textContent = matched + ' ' + pluralLessons(matched);
+  }
+
+  function addToFilter(tagEl) {
+    const tag = tagEl.dataset.tag;
+    if (selectedTags().includes(tag)) return;
+    placeholder.style.display = 'none';
+    const pill = document.createElement('span');
+    pill.className = 'drop-pill';
+    pill.dataset.tag = tag;
+    pill.draggable = true;
+    pill.style.color = tagEl.style.color;
+    pill.style.borderColor = tagEl.style.color;
+    const label = document.createElement('span');
+    label.textContent = tag;
+    const x = document.createElement('span');
+    x.className = 'remove-x';
+    x.textContent = '✕';
+    x.setAttribute('role', 'button');
+    x.setAttribute('aria-label', 'Убрать тег ' + tag);
+    x.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      pill.remove();
+      if (!drop.querySelector('.drop-pill')) placeholder.style.display = 'inline';
+      updateCount();
+    });
+    pill.append(label, x);
+    pill.addEventListener('dragstart', () => { dragged = pill; pill.classList.add('dragging'); });
+    pill.addEventListener('dragend', () => { pill.classList.remove('dragging'); dragged = null; });
+    drop.appendChild(pill);
+    updateCount();
+  }
+
+  pool.addEventListener('click', (e) => {
+    const tagEl = e.target.closest('.tag');
+    if (tagEl) addToFilter(tagEl);
+  });
+  pool.addEventListener('keydown', (e) => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('tag')) {
+      e.preventDefault();
+      addToFilter(e.target);
+    }
+  });
+
+  pool.querySelectorAll('.tag').forEach(t => {
+    t.addEventListener('dragstart', () => { dragged = t; t.classList.add('dragging'); });
+    t.addEventListener('dragend', () => { t.classList.remove('dragging'); dragged = null; });
+  });
+
+  drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('over'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+  drop.addEventListener('drop', (e) => {
+    e.preventDefault();
+    drop.classList.remove('over');
+    if (!dragged) return;
+    if (dragged.classList.contains('tag')) addToFilter(dragged);
+    dragged = null;
+  });
+
+  updateCount();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RiskLesson · Рабочее пространство</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+  /* Токены — НЛМК Design System 2.0 (nlmk-group/ds-2.0), согласованы с DESIGN.md проекта.
+     Типографика — реальная шкала Typography ds-2.0 (Heading/Subheading/Body/Body1/Body2/Caption). */
+  :root{
+    --navy-900:#112542;
+    --accent-600:#167ffb;
+    --accent-500:#008fff;
+    --accent-100:#cbe1ff;
+    --accent-50:#e8f5ff;
+    --ink-900:#001729;
+    --ink-700:#4d5d69;
+    --ink-600:#66747e;
+    --ink-400:#99a2a9;
+    --paper-0:#ffffff;
+    /* холодный светло-серый фон рабочего пространства вместо тёплого кремового */
+    --canvas:#F7F8FA;
+    --line:#E9EBEF;
+    --red-700:#ee1505;
+    --red-50:#ffedf0;
+    --green-700:#0d932b;
+    --green-50:#e5f8e8;
+    /* уровень риска (низкий/средний/высокий) — те же тона, что и в Streamlit-версии */
+    --amber-700:#f97b0f;
+    --amber-50:#fff3e0;
+    --gold-700:#8a6d00;
+    --gold-50:#ffffe6;
+    --logo-blue:#0b5fc2;
+    /* градиент названия «RiskLesson» — корпоративные синие тона НЛМК */
+    --brand-grad-1:var(--navy-900);
+    --brand-grad-2:var(--accent-600);
+
+    --font-display:'Golos Text','PT Root UI','Segoe UI',Arial,sans-serif;
+    --font-body:'Golos Text','PT Root UI','Segoe UI',Arial,sans-serif;
+    --font-mono:'IBM Plex Mono','SFMono-Regular',monospace;
+
+    --shadow-pop:0 12px 32px -12px rgba(17,37,66,.18);
+    --shadow-modal:0 20px 48px -14px rgba(17,37,66,.28);
+    --radius-card:28px;
+    --radius-field:14px;
+    --radius-pill:999px;
+  }
+
+  /* Тёмная тема: canvas темнее paper (карточка — «приподнятая» поверхность),
+     line — заметно светлее paper (граница видна), текст — из практики
+     WCAG для тёмных UI (основной текст ~93% белого, не 100% — меньше слепит). */
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --canvas:#1B1E24; --paper-0:#23262D; --line:#343943;
+      --ink-900:#f2f3f4; --ink-700:#ccd2d8; --ink-600:#9aa3ac; --ink-400:#767f89;
+      --accent-50:#17233f; --accent-100:#2b4c8c;
+      --green-50:#123321; --red-50:#3a1f22; --amber-50:#2e2413; --gold-50:#2c2408;
+      /* в тёмной теме лого и градиент названия светлее — тёмно-синий на тёмном
+         фоне почти не читался */
+      --logo-blue:#5aabff;
+      --brand-grad-1:#5aabff; --brand-grad-2:#a9d6ff;
+      --shadow-pop:0 20px 50px -12px rgba(0,0,0,.6);
+      --shadow-modal:0 24px 60px -12px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"]{
+    --canvas:#1B1E24; --paper-0:#23262D; --line:#343943;
+    --ink-900:#f2f3f4; --ink-700:#ccd2d8; --ink-600:#9aa3ac; --ink-400:#767f89;
+    --accent-50:#17233f; --accent-100:#2b4c8c;
+    --green-50:#123321; --red-50:#3a1f22; --amber-50:#2e2413; --gold-50:#2c2408;
+    --logo-blue:#5aabff;
+    --brand-grad-1:#5aabff; --brand-grad-2:#a9d6ff;
+    --shadow-pop:0 20px 50px -12px rgba(0,0,0,.6);
+    --shadow-modal:0 24px 60px -12px rgba(0,0,0,.7);
+  }
+
+  *{box-sizing:border-box;}
+  /* переключение темы — мгновенное для фонов/границ (без наложения hover-переходов),
+     но иконка солнце/луна на кнопке должна анимироваться как обычно, плавно */
+  .theme-switching, .theme-switching *{transition:none !important;}
+  .theme-switching .theme-toggle svg{transition:opacity .25s ease, transform .35s ease !important;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:var(--canvas); color:var(--ink-900); font-family:var(--font-body);
+    font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+    -webkit-user-select:none; user-select:none;
+  }
+  /* поля ввода остаются выделяемыми/редактируемыми, всё остальное — нет
+     (лейблы, кнопки, карточки ролей и т.п. не должны вести себя как текст) */
+  .field input{-webkit-user-select:text; user-select:text;}
+
+  .theme-toggle{position:fixed; top:16px; right:16px; z-index:60; width:40px; height:40px; border-radius:50%;
+    border:1px solid var(--line); background:var(--paper-0); cursor:pointer; padding:0;
+    display:flex; align-items:center; justify-content:center;}
+  .theme-toggle svg{position:absolute; width:20px; height:20px; color:var(--ink-700);
+    transition:opacity .25s ease, transform .35s ease;}
+  .theme-toggle .icon-sun{opacity:1; transform:rotate(0deg) scale(1);}
+  .theme-toggle .icon-moon{opacity:0; transform:rotate(90deg) scale(.5);}
+  :root[data-theme="dark"] .theme-toggle .icon-sun{opacity:0; transform:rotate(-90deg) scale(.5);}
+  :root[data-theme="dark"] .theme-toggle .icon-moon{opacity:1; transform:rotate(0deg) scale(1);}
+
+  /* Карточка чуть шире (396px) — под более компактные, приземистые карточки ролей,
+     чтобы пропорции читались приятнее, без ощущения вытянутости по вертикали.
+     Карточка снова реагирует на тёмную тему как обычно (не закреплена белой). */
+  .login-card{
+    width:100%; max-width:340px; background:var(--paper-0); border:none;
+    border-radius:var(--radius-card); box-shadow:var(--shadow-pop); padding:28px 24px;
+  }
+
+  /* лэйбл компании + название системы над «Вход в систему»; разделительная линия
+     чуть короче ширины карточки — со скромным отступом от краёв, стильнее сплошной во всю ширину */
+  .brand{display:flex; align-items:center; justify-content:center; gap:12px;
+    padding:0 12px 18px; margin:0 -12px 18px; border-bottom:1px solid var(--line);}
+  .brand-mark{width:46px; height:25px; flex-shrink:0;}
+  .brand-mark svg{width:100%; height:100%;}
+  /* сплошной var(--logo-blue) — тот же токен, что и у логотипа: раньше лого было
+     однотонным, а название градиентным, что давало рассинхрон цветовой логики
+     бренд-блока; теперь оба элемента читаются как один цветовой знак */
+  .brand-text .name{
+    font-family:var(--font-display); font-weight:800; font-size:19px; line-height:26px;
+    color:var(--logo-blue);
+  }
+
+  form{display:flex; flex-direction:column; gap:14px;}
+  .row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+
+  .field{display:flex; flex-direction:column; gap:6px;}
+  /* Caption-Medium (12/16, 600) */
+  .field label{font-size:11px; line-height:14px; font-weight:600; color:var(--ink-600); text-transform:uppercase; letter-spacing:.2px;}
+
+  /* Body2 (14/20, 400) */
+  .field input{
+    border:1px solid var(--line); border-radius:var(--radius-field); padding:9px 12px;
+    font-size:13px; line-height:18px; font-family:inherit; color:var(--ink-900); background:var(--paper-0); width:100%;
+  }
+  .field input:focus{outline:none; border-color:var(--accent-600); box-shadow:0 0 0 3px var(--accent-100);}
+  .field input.err{border-color:var(--red-700);}
+  .field .err-msg{font-size:12px; line-height:16px; color:var(--red-700); background:var(--red-50);
+    padding:4px 8px; border-radius:6px; margin-top:4px; display:none;}
+  .field.invalid .err-msg{display:inline-block;}
+
+  /* Плавающий лейбл — оформление поля Input из референса ds-2.0: лейбл сидит
+     внутри рамки как плейсхолдер, при фокусе/вводе плавно всплывает наверх
+     и уменьшается — так система «реагирует» на ввод данных. */
+  .field .input-float{position:relative;}
+  .field .input-float input{padding:16px 12px 6px;}
+  /* плейсхолдер-пример («Иван»/«19-1991») скрыт, пока лейбл не всплыл — иначе он
+     наложится на лейбл; появляется только в фокусе. Курсивом — чтобы визуально
+     отличаться от реально введённых данных (не путать пример формата со значением). */
+  .field .input-float input::placeholder{opacity:0; font-style:italic; transition:opacity .18s ease;}
+  .field .input-float input:focus::placeholder{opacity:1;}
+  .field .input-float label{
+    position:absolute; left:17px; top:50%; transform:translateY(-50%);
+    /* ink-600, а не ink-400 — на паре ink-400/paper-0 контраст ниже WCAG AA (~2.3:1) */
+    font-size:14px; line-height:20px; font-weight:400; color:var(--ink-600);
+    text-transform:none; letter-spacing:0; pointer-events:none; background:transparent; padding:0 2px;
+    transition:top .18s ease, transform .18s ease, font-size .18s ease, color .18s ease, left .18s ease, background-color .18s ease;
+  }
+  .field .input-float input:focus + label,
+  .field .input-float input:not(:placeholder-shown) + label{
+    top:0; transform:translateY(-50%); left:15px; font-size:12px; font-weight:400;
+    letter-spacing:0; text-transform:none; color:var(--ink-600); background:var(--paper-0);
+    /* сплошной белый ореол со всех сторон текста — надёжнее, чем просто фон:
+       гарантированно перекрывает линию рамки под лейблом, без тонких просветов */
+    box-shadow:0 0 0 4px var(--paper-0);
+  }
+  .field .input-float input:focus + label{color:var(--accent-600);}
+  /* короткая подпись-подсказка под полем — не путать с err-msg */
+  .field-hint{font-size:12px; line-height:16px; color:var(--ink-600); margin-top:4px;}
+  .field[data-field="role"] .field-hint{text-align:left;}
+
+  /* Карточки ролей с иконкой сверху и описанием (формат по референсу «Choose Your Role»),
+     цвета и иконки — корпоративные ds-2.0 */
+  /* Карточки ролей теперь — горизонтальные строки (иконка слева, текст справа),
+     сложены в один столбец, а не сетка 2×1 — другая композиция выбора роли. */
+  .role-cards{display:flex; flex-direction:column; gap:8px;}
+  .role-card{display:flex; flex-direction:row; align-items:center; text-align:left; gap:10px;
+    border:1px solid var(--line); border-radius:var(--radius-field); padding:10px 12px; cursor:pointer;
+    background:var(--paper-0); transition:border-color .25s ease, background-color .25s ease, box-shadow .25s ease;}
+  .role-card:hover{border-color:var(--accent-100); background:var(--accent-50); box-shadow:0 6px 14px -10px rgba(17,37,66,.25);}
+  .role-card-icon{width:30px; height:30px; border-radius:var(--radius-pill); background:var(--accent-50); color:var(--accent-600);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition:background-color .25s ease, color .25s ease, transform .3s cubic-bezier(.34,1.56,.64,1);}
+  .role-card-icon svg{width:16px; height:16px;}
+  .role-card-body{display:flex; flex-direction:column; gap:1px; min-width:0;}
+  .role-card-title{font-size:13px; line-height:18px; font-weight:600; color:var(--ink-900);}
+  .role-card-desc{font-size:11px; line-height:14px; color:var(--ink-600);}
+  /* активный стейт — граница + заливка + закрашенная иконка */
+  .role-card.active{border-color:var(--accent-600); background:var(--accent-50);}
+  .role-card.active .role-card-icon{background:var(--accent-600); color:#fff; transform:scale(1.08);}
+
+  .btn-row{display:flex; gap:12px; margin-top:6px;}
+  .reset-row{display:flex; justify-content:center; margin-top:6px;}
+  /* Body2-Bold / Body2-Medium (14/20, 700 / 600) */
+  .btn{flex:1; display:inline-flex; align-items:center; justify-content:center; gap:6px; white-space:nowrap;
+    border-radius:var(--radius-pill); padding:9px 16px; font-size:13px; line-height:18px; font-weight:700; border:1px solid transparent;
+    background:transparent; color:var(--ink-600); cursor:pointer; font-family:inherit;
+    transition:background-color .2s ease, border-color .2s ease, color .2s ease;}
+  .btn:hover{background:var(--canvas); border-color:var(--line); color:var(--ink-900);}
+  .btn-primary{background:var(--accent-600); border-color:var(--accent-600); color:#fff; flex:2;}
+  .btn-primary:hover{background:var(--accent-500); color:#fff;}
+  .btn-text{flex:none; font-weight:600; padding:8px 16px; border-radius:var(--radius-pill);}
+  /* «Очистить» — сброс формы, действие деструктивное: hover отдельно окрашен в red,
+     а не в нейтральный/accent тон общих кнопок, чтобы намерение читалось до клика */
+  .btn-text:hover{background:var(--red-50); color:var(--red-700); border-color:var(--red-50);}
+  /* secondary — как в референсе (variant="secondary"): светло-голубая заливка вместо обводки/прозрачности */
+  .btn-secondary{background:var(--accent-50); border-color:var(--accent-50); color:var(--accent-600);}
+  .btn-secondary:hover{background:var(--accent-100); border-color:var(--accent-100); color:var(--accent-600);}
+
+  .success{display:none; text-align:center;}
+  .success.show{display:block;}
+  .success .check{width:52px; height:52px; border-radius:50%; background:var(--green-50); color:var(--green-700);
+    display:flex; align-items:center; justify-content:center; margin:0 auto 16px;}
+  .success .check svg{width:24px; height:24px;}
+  @keyframes popIn{from{opacity:0; transform:scale(.5);} to{opacity:1; transform:scale(1);}}
+  .success.show .check{animation:popIn .35s cubic-bezier(.34,1.56,.64,1);}
+  /* Heading4 (20/28, 800) */
+  .success h2{font-size:20px; line-height:28px; font-weight:800; margin:0 0 8px;}
+  /* Body2 (14/20, 400) */
+  .success p{font-size:14px; line-height:20px; color:var(--ink-600); margin:0 0 24px;}
+  .summary{text-align:left; background:var(--canvas); border-radius:var(--radius-field); padding:16px; margin-bottom:16px;}
+  .summary div{display:flex; justify-content:space-between; font-size:14px; line-height:20px; padding:4px 0;}
+  .summary div span:first-child{color:var(--ink-600);}
+  .summary div span:last-child{font-family:var(--font-mono); color:var(--ink-900); font-weight:600;}
+
+  .login-form.hide, .success.hide{display:none;}
+
+  /* модальное окно ввода СПП — открывается поверх страницы, не сдвигая её содержимое */
+  /* модальное окно СПП — быстрое, но плавное появление (ease-out, без резкого скачка) */
+  .modal-overlay{position:fixed; inset:0; background:rgba(0,23,41,.45); display:flex; align-items:center;
+    justify-content:center; padding:24px; z-index:50; opacity:0; pointer-events:none; transition:opacity .18s ease-out;}
+  .modal-overlay.show{opacity:1; pointer-events:auto;}
+  .modal-card{
+    /* модалка теперь следует теме страницы (var(--paper-0)/var(--ink-900) и т.д.
+     * берутся из :root), а не зафиксирована на светлой — иначе в тёмном режиме
+     * она была бы ярким белым пятном поверх тёмного фона */
+    width:100%; max-width:308px; background:var(--paper-0); border:1px solid var(--line);
+    border-radius:var(--radius-card);
+    box-shadow:var(--shadow-modal); padding:24px; transform:scale(.96) translateY(6px);
+    transition:transform .22s cubic-bezier(.16,1,.3,1);}
+  .modal-overlay.show .modal-card{transform:scale(1) translateY(0);}
+  .modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;}
+  /* Body1-Bold (16/24, 700) — компактнее прежнего Subheading3 (20/28) */
+  .modal-head span{font-family:var(--font-display); font-size:16px; line-height:24px; font-weight:700; color:var(--ink-900);}
+  /* ink-600, а не ink-400 — контраст крестика на paper-0 был ниже WCAG AA для интерактивного элемента */
+  .modal-close{border:none; background:none; width:28px; height:28px; border-radius:50%; color:var(--ink-600);
+    padding:0; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition:background-color .2s ease, color .2s ease, transform .25s ease;}
+  .modal-close svg{width:16px; height:16px;}
+  .modal-close:hover{background:var(--canvas); color:var(--ink-900); transform:rotate(90deg);}
+
+  /* Рабочее пространство проекта — экран после входа риск-менеджера (СПП принят).
+     Полноэкранная раскладка (перекрывает центрированную карточку входа),
+     сайдбар — по референсу ds-2.0 Sidebar (orientation="vertical", MenuItem). */
+  .workspace{position:fixed; inset:0; z-index:10; display:none; background:var(--canvas);}
+  .workspace.show{display:flex;}
+
+  /* сворачивание/разворачивание — по наведению на сайдбар (без клика и без
+     подписи «Свернуть»); ширина и подписи анимируются одновременно одной
+     кривой, чтобы ничего не «прыгало» — раскладка (justify-content/padding)
+     не меняется скачком между состояниями, меняются только width/opacity/max-width */
+  .ws-sidebar{width:76px; flex-shrink:0; background:var(--navy-900); display:flex; flex-direction:column;
+    padding:20px 14px; gap:4px; transition:width .32s cubic-bezier(.4,0,.2,1); overflow:hidden;}
+  .ws-sidebar.expanded{width:248px;}
+  .ws-brand{display:flex; align-items:center; gap:10px; padding:8px 10px 20px;
+    border-bottom:1px solid rgba(255,255,255,.12); margin-bottom:12px;}
+  .ws-brand .brand-mark{width:36px; height:20px; flex-shrink:0;}
+  /* Body1-Bold (16/24, 700 — здесь 800 для веса бренд-знака) */
+  .ws-brand .name{font-family:var(--font-display); font-weight:800; font-size:16px; line-height:24px; color:#fff;
+    white-space:nowrap; overflow:hidden; opacity:0; max-width:0;
+    transition:opacity .2s ease, max-width .32s cubic-bezier(.4,0,.2,1);}
+  .ws-sidebar.expanded .ws-brand .name{opacity:1; max-width:160px;}
+
+  .ws-nav{flex:1; display:flex; flex-direction:column; min-height:0; overflow-y:auto; overflow-x:hidden;}
+  .ws-nav-group{display:flex; flex-direction:column; gap:2px;}
+  .ws-nav-item{display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:8px;
+    border:none; background:none; color:#aab4c4; font-family:inherit; font-size:14px; font-weight:600;
+    cursor:pointer; text-align:left; width:100%; transition:background-color .15s ease, color .15s ease;}
+  .ws-nav-item span{white-space:nowrap; overflow:hidden; opacity:0; max-width:0;
+    transition:opacity .2s ease, max-width .32s cubic-bezier(.4,0,.2,1);}
+  .ws-sidebar.expanded .ws-nav-item span{opacity:1; max-width:160px;}
+  .ws-nav-item svg{width:20px; height:20px; flex-shrink:0;}
+  .ws-nav-item:hover{background:rgba(255,255,255,.06); color:#fff;}
+  .ws-nav-item.active{background:rgba(255,255,255,.1); color:#fff;}
+  .ws-nav-item.active svg{color:var(--accent-500);}
+
+  .ws-user{margin-top:auto; display:flex; align-items:center; gap:10px; padding:12px 10px;
+    border-top:1px solid rgba(255,255,255,.12);}
+  .ws-user-avatar{width:32px; height:32px; border-radius:50%; background:var(--accent-600); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0;}
+  .ws-user-info{min-width:0; overflow:hidden; opacity:0; max-width:0;
+    transition:opacity .2s ease, max-width .32s cubic-bezier(.4,0,.2,1);}
+  .ws-sidebar.expanded .ws-user-info{opacity:1; max-width:140px;}
+  /* Body2-Bold (14/20, 700) для имени, Caption (12/16) для роли — было
+     произвольные 13px/11.5px без привязки к типографической шкале */
+  .ws-user-name{font-size:14px; line-height:20px; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .ws-user-role{font-size:12px; line-height:16px; color:#8b96aa; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .ws-signout{margin-left:auto; background:none; border:none; color:#8b96aa; cursor:pointer; padding:6px;
+    border-radius:6px; display:flex; flex-shrink:0; opacity:0; width:0; padding-left:0; padding-right:0;
+    transition:opacity .2s ease, width .32s cubic-bezier(.4,0,.2,1), padding .32s cubic-bezier(.4,0,.2,1),
+      background-color .2s ease, color .2s ease;}
+  .ws-sidebar.expanded .ws-signout{opacity:1; width:28px; padding-left:6px; padding-right:6px;}
+  .ws-signout svg{width:16px; height:16px; flex-shrink:0;}
+  .ws-signout:hover{background:rgba(255,255,255,.08); color:#fff;}
+
+  .ws-content{flex:1; overflow-y:auto; padding:36px 40px;}
+  .ws-content h1{font-family:var(--font-display); font-size:24px; line-height:32px; font-weight:800;
+    color:var(--ink-900); margin:0 0 6px;}
+  .ws-content .ws-desc{font-size:14px; line-height:20px; color:var(--ink-600); margin:0 0 28px; max-width:52ch;}
+  .ws-empty{border:1px dashed var(--line); border-radius:var(--radius-field); padding:48px 24px;
+    display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; color:var(--ink-400);}
+  .ws-empty svg{width:32px; height:32px; color:var(--ink-400);}
+  .ws-empty strong{font-size:14px; line-height:20px; color:var(--ink-600); font-weight:600;}
+  .ws-empty span{font-size:12px; line-height:16px; max-width:38ch;}
+  .ws-empty[hidden], .lessons-page[hidden], .kpi-grid[hidden]{display:none;}
+
+  /* ===== Выученные уроки: подбор по тегам + таблица + создание риска ===== */
+
+  /* select/textarea в том же визуальном языке, что и .field input */
+  .field select, .field textarea{
+    border:1px solid var(--line); border-radius:var(--radius-field); padding:12px 16px;
+    font-size:14px; line-height:20px; font-family:inherit; color:var(--ink-900);
+    background:var(--paper-0); width:100%;
+  }
+  .field select:focus, .field textarea:focus{outline:none; border-color:var(--accent-600); box-shadow:0 0 0 3px var(--accent-100);}
+  .field textarea{resize:vertical; min-height:72px;}
+  .field select{
+    cursor:pointer; appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2399a2a9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 14px center; background-size:16px; padding-right:40px;
+  }
+
+  /* панель подбора по тегам */
+  .tags-panel{background:var(--paper-0); border:1px solid var(--line); border-radius:var(--radius-field);
+    padding:20px; margin-bottom:20px;}
+  .tags-panel-head, .tags-drop-head{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:10px;}
+  .tags-drop-head{margin-top:18px;}
+  .tags-panel-title{font-size:12px; line-height:16px; font-weight:600; color:var(--ink-600);
+    text-transform:uppercase; letter-spacing:.2px;}
+  .tags-panel-hint{font-size:12px; color:var(--ink-400);}
+  /* Body1-Bold (16/24, 700) */
+  .tags-result-count{font-family:var(--font-display); font-size:16px; line-height:24px; font-weight:700; color:var(--accent-600);}
+
+  .tag-pool{display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; padding:16px;
+    background:var(--canvas); border:1px solid var(--line); border-radius:var(--radius-field); min-height:56px;}
+  .tag-chip{font-family:var(--font-body); font-weight:600; line-height:1.3; padding:3px 5px;
+    border-radius:6px; cursor:grab; user-select:none; background:none; border:none;
+    transition:background-color .15s ease, opacity .15s ease;}
+  .tag-chip:hover{background:var(--paper-0);}
+  .tag-chip.dragging{opacity:.4;}
+  .tag-chip:focus-visible{outline:2px solid var(--accent-500); outline-offset:2px;}
+
+  .tag-drop{display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:12px;
+    background:var(--paper-0); border:1.5px dashed var(--line); border-radius:var(--radius-field);
+    min-height:48px; transition:background-color .15s ease, border-color .15s ease;}
+  .tag-drop.over{background:var(--accent-50); border-color:var(--accent-500);}
+  .tag-drop-placeholder{font-size:13px; color:var(--ink-400);}
+  .tag-drop-pill{display:inline-flex; align-items:center; gap:6px; padding:5px 8px 5px 12px;
+    border-radius:999px; font-size:13px; font-weight:600; background:var(--accent-50);
+    border:1px solid var(--accent-100); color:var(--accent-600); cursor:grab; user-select:none;}
+  .tag-drop-remove{display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px;
+    border-radius:50%; font-size:11px; line-height:1; color:var(--accent-600); opacity:.7; cursor:pointer;
+    flex-shrink:0; transition:background-color .15s ease, opacity .15s ease;}
+  .tag-drop-remove:hover{background:var(--accent-100); opacity:1;}
+
+  /* поиск + таблица уроков */
+  .lessons-search-row{display:flex; gap:12px; align-items:center; margin-bottom:14px;}
+  .lessons-search{position:relative; flex:1;}
+  .lessons-search svg{position:absolute; left:12px; top:50%; transform:translateY(-50%);
+    width:16px; height:16px; color:var(--ink-400); pointer-events:none;}
+  .lessons-search input{width:100%; height:38px; padding:0 12px 0 36px; border-radius:var(--radius-field);
+    border:1px solid var(--line); background:var(--paper-0); color:var(--ink-900); font-family:inherit; font-size:13.5px;}
+  .lessons-search input:focus{outline:none; border-color:var(--accent-500); box-shadow:0 0 0 3px var(--accent-100);}
+  .lessons-row-count{font-size:12.5px; color:var(--ink-400); white-space:nowrap;}
+
+  /* скругление «таблицы» — тот же var(--radius-field), что у панелей и полей */
+  .lessons-table-wrap{border:1px solid var(--line); border-radius:var(--radius-field); overflow:hidden; background:var(--paper-0);}
+  .lessons-table{width:100%; border-collapse:collapse; table-layout:fixed; font-size:13px;}
+  .lessons-table thead th{text-align:left; padding:12px 14px; background:var(--canvas); color:var(--ink-600);
+    font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:.2px; border-bottom:1px solid var(--line);}
+  .lessons-table tbody td{padding:12px 14px; vertical-align:top; border-bottom:1px solid var(--line);
+    font-size:13px; line-height:19px; color:var(--ink-900);}
+  .lessons-table tbody tr:last-child td{border-bottom:none;}
+  .lessons-table tbody tr:hover td{background:var(--canvas);}
+  .lessons-table .lesson-code{font-family:var(--font-mono); font-size:11px; color:var(--ink-400);}
+
+  .lesson-tag-pill{display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px;
+    font-weight:700; margin:0 4px 4px 0;}
+
+  .risk-action-btn{padding:6px 12px; font-size:12px; font-weight:600; border:1px solid var(--line);
+    border-radius:var(--radius-field); background:var(--paper-0); color:var(--ink-700); cursor:pointer;
+    font-family:inherit; white-space:nowrap; transition:background-color .15s ease;}
+  .risk-action-btn:hover{background:var(--canvas);}
+  .risk-created-link{font-size:12px; font-weight:700; color:var(--green-700); display:inline-flex;
+    align-items:center; gap:4px; cursor:pointer; background:none; border:none; padding:0; font-family:inherit;}
+  .risk-created-link:hover{text-decoration:underline;}
+
+  .lessons-table-empty{padding:32px 20px; text-align:center; font-size:13px; color:var(--ink-400);}
+
+  /* модалки создания/просмотра риска */
+  .modal-card--wide{width:100%; max-width:560px; max-height:86vh; overflow-y:auto;}
+  .modal-sub{font-size:12.5px; color:var(--ink-400); margin:0 0 16px;}
+  .source-quote{background:var(--canvas); border-radius:var(--radius-field); padding:10px 12px;
+    margin:0 0 16px; font-size:13px; line-height:19px; color:var(--ink-600);}
+  .source-link{display:flex; align-items:center; gap:8px; width:100%; background:var(--accent-50);
+    border:none; border-radius:var(--radius-field); padding:10px 12px; margin:0 0 16px; font-size:12.5px;
+    font-weight:600; color:var(--accent-600); cursor:pointer; font-family:inherit; text-align:left;}
+  .source-link:hover{background:var(--accent-100);}
+  .source-link svg{width:14px; height:14px; flex-shrink:0;}
+
+  .risk-level-row{display:flex; align-items:center; justify-content:space-between; background:var(--canvas);
+    border-radius:var(--radius-field); padding:12px 16px; margin-bottom:4px;}
+  .risk-level-row .field-caption{font-size:12px; color:var(--ink-600);}
+  .risk-level-value{font-family:var(--font-display); font-size:14px; font-weight:700;}
+
+  .risk-detail-row{display:flex; justify-content:space-between; gap:12px; padding:8px 0;
+    font-size:13.5px; border-bottom:1px solid var(--line);}
+  .risk-detail-row:last-child{border-bottom:none;}
+  .risk-detail-row span:first-child{color:var(--ink-600);}
+  .risk-detail-row span:last-child{font-weight:600; color:var(--ink-900); text-align:right;}
+  .risk-view-desc{font-size:13.5px; line-height:20px; color:var(--ink-900); margin:0 0 14px;}
+
+  /* ===== KPI-карточки дэшборда (перевод React KpiCard в чистый HTML/CSS) ===== */
+  .kpi-grid{display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:28px;}
+  .kpi-card{display:flex; flex-direction:column; gap:8px; padding:16px; border-radius:var(--radius-field);
+    background:var(--paper-0); border:1px solid var(--line);}
+  .kpi-label{font-size:12px; font-weight:600; color:var(--ink-600);}
+  .kpi-value{font-family:var(--font-display); font-size:24px; line-height:32px; font-weight:800; color:var(--ink-900);}
+  .kpi-delta{display:flex; align-items:center; gap:4px; font-size:12px; font-weight:600;}
+  .kpi-delta svg{width:13px; height:13px; flex-shrink:0;}
+  .kpi-delta--good{color:var(--green-700);}
+  .kpi-delta--bad{color:var(--red-700);}
+  .kpi-delta--muted{color:var(--ink-400);}
+  /* подпись-порог прижата к низу карточки (margin-top:auto) — карточки
+     одной высоты в ряду выглядят выровненными независимо от длины текста */
+  .kpi-threshold{font-size:11px; line-height:15px; color:var(--ink-400); padding-top:8px;
+    margin-top:auto; border-top:1px solid var(--line);}
+  @media (max-width:900px){ .kpi-grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:560px){ .kpi-grid{grid-template-columns:1fr;} }
+</style>
+
+</head>
+<body>
+<button class="theme-toggle" id="themeBtn" type="button" aria-label="Переключить тему">
+  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.5M12 19v2.5M4.5 12H2M22 12h-2.5M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8"/></svg>
+  <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.4 14.7A8.5 8.5 0 1 1 9.3 3.6a7 7 0 0 0 11.1 11.1z"/></svg>
+</button>
+
+<div class="workspace show">
+  <aside class="ws-sidebar">
+    <div class="ws-brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 105 57" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="НЛМК"><path fill-rule="evenodd" clip-rule="evenodd" d="M20.7303 19.0532H15.5128V36.6192H20.7303V29.6627H26.2956V36.6192H31.5164V19.0532H26.2956V25.4881H20.7303V19.0532ZM50.1263 36.6192V19.0532H36.7291V28.2701C36.7291 31.7491 36.0337 32.794 33.2518 32.2708V36.6112C36.2075 37.1328 38.8155 36.6112 40.208 34.8725C41.5989 33.3076 41.7728 30.524 41.7728 28.2621V23.2198H45.0746V36.6192H50.1263ZM59.6905 19.0532H54.4745L52.0324 36.6208H56.9022L58.1193 27.23L60.898 36.6192H64.3752L67.1619 27.23L68.3789 36.6192H73.2551L70.821 19.0532H65.6035L62.6478 29.4888L59.6905 19.0532ZM80.3852 19.0532H75.1676L75.1613 36.6192H80.3788V29.4888L85.0748 36.6192H91.3323L84.5532 27.75L91.1728 19.0532H85.4305L80.3852 26.1836V19.0532ZM0.731079 28.2701C0.731079 11.575 21.4258 0.271667 52.7311 0.271667C84.2054 0.271667 104.731 11.575 104.731 28.2701C104.731 44.7865 84.2086 56.2717 52.7311 56.2717C21.4258 56.2717 0.731079 44.7928 0.731079 28.2701ZM3.68997 28.2701C3.68997 43.4018 23.3415 53.662 52.7311 53.662C82.2945 53.662 101.772 43.4018 101.772 28.2701C101.772 12.966 82.2945 2.87977 52.7311 2.87977C23.3383 2.87977 3.68678 12.966 3.68997 28.2701ZM7.64417 28.2707C7.64417 21.9298 11.8809 16.4671 19.7642 12.536C27.6444 8.60642 38.9979 6.31464 52.7312 6.31464C66.462 6.31464 77.8143 8.60563 85.6939 12.5348C93.5766 16.4655 97.8134 21.9281 97.8134 28.2707C97.8134 34.6134 93.5776 40.0764 85.6956 44.0075C77.8167 47.937 66.4644 50.2284 52.7312 50.2284C38.9979 50.2284 27.6444 47.9362 19.7643 44.0063C11.8809 40.0747 7.64417 34.6117 7.64417 28.2707ZM6.64417 28.2707C6.64417 14.5331 25.0786 5.31464 52.7312 5.31464C80.3789 5.31464 98.8134 14.5299 98.8134 28.2707C98.8134 42.0115 80.3837 51.2284 52.7312 51.2284C25.0786 51.2284 6.64417 42.0083 6.64417 28.2707Z" fill="#fff"/></svg>
+      </div>
+      <div class="name">RiskLesson</div>
+    </div>
+    <nav class="ws-nav" id="wsNav">
+      <div class="ws-nav-group">
+        <button type="button" class="ws-nav-item active" data-page="dashboard" title="Дэшборд">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
+          <span>Дэшборд</span>
+        </button>
+
+        <button type="button" class="ws-nav-item" data-page="register" title="Реестр рисков">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6z"/><path d="M15 3v3h3"/><path d="M9 12h6M9 16h6"/></svg>
+          <span>Реестр рисков</span>
+        </button>
+
+        <button type="button" class="ws-nav-item" data-page="matrix" title="Матрица рисков">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+          <span>Матрица рисков</span>
+        </button>
+
+        <button type="button" class="ws-nav-item" data-page="lessons" title="Выученные уроки">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H12v16H5.5C4.7 20 4 19.3 4 18.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H12v16h6.5c.8 0 1.5-.7 1.5-1.5z"/></svg>
+          <span>Выученные уроки</span>
+        </button>
+      </div>
+    </nav>
+
+    <div class="ws-user">
+      <div class="ws-user-avatar" id="wsAvatar"></div>
+      <div class="ws-user-info">
+        <div class="ws-user-name" id="wsUserName"></div>
+        <div class="ws-user-role" id="wsUserRole"></div>
+      </div>
+      <button type="button" class="ws-signout" id="wsSignOut" aria-label="Выйти">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <main class="ws-content">
+    <h1 id="wsTitle">Дэшборд</h1>
+    <p class="ws-desc" id="wsDesc">Общая сводка по рискам программы: количество, критичность, статус мероприятий.</p>
+
+    <!-- KPI-карточки — пример/иллюстративные значения для прототипа интерфейса
+         (реальный риск-регистр в эту статическую страницу не подключён;
+         числа согласованы с демонстрационными данными Streamlit-версии) -->
+    <div class="kpi-grid" id="wsDashboardPage">
+      <div class="kpi-card">
+        <span class="kpi-label">Всего активных рисков</span>
+        <span class="kpi-value">15</span>
+        <span class="kpi-delta kpi-delta--muted">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+          +2 за 30 дней
+        </span>
+        <span class="kpi-threshold">из 92 рисков программы</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Критических (высокий приоритет)</span>
+        <span class="kpi-value">12</span>
+        <span class="kpi-delta kpi-delta--bad">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+          +1 за 30 дней
+        </span>
+        <span class="kpi-threshold">RRA 6–9</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Закрыто мероприятий</span>
+        <span class="kpi-value">4</span>
+        <span class="kpi-delta kpi-delta--good">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+          +4 за 30 дней
+        </span>
+        <span class="kpi-threshold">все меры выполнены</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Просрочено мероприятий</span>
+        <span class="kpi-value">6</span>
+        <span class="kpi-delta kpi-delta--good">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>
+          −3 за 30 дней
+        </span>
+        <span class="kpi-threshold">плановый срок прошёл</span>
+      </div>
+    </div>
+
+    <div class="ws-empty" id="wsEmpty" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      <strong>Раздел в разработке</strong>
+      <span>СПП проекта принят, вход выполнен — содержимое этого раздела появится на следующем этапе.</span>
+    </div>
+  </main>
+</div>
+
+<script>
+  const WS_PAGES = {
+    dashboard: {title:'Дэшборд', desc:'Общая сводка по рискам программы: количество, критичность, статус мероприятий.'},
+    register: {title:'Реестр рисков', desc:'Полный список зарегистрированных рисков проекта с владельцем, оценкой и статусом.'},
+    matrix: {title:'Матрица рисков', desc:'Визуализация рисков по вероятности и влиянию (P×I).'},
+    lessons: {title:'Выученные уроки', desc:'База знаний по прошлым проектам — риски, которые уже случались, и как их избежать.'},
+  };
+
+  const wsEmpty = document.getElementById('wsEmpty');
+  const wsDashboardPage = document.getElementById('wsDashboardPage');
+
+  document.getElementById('wsNav').addEventListener('click', (e) => {
+    const btn = e.target.closest('.ws-nav-item');
+    if (!btn || btn.disabled) return;
+    const pageKey = btn.dataset.page;
+    const page = WS_PAGES[pageKey];
+    if (!page) return;
+
+    document.querySelectorAll('.ws-nav-item').forEach(o => o.classList.remove('active'));
+    btn.classList.add('active');
+
+    document.getElementById('wsTitle').textContent = page.title;
+    document.getElementById('wsDesc').textContent = page.desc;
+
+    const showDashboard = pageKey === 'dashboard';
+    wsDashboardPage.hidden = !showDashboard;
+    wsEmpty.hidden = showDashboard;
+  });
+
+  const STORAGE_KEY = 'riskassess_session';
+  document.getElementById('wsSignOut').addEventListener('click', () => {
+    try { localStorage.removeItem(STORAGE_KEY); } catch (err) {}
+    window.location.href = 'login-variant-b.html';
+  });
+
+  // сайдбар раскрывается по наведению и сворачивается обратно при уходе курсора
+  const wsSidebar = document.querySelector('.ws-sidebar');
+  wsSidebar.addEventListener('mouseenter', () => wsSidebar.classList.add('expanded'));
+  wsSidebar.addEventListener('mouseleave', () => wsSidebar.classList.remove('expanded'));
+
+  // данные пользователя — сохранены на экране входа перед переходом сюда
+  function initials(first, last){
+    return ((first || '')[0] || '' ) .concat((last || '')[0] || '').toUpperCase() || '—';
+  }
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      document.getElementById('wsAvatar').textContent = initials(data.firstName, data.lastName);
+      document.getElementById('wsUserName').textContent = [data.firstName, data.lastName].filter(Boolean).join(' ') || '—';
+      document.getElementById('wsUserRole').textContent = data.role === 'riskmanager' ? 'Риск-менеджер' : 'Инициатор';
+    } else {
+      window.location.href = 'login-variant-b.html';
+    }
+  } catch (err) {}
+
+  // тема — идентично странице входа
+  const themeBtn = document.getElementById('themeBtn');
+  const THEME_KEY = 'riskassess-theme';
+  function applyTheme(isDark){
+    const root = document.documentElement;
+    root.classList.add('theme-switching');
+    root.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('theme-switching')));
+  }
+  let storedTheme = null;
+  try { storedTheme = localStorage.getItem(THEME_KEY); } catch (err) {}
+  applyTheme(storedTheme === 'dark');
+  themeBtn.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'dark';
+    applyTheme(isDark);
+    try { localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light'); } catch (err) {}
+  });
+</script>
+</body>
+</html>

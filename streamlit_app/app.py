@@ -4,7 +4,11 @@ RiskAssess Bot — НЛМК. Streamlit-версия интерфейса (по �
 
 Запуск:  streamlit run app.py
 """
+import re
+from datetime import date, timedelta
+
 import streamlit as st
+import plotly.graph_objects as go
 
 from data import (
     RISKS, LESSONS, RISK_CATS, RSTATUS, STRATEGIES, ACTION_STATUSES, ACTION_TYPES,
@@ -215,23 +219,267 @@ def render_sidebar():
 
 
 # ============================================================ ЭКРАН: ДЭШБОРД
+#
+# Ниже — вспомогательные функции только для дэшборда (_dash_*). Они не трогают
+# data.py и не меняют модель полей RISKS (см. README: «модель полей risks —
+# по чек-листу будет отдельный шаблон, произвольные новые поля не добавляем»).
+# Всё, что дэшборду нужно сверх готовых полей (статус жизненного цикла,
+# просрочка на произвольную дату, таксономия из 7 групп, ₽-оценка ущерба),
+# вычисляется на лету из уже существующих реальных полей риска.
+
+# 7 таксономических групп по задаче дэшборда — «Технологические» и
+# «Технические» (ключи tech/techn в RISK_CATS) объединены в одну группу.
+# Цвета — те же токены ds-2.0, что и в styles.py:CAT_COLORS, но в HEX,
+# т.к. Plotly не умеет резолвить CSS-переменные var(--...).
+_DASH_CAT_TO_BUCKET = {
+    "tech": "tech_techn", "techn": "tech_techn",
+    "pir": "pir", "supply": "supply", "smr": "smr",
+    "process": "process", "regulatory": "regulatory", "economic": "economic",
+}
+DASH_CAT_HEX = {
+    "tech_techn": ("Технологические/Технические", "#167ffb"),  # accent-600
+    "pir": ("ПИР", "#037963"),                                  # mint-700
+    "supply": ("Снабжение", "#0096e2"),                         # cyan-700
+    "smr": ("СМР/ПНР", "#ee1505"),                              # red-700
+    "process": ("Процессные", "#803be0"),                       # violet-700
+    "regulatory": ("Регуляторные", "#8a6d00"),                  # gold-700
+    "economic": ("Экономические", "#0b3461"),                   # navycat-700
+}
+
+_DASH_LIFECYCLE_ORDER = ["Новый", "В работе", "Митигирован", "Закрыт", "Реализовался"]
+_DASH_LIFECYCLE_HEX = {
+    "Новый": "#0096e2", "В работе": "#167ffb", "Митигирован": "#0d932b",
+    "Закрыт": "#66747e", "Реализовался": "#ee1505",
+}
+
+_DASH_RU_MONTHS = {"янв": 1, "фев": 2, "мар": 3, "апр": 4, "май": 5, "июн": 6,
+                    "июл": 7, "авг": 8, "сен": 9, "окт": 10, "ноя": 11, "дек": 12}
+
+
+def _dash_parse_due(due: str):
+    """Разбор плановой даты мероприятия («мон.гг»). Локальная копия парсера
+    (в data.py есть приватный аналог) — по условиям задачи страницы дэшборда
+    трогать data.py нельзя, а формат даты дэшборду нужен для периодных KPI."""
+    if not due or "." not in due:
+        return None
+    mon, yy = due.split(".")
+    mon = mon.strip().lower()[:3]
+    if mon not in _DASH_RU_MONTHS or not yy.strip().isdigit():
+        return None
+    return date(2000 + int(yy.strip()), _DASH_RU_MONTHS[mon], 1)
+
+
+def _dash_overdue_actions_asof(risks, asof: date):
+    """Мероприятия, просроченные по состоянию на дату asof. Даты реальные
+    (actions[].dueDate), поэтому расчёт на любую дату — не фабрикация:
+    просто тот же критерий просрочки, что и в data.py, применённый к другой
+    точке отсчёта вместо «сегодня» (нужно для дельты KPI за период)."""
+    out = []
+    for r in risks:
+        for a in r["actions"]:
+            if a.get("status") in ("В работе", "Планируется"):
+                d = _dash_parse_due(a.get("dueDate", ""))
+                if d and d < asof:
+                    out.append({"risk": r, "action": a})
+    return out
+
+
+def _dash_lifecycle_status(r) -> str:
+    """Статус риска для донат-чарта (новый/в работе/митигирован/закрыт/
+    реализовался). Такого поля в реестре нет (см. README), поэтому статус
+    выводится из уже посчитанных реальных полей — статусов мероприятий и
+    остаточной оценки (score/scoreRes) — без добавления новых полей в данные."""
+    statuses = [a.get("status") for a in r["actions"]]
+    if not statuses:
+        return "Новый"
+    if all(s == "Выполнено" for s in statuses):
+        return "Закрыт"
+    if severity_of(r["scoreRes"]) != severity_of(r["score"]):
+        return "Митигирован"
+    if all(s == "Планируется" for s in statuses):
+        return "Новый"
+    return "В работе"
+
+
+def _dash_fin_impact_mln(text):
+    """Парсинг реальной ₽-оценки из finImpact, если она указана текстом
+    в реестре (сейчас — только у одного риска из 15); для остальных
+    возвращает None, без подстановки выдуманных сумм."""
+    if not text or text == "—":
+        return None
+    m = re.search(r"([\d,.]+)\s*млрд", text)
+    if m:
+        return float(m.group(1).replace(",", ".")) * 1000
+    m = re.search(r"([\d,.]+)\s*млн", text)
+    if m:
+        return float(m.group(1).replace(",", "."))
+    return None
+
+
+def _dash_trend_html(delta, note: str) -> str:
+    if delta is None:
+        return f'<div class="kpi-note">{note}</div>'
+    if delta > 0:
+        return f'<div class="kpi-note" style="color:var(--red-700); font-weight:700;">▲ +{delta} {note}</div>'
+    if delta < 0:
+        return f'<div class="kpi-note" style="color:var(--green-700); font-weight:700;">▼ {delta} {note}</div>'
+    return f'<div class="kpi-note">без изменений · {note}</div>'
+
+
+def _dash_chart_layout(fig, dark: bool, height: int, **extra):
+    text_color = "#ccd1d4" if dark else "#4d5d69"
+    fig.update_layout(
+        margin=dict(l=8, r=8, t=8, b=8), height=height,
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="PT Root UI, Segoe UI, Arial, sans-serif", size=12, color=text_color),
+        **extra,
+    )
+    return fig
+
+
+def _dash_render_taxonomy_bar(risks, dark: bool):
+    counts = {k: 0 for k in DASH_CAT_HEX}
+    for r in risks:
+        counts[_DASH_CAT_TO_BUCKET[r["category"]]] += 1
+    keys = list(DASH_CAT_HEX)
+    labels = [DASH_CAT_HEX[k][0] for k in keys]
+    values = [counts[k] for k in keys]
+    colors = [DASH_CAT_HEX[k][1] for k in keys]
+    fig = go.Figure(go.Bar(
+        x=values, y=labels, orientation="h", marker_color=colors,
+        text=values, textposition="outside", cliponaxis=False,
+        hovertemplate="%{y}: %{x} риск(ов)<extra></extra>",
+    ))
+    _dash_chart_layout(
+        fig, dark, 300,
+        xaxis=dict(showgrid=False, visible=False, range=[0, max(values + [1]) * 1.25]),
+        yaxis=dict(autorange="reversed"),
+        showlegend=False,
+    )
+    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+
+
+def _dash_render_status_donut(risks, dark: bool):
+    counts = {k: 0 for k in _DASH_LIFECYCLE_ORDER}
+    for r in risks:
+        counts[_dash_lifecycle_status(r)] += 1
+    labels = _DASH_LIFECYCLE_ORDER
+    values = [counts[k] for k in labels]
+    colors = [_DASH_LIFECYCLE_HEX[k] for k in labels]
+    text_color = "#ccd1d4" if dark else "#4d5d69"
+    ring_line = "#33404b" if dark else "#ffffff"
+    total = sum(values) or 1
+    # для нулевых долей подпись процента не рисуем — иначе несколько «0%»
+    # накладываются друг на друга в точке, где нет дуги
+    slice_text = [f"{round(100 * v / total)}%" if v else "" for v in values]
+    fig = go.Figure(go.Pie(
+        labels=labels, values=values, hole=0.62, sort=False,
+        marker=dict(colors=colors, line=dict(color=ring_line, width=2)),
+        text=slice_text, textinfo="text", textfont=dict(color="#ffffff", size=11),
+        hovertemplate="%{label}: %{value} риск(ов) (%{percent})<extra></extra>",
+    ))
+    _dash_chart_layout(
+        fig, dark, 300,
+        legend=dict(orientation="h", yanchor="top", y=-0.05, font=dict(size=11)),
+        annotations=[dict(text=f"{sum(values)}<br>рисков", x=0.5, y=0.5, showarrow=False,
+                           font=dict(size=15, color=text_color))],
+    )
+    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+    st.caption("Статус выводится по ходу мероприятий и изменению остаточной оценки риска — "
+               "отдельного поля «статус риска» с такими значениями в реестре пока нет.")
+
+
+def _dash_render_damage_bubble(risks, dark: bool):
+    text_color = "#ccd1d4" if dark else "#4d5d69"
+    cat_order = [DASH_CAT_HEX[k][0] for k in DASH_CAT_HEX]
+    xs, ys, sizes, colors, hovers = [], [], [], [], []
+    annotated = None
+    for r in risks:
+        bucket = _DASH_CAT_TO_BUCKET[r["category"]]
+        cat_label, cat_hex = DASH_CAT_HEX[bucket]
+        fin_mln = _dash_fin_impact_mln(r.get("finImpact"))
+        xs.append(cat_label)
+        ys.append(r["score"])
+        sizes.append(20 + r["score"] * 5)
+        colors.append(cat_hex)
+        fin_txt = f"≈{fin_mln:,.0f} млн ₽ (указано в реестре)".replace(",", " ") if fin_mln \
+            else "финансовая оценка не указана в реестре"
+        hovers.append(f'{r["id"]} · {r["description"][:70]}…<br>RRA={r["score"]} · {fin_txt}')
+        if fin_mln and annotated is None:
+            annotated = (cat_label, r["score"], fin_txt)
+    fig = go.Figure(go.Scatter(
+        x=xs, y=ys, mode="markers",
+        marker=dict(size=sizes, color=colors, opacity=.85,
+                    line=dict(width=1, color=("#1c222a" if dark else "#ffffff"))),
+        hovertext=hovers, hoverinfo="text",
+    ))
+    if annotated:
+        cat_label, score_y, fin_txt = annotated
+        fig.add_annotation(x=cat_label, y=score_y, text=fin_txt.replace("указано в реестре", "факт"),
+                            showarrow=True, arrowhead=2, ax=40, ay=-30,
+                            font=dict(size=10, color=text_color))
+    grid_color = "#3c4854" if dark else "#e5e8ea"
+    _dash_chart_layout(
+        fig, dark, 320,
+        xaxis=dict(categoryorder="array", categoryarray=cat_order, tickfont=dict(size=10),
+                    showgrid=False),
+        yaxis=dict(title="RRA = P×I", range=[0, 10], gridcolor=grid_color, zeroline=False),
+        showlegend=False,
+    )
+    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+    st.caption("Размер пузырька — оценка RRA (P×I) по методике v2.2. Денежная оценка ущерба указана "
+               "в реестре только для одного риска из 15 — она вынесена подписью; для остальных сумма "
+               "в реестре не приведена (показывать вымышленные ₽ было бы недостоверно).")
+
+
 def render_dashboard():
     st.title("Дэшборд")
     st.caption(f'{ss["project"]["name"]} · СПП-{ss["user"]["spp"] or "—"} · {ss["project"]["region"]}')
 
+    period_options = {"7 дней": 7, "30 дней": 30, "90 дней": 90, "180 дней": 180}
+    hc, pc = st.columns([3, 1])
+    with pc:
+        period_label = st.selectbox("Период", list(period_options), index=1, key="dash_period",
+                                     help="Применяется к показателю просроченных мероприятий и "
+                                          "к необязательному фильтру таблицы ниже — другие даты "
+                                          "(обнаружения/закрытия риска) в данных программы не ведутся.")
+    period_days = period_options[period_label]
+    today = date.today()
+    overdue_now_list = _dash_overdue_actions_asof(RISKS, today)
+    overdue_prev_list = _dash_overdue_actions_asof(RISKS, today - timedelta(days=period_days))
+    overdue_now = len(overdue_now_list)
+    overdue_delta = overdue_now - len(overdue_prev_list)
+
+    if overdue_now_list:
+        st.error(f"⏰ Просрочено мероприятий: {overdue_now} — плановый срок реализации уже прошёл.")
+        with st.expander("Показать просроченные мероприятия"):
+            for item in overdue_now_list:
+                r, a = item["risk"], item["action"]
+                st.markdown(
+                    f'<span style="color:var(--accent-600); font-weight:700; font-size:12px;">{r["id"]}</span> '
+                    f'{a["text"]} <span style="color:var(--ink-400); font-size:11px;"> — '
+                    f'{a["responsible"]} · срок {a["dueDate"]}</span>',
+                    unsafe_allow_html=True,
+                )
+
     high = sum(1 for r in RISKS if severity_of(r["score"]) == "high")
-    overdue = sum(1 for r in RISKS if r["overdue_computed"])
+    closed = sum(1 for r in RISKS if _dash_lifecycle_status(r) == "Закрыт")
+    no_history_note = "истории по датам обнаружения/закрытия риска в данных нет"
     k1, k2, k3, k4 = st.columns(4)
-    for col, label, value, note, color in [
-        (k1, "Рисков в программе", PROGRAM_TOTAL_RISKS, f"в реестре — топ-{len(RISKS)} с паспортами", "var(--ink-900)"),
-        (k2, "Высокий уровень критичности (H)", high, "RRA 6–9 по свойственной оценке", "var(--amber-600)"),
-        (k3, "ТОП-риски (эскалация на УК)", len(RISKS), "требуют внимания/решения УК", "var(--accent-500)"),
-        (k4, "Просрочено мероприятий", overdue, "плановый срок реализации прошёл", "var(--amber-600)"),
+    for col, label, value, note_html, color in [
+        (k1, "Всего активных рисков", len(RISKS),
+         f'<div class="kpi-note">из {PROGRAM_TOTAL_RISKS} рисков программы</div>', "var(--ink-900)"),
+        (k2, "Критических (высокий приоритет)", high,
+         f'<div class="kpi-note">RRA 6–9, {no_history_note}</div>', "var(--amber-600)"),
+        (k3, "Закрыто (все меры выполнены)", closed,
+         f'<div class="kpi-note">{no_history_note}</div>', "var(--green-700)"),
+        (k4, "Просрочено мероприятий", overdue_now,
+         _dash_trend_html(overdue_delta, f"за {period_label}"), "var(--red-700)"),
     ]:
         col.markdown(
             f'<div class="kpi-tile"><div class="kpi-label">{label}</div>'
             f'<div class="kpi-value" style="color:{color}">{value}</div>'
-            f'<div class="kpi-note">{note}</div></div>', unsafe_allow_html=True)
+            f'{note_html}</div>', unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
     left, right = st.columns([1, 1.1])
@@ -241,18 +489,96 @@ def render_dashboard():
             render_matrix_grid(RISKS, mode="inherent")
     with right:
         with st.container(border=True):
-            st.markdown('<div class="panel-title">Топ рисков по критичности</div>', unsafe_allow_html=True)
-            top = sorted(RISKS, key=lambda r: (-r["score"], r["id"]))[:5]
-            for i, r in enumerate(top, 1):
-                st.markdown(
-                    f'<div style="display:flex; gap:10px; align-items:center; padding:8px 0; '
-                    f'border-bottom:1px solid var(--line);">'
-                    f'<div style="font-weight:800; color:var(--ink-400); width:18px;">{i}</div>'
-                    f'<div style="flex:1;"><span style="color:var(--accent-600); font-weight:700; '
-                    f'font-size:12px;">{r["id"]}</span>'
-                    f'<div style="font-size:12.5px; color:var(--ink-900);">{r["description"]}</div></div>'
-                    f'{score_pill_html(r["score"])}</div>', unsafe_allow_html=True)
+            st.markdown('<div class="panel-title">Распределение по таксономии</div>', unsafe_allow_html=True)
+            _dash_render_taxonomy_bar(RISKS, ss["dark"])
 
+    st.markdown("<br>", unsafe_allow_html=True)
+    left2, right2 = st.columns([1, 1.1])
+    with left2:
+        with st.container(border=True):
+            st.markdown('<div class="panel-title">Статус риска</div>', unsafe_allow_html=True)
+            _dash_render_status_donut(RISKS, ss["dark"])
+    with right2:
+        with st.container(border=True):
+            st.markdown('<div class="panel-title">Топ-5 самых критичных рисков</div>', unsafe_allow_html=True)
+            top5 = sorted(RISKS, key=lambda r: (-r["score"], r["id"]))[:5]
+            for r in top5:
+                fin = r["finImpact"] if r["finImpact"] and r["finImpact"] != "—" else "не указано"
+                st.markdown(
+                    f'<div style="padding:10px 0; border-bottom:1px solid var(--line);">'
+                    f'<div style="display:flex; justify-content:space-between; gap:8px;">'
+                    f'<span style="color:var(--accent-600); font-weight:700; font-size:12px;">{r["id"]}</span>'
+                    f'{score_pill_html(r["score"])}</div>'
+                    f'<div style="font-size:12.5px; color:var(--ink-900); margin:4px 0 6px;">{r["description"]}</div>'
+                    f'{cat_badge_html(r["category"])} '
+                    f'<span class="badge" style="background:var(--canvas-alt); color:var(--ink-700);">{r["strategy"]}</span>'
+                    f'<div style="font-size:11.5px; color:var(--ink-600); margin-top:6px;">'
+                    f'👤 {r["owner"]} &nbsp;·&nbsp; 💰 {fin}</div>'
+                    f'</div>', unsafe_allow_html=True)
+                if st.button("Подробнее", key=f"dash_top5_{r['id']}"):
+                    ss["open_risk"] = r["id"]
+                    st.rerun()
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown('<div class="panel-title">Оценка ущерба от рисков</div>', unsafe_allow_html=True)
+        _dash_render_damage_bubble(RISKS, ss["dark"])
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown('<div class="panel-title">Реестр рисков — фильтры</div>', unsafe_allow_html=True)
+        fc1, fc2, fc3, fc4 = st.columns(4)
+        cat_filter = fc1.selectbox("Категория", ["Все"] + [RISK_CATS[k]["label"] for k in RISK_CATS],
+                                    key="dash_f_cat")
+        status_filter = fc2.selectbox("Статус", ["Все"] + [RSTATUS[k]["label"] for k in RSTATUS],
+                                       key="dash_f_status")
+        owners = sorted({r["owner"] for r in RISKS})
+        owner_filter = fc3.selectbox("Ответственный", ["Все"] + owners, key="dash_f_owner")
+        q = fc4.text_input("Поиск по ID или описанию", key="dash_f_q")
+        period_only = st.checkbox(
+            f"Показывать только риски с мероприятиями за «{period_label}»",
+            key="dash_f_period",
+            help="Фильтр по плановым срокам мероприятий (actions[].dueDate) — "
+                 "иной привязки риска к периоду в данных нет.",
+        )
+
+        rows = RISKS
+        if cat_filter != "Все":
+            key = [k for k in RISK_CATS if RISK_CATS[k]["label"] == cat_filter][0]
+            rows = [r for r in rows if r["category"] == key]
+        if status_filter != "Все":
+            key = [k for k in RSTATUS if RSTATUS[k]["label"] == status_filter][0]
+            rows = [r for r in rows if r["status"] == key]
+        if owner_filter != "Все":
+            rows = [r for r in rows if r["owner"] == owner_filter]
+        if q:
+            ql = q.lower()
+            rows = [r for r in rows if ql in r["id"].lower() or ql in r["description"].lower()]
+        if period_only:
+            cutoff = today - timedelta(days=period_days)
+            rows = [r for r in rows if any(
+                (_dash_parse_due(a.get("dueDate", "")) or date.min) >= cutoff for a in r["actions"])]
+
+        header = st.columns([0.7, 1.3, 3, 0.6, 1.2, 1.4, 0.6])
+        for c, t in zip(header, ["ID", "Категория", "Описание", "Score", "Владелец", "Статус", ""]):
+            c.markdown(f"**{t}**")
+        for r in rows:
+            cols = st.columns([0.7, 1.3, 3, 0.6, 1.2, 1.4, 0.6])
+            cols[0].markdown(f'<span class="mono" style="color:var(--accent-600); font-weight:700;">{r["id"]}</span>',
+                              unsafe_allow_html=True)
+            cols[1].markdown(cat_badge_html(r["category"]), unsafe_allow_html=True)
+            cols[2].markdown(r["description"][:100] + ("…" if len(r["description"]) > 100 else ""))
+            cols[3].markdown(score_pill_html(r["score"]), unsafe_allow_html=True)
+            cols[4].markdown(r["owner"])
+            cols[5].markdown(status_pill_html(r["status"]), unsafe_allow_html=True)
+            if cols[6].button("Открыть", key=f"dash_open_{r['id']}"):
+                ss["open_risk"] = r["id"]
+                st.rerun()
+        st.markdown(f'<div style="color:var(--ink-400); font-size:12px; margin-top:6px;">{len(rows)} рисков</div>',
+                    unsafe_allow_html=True)
+
+    if ss.get("open_risk"):
+        render_risk_dialog(ss["open_risk"])
 
 def render_matrix_grid(risks, mode="inherent"):
     html = '<div class="matrix-wrap">'
