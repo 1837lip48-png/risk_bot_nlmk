@@ -114,11 +114,7 @@
   .login-card{
     width:100%; max-width:340px; background:var(--paper-0); border:none;
     border-radius:var(--radius-card); box-shadow:var(--shadow-pop); padding:28px 24px;
-    transition:max-width .2s ease;
   }
-  /* форма создания риска (Инициатор) — шире карточки логина, тот же модификатор
-     -–wide, что уже используется у .modal-card--wide */
-  .login-card.login-card--wide{max-width:560px;}
 
   /* лэйбл компании + название системы над «Вход в систему»; разделительная линия
      чуть короче ширины карточки — со скромным отступом от краёв, стильнее сплошной во всю ширину */
@@ -220,17 +216,6 @@
   .btn-secondary{background:var(--accent-50); border-color:var(--accent-50); color:var(--accent-600);}
   .btn-secondary:hover{background:var(--accent-100); border-color:var(--accent-100); color:var(--accent-600);}
 
-  .success{display:none; text-align:left;}
-  .success.show{display:block;}
-  .success .check{width:52px; height:52px; border-radius:50%; background:var(--green-50); color:var(--green-700);
-    display:flex; align-items:center; justify-content:center; margin:0 auto 16px;}
-  .success .check svg{width:24px; height:24px;}
-  @keyframes popIn{from{opacity:0; transform:scale(.5);} to{opacity:1; transform:scale(1);}}
-  .success.show .check{animation:popIn .35s cubic-bezier(.34,1.56,.64,1);}
-  /* Heading4 (20/28, 800) */
-  .success h2{font-size:20px; line-height:28px; font-weight:800; margin:0 0 4px;}
-  /* Body2 (14/20, 400) */
-  .success p{font-size:13px; line-height:19px; color:var(--ink-600); margin:0 0 18px;}
   .summary{text-align:left; background:var(--canvas); border-radius:var(--radius-field); padding:16px; margin:18px 0 16px;}
   .summary div{display:flex; justify-content:space-between; align-items:center; font-size:14px; line-height:20px; padding:4px 0;}
   .summary div span:first-child{color:var(--ink-600);}
@@ -241,10 +226,11 @@
     font-family:var(--font-body); font-weight:700; font-size:12px; line-height:16px;
     background:var(--gold-50); color:var(--gold-700);}
 
-  .login-form.hide, .success.hide{display:none;}
+  .login-form.hide{display:none;}
 
-  /* AI-подсказки в форме создания риска (обратный поиск дублей/уроков) — не блокируют
-     отправку, появляются под полем «Риск-событие» по blur/паузе в наборе */
+  /* AI-подсказка «Возможный дубль» в форме создания риска (обратный поиск дублей) —
+     не блокирует отправку, появляется под полем «Риск-событие» по blur/паузе в наборе.
+     Подсказка «Похожий урок» временно убрана — раздел «Выученные уроки» пока пуст. */
   .ai-hint{display:none; gap:10px; align-items:flex-start; border-radius:var(--radius-field);
     padding:12px 14px; margin-top:8px;}
   .ai-hint.show{display:flex;}
@@ -260,11 +246,6 @@
      риска»), смысл близкий: «внимание, проверьте перед тем как продолжить» */
   .ai-hint--dup{background:var(--amber-50); border:1px solid var(--amber-700);}
   .ai-hint--dup .ai-hint-title, .ai-hint--dup .ai-hint-icon{color:var(--amber-700);}
-
-  /* «похожий урок» — отдельный AI-токен: цвет должен явно означать «это
-     сгенерировано LLM», а не переиспользовать статусный/уровневый цвет */
-  .ai-hint--lesson{background:var(--ai-50); border:1px solid var(--ai-700);}
-  .ai-hint--lesson .ai-hint-title, .ai-hint--lesson .ai-hint-icon{color:var(--ai-700);}
 
   /* модальное окно ввода СПП — открывается поверх страницы, не сдвигая её содержимое */
   /* модальное окно СПП — быстрое, но плавное появление (ease-out, без резкого скачка) */
@@ -440,6 +421,8 @@
 
   /* модалки создания/просмотра риска */
   .modal-card--wide{width:100%; max-width:560px; max-height:86vh; overflow-y:auto;}
+  /* компактное окно подачи риска (Инициатор) — уже, чем .modal-card--wide */
+  .modal-card--risk{width:100%; max-width:420px; max-height:86vh; overflow-y:auto; text-align:left;}
   .modal-sub{font-size:12.5px; color:var(--ink-400); margin:0 0 16px;}
   .source-quote{background:var(--canvas); border-radius:var(--radius-field); padding:10px 12px;
     margin:0 0 16px; font-size:13px; line-height:19px; color:var(--ink-600);}
@@ -529,9 +512,16 @@
     </div>
   </div>
 
-  <div class="success" id="successPanel">
-    <h2>Новый риск</h2>
-    <p>Заполните карточку — риск сразу появится в реестре проекта</p>
+</div>
+<div class="modal-overlay" id="riskModalOverlay">
+  <div class="modal-card modal-card--risk" role="dialog" aria-modal="true" aria-labelledby="riskModalTitle">
+    <div class="modal-head">
+      <span id="riskModalTitle">Новый риск</span>
+      <button type="button" class="modal-close" id="riskModalClose" aria-label="Закрыть">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <p class="modal-sub">Заполните карточку — риск сразу появится в реестре проекта</p>
 
     <form id="riskForm" novalidate>
       <div class="field" data-field="riskCategory">
@@ -568,17 +558,6 @@
             <span class="ai-hint-actions">
               <button type="button" class="btn btn-secondary" id="dupOpenBtn">Открыть существующий</button>
               <button type="button" class="btn btn-text" id="dupIgnoreBtn">Всё же создать новый</button>
-            </span>
-          </span>
-        </div>
-
-        <div class="ai-hint ai-hint--lesson" id="lessonHint">
-          <span class="ai-hint-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 4.2L18 9l-4.4 1.8L12 15l-1.6-4.2L6 9l4.4-1.8L12 3z"/><path d="M19 15l.8 2.1L22 18l-2.2.9L19 21l-.8-2.1L16 18l2.2-.9L19 15z"/></svg></span>
-          <span class="ai-hint-body">
-            <span class="ai-hint-title">Похожий урок</span>
-            <span class="ai-hint-text" id="lessonHintText"></span>
-            <span class="ai-hint-actions">
-              <button type="button" class="btn btn-secondary" id="lessonOpenBtn">Посмотреть урок</button>
             </span>
           </span>
         </div>
@@ -633,7 +612,6 @@
   const firstNameInput = document.getElementById('firstName');
   const lastNameInput = document.getElementById('lastName');
   const sppInput = document.getElementById('spp');
-  const loginCard = document.getElementById('loginCard');
   let selectedRole = '';
   let sessionData = null;
 
@@ -684,6 +662,20 @@
     if (e.target === sppModalOverlay) closeSppModal();
   });
 
+  // модальное окно подачи риска (Инициатор) — компактный всплывающий попап,
+  // login-форма остаётся под ним без изменений
+  const riskModalOverlay = document.getElementById('riskModalOverlay');
+  function openRiskModal(){
+    riskModalOverlay.classList.add('show');
+  }
+  function closeRiskModal(){
+    riskModalOverlay.classList.remove('show');
+  }
+  document.getElementById('riskModalClose').addEventListener('click', closeRiskModal);
+  riskModalOverlay.addEventListener('click', (e) => {
+    if (e.target === riskModalOverlay) closeRiskModal();
+  });
+
   roleOpts.forEach(opt => {
     opt.addEventListener('click', () => {
       const firstName = firstNameInput.value.trim();
@@ -730,9 +722,7 @@
 
     sessionData = data;
     renderRiskSummary();
-    document.getElementById('loginForm').classList.add('hide');
-    loginCard.classList.add('login-card--wide');
-    document.getElementById('successPanel').classList.add('show');
+    openRiskModal();
   });
 
   document.getElementById('resetBtn').addEventListener('click', () => {
@@ -744,12 +734,9 @@
   });
 
   document.getElementById('changeBtn').addEventListener('click', () => {
-    document.getElementById('successPanel').classList.remove('show');
-    loginCard.classList.remove('login-card--wide');
-    document.getElementById('loginForm').classList.remove('hide');
+    closeRiskModal();
     document.getElementById('riskForm').reset();
     hideAiHint(dupHint);
-    hideAiHint(lessonHint);
   });
 
   // ===== Форма создания риска (Инициатор) =====
@@ -791,42 +778,35 @@
     setTimeout(() => {
       document.getElementById('riskForm').reset();
       hideAiHint(dupHint);
-      hideAiHint(lessonHint);
       ['riskCategory','riskTitle','riskEvent','riskConsequence'].forEach(clearFieldError);
       btn.textContent = original;
       btn.disabled = false;
     }, 1600);
   });
 
-  // ===== AI-подсказки: срабатывают на потерю фокуса или паузу в наборе
-  // (debounce ~600мс) в поле «Риск-событие». Не блокируют отправку. =====
+  // ===== AI-подсказка «Возможный дубль»: срабатывает на потерю фокуса или паузу
+  // в наборе (debounce ~600мс) в поле «Риск-событие». Не блокирует отправку.
+  // Подсказка «Похожий урок» временно убрана — раздел «Выученные уроки» пуст. =====
 
   const riskEventInput = document.getElementById('riskEvent');
   const dupHint = document.getElementById('dupHint');
-  const lessonHint = document.getElementById('lessonHint');
   let aiDebounceTimer = null;
 
   function showAiHint(el){ el.classList.add('show'); }
   function hideAiHint(el){ el.classList.remove('show'); }
 
   // демонстрационная имитация обратного поиска (реальный поиск — по базе
-  // рисков/уроков на бэкенде); срабатывает при достаточно содержательном
-  // тексте риск-события, оба блока независимы друг от друга
+  // рисков на бэкенде); срабатывает при достаточно содержательном тексте риск-события
   function runAiLookup(){
     const text = riskEventInput.value.trim();
     if (text.length < 8){
       hideAiHint(dupHint);
-      hideAiHint(lessonHint);
       return;
     }
 
     document.getElementById('dupHintText').textContent =
       '«Срыв сроков поставки основного оборудования» — риск №R-2024-014, владелец: И.И. Иванов, статус: «Реагирование»';
     showAiHint(dupHint);
-
-    document.getElementById('lessonHintText').textContent =
-      'Урок №L-231 — «Задержка поставки из-за несогласованных технических условий»';
-    showAiHint(lessonHint);
   }
 
   riskEventInput.addEventListener('input', () => {
@@ -843,9 +823,6 @@
     // в прототипе — переход к существующему риску в реестре не реализован
     // (реестр рисков находится в workspace.html, вне этого экрана)
     alert('Открыть существующий риск №R-2024-014 в реестре рисков проекта');
-  });
-  document.getElementById('lessonOpenBtn').addEventListener('click', () => {
-    alert('Открыть урок №L-231 в реестре уроков проекта');
   });
 
   // тема — иконка солнца/луны, без текстовой подписи (как переключатель внешнего вида в Apple)
