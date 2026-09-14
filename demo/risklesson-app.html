@@ -11,6 +11,12 @@
     --logo-blue:#0b5fc2;
     --ai-700:#6E4CD6; --ai-50:#F1ECFC;
     --purple-700:#7c5cff; --purple-50:#efeaff;
+    /* Акцентные цвета ролей на экране входа — только для иконки роли, в холодной
+       сине-бирюзовой гамме бренда, различаются по тону, а не по «типу сигнала». */
+    --role-manager-1:var(--navy-900); --role-manager-2:var(--accent-600);
+    --role-owner-1:var(--accent-600); --role-owner-2:#17b6c4;
+    --role-initiator-1:var(--logo-blue); --role-initiator-2:#4f6fe0;
+    --role-active-bg:var(--accent-50);
     --font-display:'Golos Text','PT Root UI','Segoe UI',Arial,sans-serif;
     --font-body:'Golos Text','PT Root UI','Segoe UI',Arial,sans-serif;
     --font-mono:'IBM Plex Mono','SFMono-Regular',monospace;
@@ -26,6 +32,7 @@
       --green-50:#123321; --red-50:#3a1f22; --amber-50:#2e2413; --gold-50:#2c2408; --ai-50:#241c3d; --purple-50:#241c3d;
       --logo-blue:#5aabff;
       --shadow-pop:0 20px 50px -12px rgba(0,0,0,.6); --shadow-modal:0 24px 60px -12px rgba(0,0,0,.7);
+      --role-active-bg:#1c2f52;
     }
   }
   :root[data-theme="dark"]{
@@ -35,6 +42,7 @@
     --green-50:#123321; --red-50:#3a1f22; --amber-50:#2e2413; --gold-50:#2c2408; --ai-50:#241c3d; --purple-50:#241c3d;
     --logo-blue:#5aabff;
     --shadow-pop:0 20px 50px -12px rgba(0,0,0,.6); --shadow-modal:0 24px 60px -12px rgba(0,0,0,.7);
+    --role-active-bg:#1c2f52;
   }
 
   *{box-sizing:border-box;}
@@ -79,17 +87,39 @@
   .field select{appearance:none; cursor:pointer; background-repeat:no-repeat; background-position:right 12px center; background-size:14px; padding-right:34px;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2399a2a9' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");}
 
-  .role-cards{display:flex; flex-direction:column; gap:8px;}
-  .role-card{display:flex; align-items:center; gap:10px; border:1px solid var(--line); border-radius:var(--radius-field);
-    padding:10px 12px; cursor:pointer; background:var(--paper-0); transition:.2s ease;}
-  .role-card:hover{border-color:var(--accent-100); background:var(--accent-50);}
-  .role-card.active{border-color:var(--accent-600); background:var(--accent-50);}
-  .role-card-icon{width:30px; height:30px; border-radius:50%; background:var(--accent-50); color:var(--accent-600);
-    display:flex; align-items:center; justify-content:center; flex-shrink:0;}
-  .role-card-icon svg{width:16px; height:16px;}
-  .role-card.active .role-card-icon{background:var(--accent-600); color:#fff;}
-  .role-card-title{font-size:13px; font-weight:600;}
-  .role-card-desc{font-size:11px; color:var(--ink-600);}
+  /* Карточки ролей — три в ряд, иконка сверху по центру → заголовок → описание,
+     перенесено из референса RiskLesson · Вход.html (role-selection screen). */
+  .role-cards{display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;}
+  .role-card{display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px;
+    position:relative; border:1px solid var(--line); border-radius:16px; padding:18px 10px; cursor:pointer;
+    background:var(--paper-0);
+    transition:border-color .25s ease, background-color .25s ease, box-shadow .25s ease, transform .25s ease;}
+  .role-card:hover{border-color:var(--accent-100); background:var(--role-active-bg);
+    box-shadow:0 14px 28px -16px rgba(17,37,66,.28); transform:translateY(-2px);}
+  .role-card-icon{width:42px; height:42px; border-radius:12px; color:#fff;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    box-shadow:0 6px 14px -6px rgba(17,37,66,.35), inset 0 0 0 1px rgba(255,255,255,.18);
+    transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
+  .role-card[data-value="riskmanager"] .role-card-icon{background:linear-gradient(135deg,var(--role-manager-1),var(--role-manager-2));}
+  .role-card[data-value="riskowner"] .role-card-icon{background:linear-gradient(135deg,var(--role-owner-1),var(--role-owner-2));}
+  .role-card[data-value="initiator"] .role-card-icon{background:linear-gradient(135deg,var(--role-initiator-1),var(--role-initiator-2));}
+  .role-card:hover .role-card-icon{transform:scale(1.06);}
+  .role-card-icon svg{width:19px; height:19px;}
+  .role-card-title{font-size:12.5px; font-weight:600; color:var(--ink-900);}
+  .role-card-desc{font-size:10.5px; line-height:14px; color:var(--ink-600); min-height:28px;
+    display:flex; align-items:flex-start; justify-content:center;}
+  .role-card.active{border-color:var(--accent-600); background:var(--role-active-bg);}
+  .role-card.active .role-card-icon{transform:scale(1.08); box-shadow:0 8px 16px -6px rgba(17,37,66,.4);}
+  .role-card-check{position:absolute; top:8px; right:8px; width:16px; height:16px; border-radius:50%;
+    background:var(--accent-600); color:#fff; display:flex; align-items:center; justify-content:center;
+    opacity:0; transform:scale(.5); transition:opacity .2s ease, transform .2s cubic-bezier(.34,1.56,.64,1);}
+  .role-card-check svg{width:10px; height:10px;}
+  .role-card.active .role-card-check{opacity:1; transform:scale(1);}
+  @media (max-width:520px){
+    .role-cards{grid-template-columns:1fr;}
+    .role-card{flex-direction:row; text-align:left; padding:10px 12px;}
+    .role-card-desc{min-height:0; justify-content:flex-start;}
+  }
 
   .btn{display:inline-flex; align-items:center; justify-content:center; gap:6px; white-space:nowrap;
     border-radius:var(--radius-pill); padding:9px 16px; font-size:13px; font-weight:700; border:1px solid transparent;
@@ -388,45 +418,53 @@
         <div class="field" data-field="firstName"><label>Имя</label><input type="text" id="firstName" placeholder="Иван"></div>
         <div class="field" data-field="lastName"><label>Фамилия</label><input type="text" id="lastName" placeholder="Петров"></div>
       </div>
-      <div class="field" data-field="role">
-        <label>Роль</label>
-        <div class="role-cards" id="roleCards">
-          <div class="role-card" data-value="riskmanager">
-            <span class="role-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/></svg></span>
-            <span><span class="role-card-title" style="display:block;">Риск-менеджер</span><span class="role-card-desc">Полный доступ, верификация, эскалация</span></span>
-          </div>
-          <div class="role-card" data-value="riskowner">
-            <span class="role-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg></span>
-            <span><span class="role-card-title" style="display:block;">Владелец риска</span><span class="role-card-desc">Управляет своими рисками и мероприятиями</span></span>
-          </div>
-          <div class="role-card" data-value="initiator">
-            <span class="role-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h13l-3 4 3 4H5"/></svg></span>
-            <span><span class="role-card-title" style="display:block;">Инициатор</span><span class="role-card-desc">Только подаёт риски по проекту</span></span>
-          </div>
-        </div>
-        <div class="field-hint">Выберите роль, чтобы перейти к следующему шагу</div>
-      </div>
     </form>
-    <div class="btn-row" style="justify-content:center; margin-top:4px;">
+    <div class="btn-row" style="margin-top:4px;">
       <button type="button" class="btn btn-text" id="resetBtn">Очистить</button>
+      <button type="button" class="btn btn-primary" id="continueBtn" style="flex:2;">Далее</button>
     </div>
   </div>
 </div>
 
-<!-- SPP modal -->
+<!-- Роль + SPP modal — роль перенесена сюда с первого экрана (та же механика
+     карточек: клик переключает .active), имя/фамилия остаются на первом экране -->
 <div class="modal-overlay" id="sppModalOverlay">
-  <div class="modal-card" role="dialog" aria-modal="true">
-    <div class="modal-head"><span>Введите СПП проекта</span>
+  <div class="modal-card modal-card--wide" role="dialog" aria-modal="true">
+    <div class="modal-head"><span>Роль и проект</span>
       <button type="button" class="modal-close" id="sppClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
-    <div class="field" data-field="spp">
+    <div class="field" data-field="role">
+      <label>Роль</label>
+      <div class="role-cards" id="roleCards">
+        <div class="role-card" data-value="riskmanager">
+          <span class="role-card-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+          <span class="role-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/></svg></span>
+          <span class="role-card-title">Риск-менеджер</span>
+          <span class="role-card-desc">Полный доступ, верификация, эскалация</span>
+        </div>
+        <div class="role-card" data-value="riskowner">
+          <span class="role-card-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+          <span class="role-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg></span>
+          <span class="role-card-title">Владелец риска</span>
+          <span class="role-card-desc">Управляет своими рисками и мероприятиями</span>
+        </div>
+        <div class="role-card" data-value="initiator">
+          <span class="role-card-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+          <span class="role-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h13l-3 4 3 4H5"/></svg></span>
+          <span class="role-card-title">Инициатор</span>
+          <span class="role-card-desc">Только подаёт риски по проекту</span>
+        </div>
+      </div>
+      <div class="err-msg">Выберите роль</div>
+    </div>
+    <div class="field" data-field="spp" style="margin-top:14px;">
       <label>СПП</label>
       <input type="text" id="sppInput" placeholder="12-1111" inputmode="numeric" maxlength="7">
       <div class="err-msg">СПП должен состоять ровно из 6 цифр</div>
     </div>
     <div class="field-hint" style="margin:-6px 0 4px;">Подсказка демо: <b class="mono">12-1111</b> — проект ЦГП-2 с реальными данными</div>
     <div class="btn-row">
-      <button type="button" class="btn btn-secondary" id="sppCancel">Отмена</button>
+      <button type="button" class="btn btn-secondary" id="sppCancel">Назад</button>
       <button type="button" class="btn btn-primary" id="sppSubmit">Войти в систему</button>
     </div>
   </div>
@@ -1071,17 +1109,23 @@ document.querySelectorAll('.modal-overlay').forEach(ov => ov.addEventListener('c
 let selectedRole = '';
 const firstNameInput = document.getElementById('firstName');
 const lastNameInput = document.getElementById('lastName');
+
+// «Далее» — первый экран отвечает только за имя/фамилию; роль и СПП теперь
+// собраны на втором шаге (той же модалке), механика самих карточек роли и
+// поля СПП не изменилась, только их расположение.
+document.getElementById('continueBtn').addEventListener('click', () => {
+  const fn = firstNameInput.value.trim(), ln = lastNameInput.value.trim();
+  if (!fn){ firstNameInput.focus(); return; }
+  if (!ln){ lastNameInput.focus(); return; }
+  openModal('sppModalOverlay');
+});
+
 document.querySelectorAll('.role-card').forEach(card => {
   card.addEventListener('click', () => {
-    const fn = firstNameInput.value.trim(), ln = lastNameInput.value.trim();
-    if (!fn){ firstNameInput.focus(); return; }
-    if (!ln){ lastNameInput.focus(); return; }
     document.querySelectorAll('.role-card').forEach(c => c.classList.remove('active'));
     card.classList.add('active');
     selectedRole = card.dataset.value;
-    document.getElementById('sppInput').value = '';
-    openModal('sppModalOverlay');
-    setTimeout(() => document.getElementById('sppInput').focus(), 150);
+    document.querySelector('.field[data-field="role"]').classList.remove('invalid');
   });
 });
 document.getElementById('sppClose').addEventListener('click', () => closeModal('sppModalOverlay'));
@@ -1090,12 +1134,17 @@ const sppInput = document.getElementById('sppInput');
 sppInput.addEventListener('input', () => {
   const digits = sppInput.value.replace(/\D/g,'').slice(0,6);
   sppInput.value = digits.length > 2 ? digits.slice(0,2) + '-' + digits.slice(2) : digits;
+  if (digits.length === 6) document.querySelector('.field[data-field="spp"]').classList.remove('invalid');
 });
 document.getElementById('sppSubmit').addEventListener('click', () => {
+  const roleField = document.querySelector('.field[data-field="role"]');
+  roleField.classList.toggle('invalid', !selectedRole);
   const spp = sppInput.value.trim();
-  const field = document.querySelector('.field[data-field="spp"]');
-  if (spp.replace(/\D/g,'').length !== 6){ field.classList.add('invalid'); sppInput.classList.add('err'); return; }
-  field.classList.remove('invalid'); sppInput.classList.remove('err');
+  const sppField = document.querySelector('.field[data-field="spp"]');
+  const sppOk = spp.replace(/\D/g,'').length === 6;
+  sppField.classList.toggle('invalid', !sppOk);
+  sppInput.classList.toggle('err', !sppOk);
+  if (!selectedRole || !sppOk) return;
 
   state.session = {firstName: firstNameInput.value.trim(), lastName: lastNameInput.value.trim(), role: selectedRole, spp};
   saveState();
@@ -1105,7 +1154,10 @@ document.getElementById('sppSubmit').addEventListener('click', () => {
 document.getElementById('resetBtn').addEventListener('click', () => {
   document.getElementById('entryForm').reset();
   document.querySelectorAll('.role-card').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('#sppModalOverlay .field').forEach(f => f.classList.remove('invalid'));
+  sppInput.value = '';
   selectedRole = '';
+  closeModal('sppModalOverlay');
 });
 
 function enterApp(){
