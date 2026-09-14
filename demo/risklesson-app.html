@@ -2421,31 +2421,60 @@ function renderMatrix(){
 // РЕЕСТР УРОКОВ
 // ===================================================================
 let lessonTagFilter = new Set();
+let lessonAiQuery = '';
 function allTags(){ const s = new Set(); state.lessons.forEach(l => l.hashtags.forEach(t=>s.add(t))); return Array.from(s); }
 function renderLessons(){
   const mount = document.getElementById('lessonsMount');
   mount.innerHTML = `
-    <div class="panel">
-      <h3>Подбор по хештегам</h3>
-      <div class="tag-pool" id="tagPool"></div>
-    </div>
     <div class="toolbar-row">
       <div class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input type="text" id="lesSearch" placeholder="Поиск уроков..."></div>
+        <input type="text" id="lesSearch" placeholder="Поиск по названию, описанию..."></div>
+      <div class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2M20 14h2M9 13v2M15 13v2"/></svg>
+        <input type="text" id="lesAiAsk" placeholder="Спросить AI: например «риски по срокам поставки»"></div>
+      <button type="button" class="btn btn-secondary" id="btnTagPicker">Хештеги${lessonTagFilter.size?` (${lessonTagFilter.size})`:''}</button>
       <span class="result-count" id="lesCount"></span>
       <button type="button" class="btn btn-primary" id="btnAddLesson">+ Добавить урок</button>
     </div>
-    <div class="lessons-table-wrap" style="border:1px solid var(--line);border-radius:var(--radius-field);overflow:hidden;background:var(--paper-0);">
-      <table class="data-table"><thead><tr><th style="width:26%">Урок</th><th style="width:14%">Категория</th><th style="width:8%">Фаза</th><th style="width:10%">Стратегия</th><th style="width:26%">Хештеги</th><th style="width:16%">Действия</th></tr></thead><tbody id="lessonsBody"></tbody></table>
-    </div>`;
-  document.getElementById('tagPool').innerHTML = allTags().map(t => `<button type="button" class="tag-chip${lessonTagFilter.has(t)?' active':''}" data-tag="${t}">${t}</button>`).join('');
-  document.querySelectorAll('#tagPool .tag-chip').forEach(chip => chip.addEventListener('click', () => {
-    lessonTagFilter.has(chip.dataset.tag) ? lessonTagFilter.delete(chip.dataset.tag) : lessonTagFilter.add(chip.dataset.tag);
-    renderLessonsTable();
-    chip.classList.toggle('active');
-  }));
+    <div id="lesQuickChip"></div>
+    <div id="lessonsBody"></div>`;
   document.getElementById('lesSearch').addEventListener('input', renderLessonsTable);
+  document.getElementById('lesAiAsk').addEventListener('keydown', e => { if (e.key === 'Enter') runLessonAiAsk(); });
   document.getElementById('btnAddLesson').addEventListener('click', () => openLessonModal(null, true));
+  document.getElementById('btnTagPicker').addEventListener('click', openTagPickerModal);
+  renderLessonsTable();
+}
+function openTagPickerModal(){
+  openChartModal('Подбор по хештегам', 'Выберите один или несколько тегов — карточки урока отфильтруются', tagPickerBodyHtml());
+  wireTagPickerChips();
+}
+function tagPickerBodyHtml(){
+  const tags = allTags();
+  return `<div class="tag-pool" id="tagPoolModal">${tags.map(t => `<button type="button" class="tag-chip${lessonTagFilter.has(t)?' active':''}" data-tag="${t}">${t}</button>`).join('') || '<span class="muted">Тегов пока нет</span>'}</div>
+    <div class="btn-row" style="margin-top:14px;"><button type="button" class="btn btn-text btn-sm" id="tagPickerClear">Очистить выбор</button></div>`;
+}
+function wireTagPickerChips(){
+  document.querySelectorAll('#tagPoolModal .tag-chip').forEach(chip => chip.addEventListener('click', () => {
+    lessonTagFilter.has(chip.dataset.tag) ? lessonTagFilter.delete(chip.dataset.tag) : lessonTagFilter.add(chip.dataset.tag);
+    document.getElementById('chartModalMount').innerHTML = tagPickerBodyHtml();
+    wireTagPickerChips();
+    renderLessonsTable();
+    const btn = document.getElementById('btnTagPicker');
+    if (btn) btn.textContent = `Хештеги${lessonTagFilter.size?` (${lessonTagFilter.size})`:''}`;
+  }));
+  const clearBtn = document.getElementById('tagPickerClear');
+  if (clearBtn) clearBtn.addEventListener('click', () => {
+    lessonTagFilter.clear();
+    document.getElementById('chartModalMount').innerHTML = tagPickerBodyHtml();
+    wireTagPickerChips();
+    renderLessonsTable();
+    const btn = document.getElementById('btnTagPicker');
+    if (btn) btn.textContent = 'Хештеги';
+  });
+}
+// «Спросить AI» — та же демо-эвристика (пересечение токенов), что и для
+// поиска дублей рисков; явно не реальный вызов LLM, помечено в подсказке чипа.
+function runLessonAiAsk(){
+  lessonAiQuery = document.getElementById('lesAiAsk').value.trim();
   renderLessonsTable();
 }
 function renderLessonsTable(){
@@ -2453,19 +2482,52 @@ function renderLessonsTable(){
   let list = state.lessons.slice();
   if (lessonTagFilter.size) list = list.filter(l => l.hashtags.some(t => lessonTagFilter.has(t)));
   if (q) list = list.filter(l => (l.title+l.description+l.category).toLowerCase().includes(q));
+  let aiNote = '';
+  if (lessonAiQuery){
+    const qTokens = tokenize(lessonAiQuery);
+    const scored = list.map(l => ({l, score: jaccard(qTokens, tokenize(l.title+' '+l.description+' '+l.category))}))
+      .filter(x => x.score > 0).sort((a,b) => b.score - a.score);
+    list = scored.map(x => x.l);
+    aiNote = `<span class="quick-chip">AI-поиск (демо-эвристика): «${esc(lessonAiQuery)}» — ${list.length} совпадений<button type="button" id="lesAiClear" aria-label="Сбросить">×</button></span>`;
+  }
+  document.getElementById('lesQuickChip').innerHTML = aiNote;
+  const aiClear = document.getElementById('lesAiClear');
+  if (aiClear) aiClear.addEventListener('click', () => { lessonAiQuery=''; document.getElementById('lesAiAsk').value=''; renderLessonsTable(); });
   document.getElementById('lesCount').textContent = `${list.length} из ${state.lessons.length}`;
-  document.getElementById('lessonsBody').innerHTML = list.map(l => `<tr>
-    <td data-open-lesson="${l.id}" style="cursor:pointer;"><strong>${esc(l.title)}</strong>${l.isDraft?' <span class="badge-pill badge-status-ident">черновик</span>':''}<div class="muted" style="font-size:12px;margin-top:2px;">${esc(l.description).slice(0,90)}${l.description.length>90?'…':''}</div></td>
-    <td>${esc(l.category)}</td><td>${esc(l.phase||'—')}</td><td>${esc(l.strategy||'—')}</td>
-    <td>${l.hashtags.map(t=>`<span class="lesson-tag-pill">${t}</span>`).join('')}</td>
-    <td><button type="button" class="btn-sm" data-create-risk="${l.id}">Создать риск</button></td>
-  </tr>`).join('') || `<tr><td colspan="6" class="empty-state">Ничего не найдено.</td></tr>`;
-  document.querySelectorAll('[data-open-lesson]').forEach(td => td.addEventListener('click', () => openLessonModal(td.dataset.openLesson)));
-  document.querySelectorAll('[data-create-risk]').forEach(b => b.addEventListener('click', () => {
+  document.getElementById('lessonsBody').innerHTML = list.length ? list.map(lessonCardHtml).join('') : `<div class="empty-state">Ничего не найдено.</div>`;
+  document.querySelectorAll('#lessonsBody [data-open-lesson]').forEach(el => el.addEventListener('click', (e) => { e.stopPropagation(); openLessonModal(el.dataset.openLesson); }));
+  document.querySelectorAll('#lessonsBody [data-create-risk]').forEach(b => b.addEventListener('click', (e) => {
+    e.stopPropagation();
     const l = findLesson(b.dataset.createRisk);
     openRiskCreateModal({title: 'На основе урока: ' + l.title, event: l.problemOrRiskEvent || l.description, consequence: l.impact || l.description,
       category: CATEGORIES.includes(l.category) ? l.category : '', sourceLessonId: l.id, sourceQuote: l.description});
   }));
+}
+// Заголовок карточки — формулировка проблемы (description, реальный нарратив
+// инцидента), не короткое имя; рекомендация/вывод (title) — подстрокой ниже;
+// всё остальное (корневая причина, влияние, триггер, урок, рекомендация) — в детальной карточке.
+function lessonCardHtml(l){
+  return `<div class="risk-card" data-lesson-id="${l.id}" style="cursor:pointer;" data-open-lesson="${l.id}">
+    <div class="rc-head">
+      <div class="rc-head-left">
+        <div class="risk-card-top" style="margin-bottom:6px;">
+          <span class="risk-card-title">${esc(l.description || l.problemOrRiskEvent || l.title)}</span>
+          ${l.isDraft ? `<span class="badge-pill badge-status-ident">черновик</span>` : ''}
+        </div>
+        <div class="rc-desc">${esc(l.title)}</div>
+      </div>
+      <div class="rc-head-actions">
+        <button class="btn btn-sm" data-open-lesson="${l.id}">Детали</button>
+      </div>
+    </div>
+    <div class="rc-meta4" style="grid-template-columns:1fr 1fr 1fr;">
+      <div><div class="k">Категория</div><div class="v">${esc(l.category)}</div></div>
+      <div><div class="k">Фаза</div><div class="v">${esc(l.phase||'—')}</div></div>
+      <div><div class="k">Стратегия</div><div class="v">${esc(l.strategy||'—')}</div></div>
+    </div>
+    <div style="margin-bottom:10px;">${l.hashtags.map(t=>`<span class="lesson-tag-pill">${t}</span>`).join('')}</div>
+    <div class="risk-card-foot">${l.sourceRiskId?`<span>источник — риск <code class="mono">${l.sourceRiskId}</code></span>`:'<span></span>'}<button class="link-btn btn-sm" data-create-risk="${l.id}">Создать риск на основе урока →</button></div>
+  </div>`;
 }
 function openLessonModal(id, createNew){
   const mount = document.getElementById('lessonMount');
@@ -2499,6 +2561,7 @@ function openLessonModal(id, createNew){
       <div class="passport-block"><div class="k">Стратегия реагирования</div><div class="v">${esc(l.strategy||'—')}</div></div>
     </div>
     <div class="passport-block" style="margin-bottom:10px;"><div class="k">Описание</div><div class="v">${esc(l.description)||'—'}</div></div>
+    ${l.title?`<div class="passport-block" style="margin-bottom:10px;"><div class="k">Урок / рекомендация</div><div class="v">${esc(l.title)}</div></div>`:''}
     ${l.rootCause?`<div class="passport-block" style="margin-bottom:10px;"><div class="k">Корневая причина</div><div class="v">${esc(l.rootCause)}</div></div>`:''}
     ${l.impact?`<div class="passport-block" style="margin-bottom:10px;"><div class="k">Влияние</div><div class="v">${esc(l.impact)}</div></div>`:''}
     ${l.lessonLearned?`<div class="passport-block" style="margin-bottom:10px;"><div class="k">Выученный урок</div><div class="v">${esc(l.lessonLearned)}</div></div>`:''}
