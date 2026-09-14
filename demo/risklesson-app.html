@@ -49,7 +49,12 @@
   .theme-switching, .theme-switching *{transition:none !important;}
   html,body{margin:0;padding:0;height:100%;}
   body{background:var(--canvas); color:var(--ink-900); font-family:var(--font-body); font-size:14px; line-height:1.5;
-    -webkit-font-smoothing:antialiased; min-height:100vh;}
+    -webkit-font-smoothing:antialiased; min-height:100vh;
+    -webkit-user-select:none; user-select:none;}
+  /* Ввод/выделение текста разрешены только внутри реальных полей формы —
+     без этого заголовки, названия карточек и т.п. ведут себя как выделяемый/
+     редактируемый текст (кликом можно было "продолжить набор" не в том месте). */
+  input, textarea{-webkit-user-select:text; user-select:text;}
   button, input, select, textarea{font-family:inherit;}
   a{color:var(--accent-600);}
 
@@ -121,16 +126,14 @@
   .field .input-float.has-icon input:not(:placeholder-shown) + label{left:13px;}
   .field .input-float.has-icon input:focus ~ .field-icon{color:var(--accent-600);}
 
-  /* Карточки ролей — крупные, без белой заливки и рамки (только тонкий
-     разделитель между колонками); на businesslike-манер вес несёт иконка +
-     типографика, а не контур карточки — «карточность» появляется только
-     на hover, как лёгкий подъём. */
-  .role-cards{display:grid; grid-template-columns:repeat(3, 1fr); gap:0; width:100%;}
+  /* Карточки ролей — белая заливка + видимый контур, подсвечивается на
+     hover (акцентная рамка + лёгкий подъём) — по образцу референса. */
+  .role-cards{display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; width:100%;}
   .role-card{display:flex; flex-direction:column; align-items:center; text-align:center; gap:14px;
-    position:relative; border-radius:20px; padding:36px 22px; cursor:pointer; background:transparent;
-    transition:background-color .25s ease, box-shadow .25s ease, transform .25s ease;}
-  .role-card + .role-card{border-left:1px solid var(--line);}
-  .role-card:hover{background:var(--paper-0); box-shadow:0 20px 44px -20px rgba(17,37,66,.3); transform:translateY(-4px);}
+    position:relative; border-radius:20px; padding:36px 22px; cursor:pointer;
+    background:var(--paper-0); border:1.5px solid var(--line);
+    transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease;}
+  .role-card:hover{border-color:var(--accent-600); box-shadow:0 20px 44px -20px rgba(17,37,66,.3); transform:translateY(-4px);}
   .role-card-icon{width:64px; height:64px; border-radius:18px; color:#fff;
     display:flex; align-items:center; justify-content:center; flex-shrink:0;
     box-shadow:0 8px 18px -6px rgba(17,37,66,.35), inset 0 0 0 1px rgba(255,255,255,.18);
@@ -144,7 +147,6 @@
   .role-card-desc{font-size:13.5px; line-height:19px; color:var(--ink-600); max-width:200px;}
   @media (max-width:760px){
     .role-cards{grid-template-columns:1fr;}
-    .role-card + .role-card{border-left:none; border-top:1px solid var(--line);}
   }
 
   .btn{display:inline-flex; align-items:center; justify-content:center; gap:6px; white-space:nowrap;
@@ -1151,9 +1153,14 @@ function openModal(id){
   document.body.appendChild(el);
   el.classList.add('show');
 }
-function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+function closeModal(id){
+  document.getElementById(id).classList.remove('show');
+  // снимаем фокус с любого поля внутри — иначе курсор/ввод мог "висеть" в
+  // уже скрытом поле, а клик мимо полей выглядел как продолжение набора
+  if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+}
 document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.close)));
-document.querySelectorAll('.modal-overlay').forEach(ov => ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('show'); }));
+document.querySelectorAll('.modal-overlay').forEach(ov => ov.addEventListener('click', e => { if (e.target === ov) closeModal(ov.id); }));
 
 // ===================================================================
 // ВХОД
