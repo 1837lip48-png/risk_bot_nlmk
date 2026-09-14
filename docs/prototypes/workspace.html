@@ -1,0 +1,1326 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RiskLesson · Рабочее пространство</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+  /* Токены — НЛМК Design System 2.0 (nlmk-group/ds-2.0), согласованы с DESIGN.md проекта.
+     Типографика — реальная шкала Typography ds-2.0 (Heading/Subheading/Body/Body1/Body2/Caption). */
+  :root{
+    --navy-900:#112542;
+    --accent-600:#167ffb;
+    --accent-500:#008fff;
+    --accent-100:#cbe1ff;
+    --accent-50:#e8f5ff;
+    --ink-900:#001729;
+    --ink-700:#4d5d69;
+    --ink-600:#66747e;
+    --ink-400:#99a2a9;
+    --paper-0:#ffffff;
+    /* холодный светло-серый фон рабочего пространства вместо тёплого кремового */
+    --canvas:#F7F8FA;
+    --line:#E9EBEF;
+    --red-700:#ee1505;
+    --red-50:#ffedf0;
+    --green-700:#0d932b;
+    --green-50:#e5f8e8;
+    /* уровень риска (низкий/средний/высокий) — те же тона, что и в Streamlit-версии */
+    --amber-700:#f97b0f;
+    --amber-50:#fff3e0;
+    --gold-700:#8a6d00;
+    --gold-50:#ffffe6;
+    --logo-blue:#0b5fc2;
+    /* градиент названия «RiskLesson» — корпоративные синие тона НЛМК */
+    --brand-grad-1:var(--navy-900);
+    --brand-grad-2:var(--accent-600);
+
+    --font-display:'Golos Text','PT Root UI','Segoe UI',Arial,sans-serif;
+    --font-body:'Golos Text','PT Root UI','Segoe UI',Arial,sans-serif;
+    --font-mono:'IBM Plex Mono','SFMono-Regular',monospace;
+
+    --shadow-pop:0 12px 32px -12px rgba(17,37,66,.18);
+    --shadow-modal:0 20px 48px -14px rgba(17,37,66,.28);
+    --radius-card:28px;
+    --radius-field:14px;
+    --radius-pill:999px;
+  }
+
+  /* Тёмная тема: canvas темнее paper (карточка — «приподнятая» поверхность),
+     line — заметно светлее paper (граница видна), текст — из практики
+     WCAG для тёмных UI (основной текст ~93% белого, не 100% — меньше слепит). */
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --canvas:#1B1E24; --paper-0:#23262D; --line:#343943;
+      --ink-900:#f2f3f4; --ink-700:#ccd2d8; --ink-600:#9aa3ac; --ink-400:#767f89;
+      --accent-50:#17233f; --accent-100:#2b4c8c;
+      --green-50:#123321; --red-50:#3a1f22; --amber-50:#2e2413; --gold-50:#2c2408;
+      /* в тёмной теме лого и градиент названия светлее — тёмно-синий на тёмном
+         фоне почти не читался */
+      --logo-blue:#5aabff;
+      --brand-grad-1:#5aabff; --brand-grad-2:#a9d6ff;
+      --shadow-pop:0 20px 50px -12px rgba(0,0,0,.6);
+      --shadow-modal:0 24px 60px -12px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"]{
+    --canvas:#1B1E24; --paper-0:#23262D; --line:#343943;
+    --ink-900:#f2f3f4; --ink-700:#ccd2d8; --ink-600:#9aa3ac; --ink-400:#767f89;
+    --accent-50:#17233f; --accent-100:#2b4c8c;
+    --green-50:#123321; --red-50:#3a1f22; --amber-50:#2e2413; --gold-50:#2c2408;
+    --logo-blue:#5aabff;
+    --brand-grad-1:#5aabff; --brand-grad-2:#a9d6ff;
+    --shadow-pop:0 20px 50px -12px rgba(0,0,0,.6);
+    --shadow-modal:0 24px 60px -12px rgba(0,0,0,.7);
+  }
+
+  *{box-sizing:border-box;}
+  /* переключение темы — мгновенное для фонов/границ (без наложения hover-переходов),
+     но иконка солнце/луна на кнопке должна анимироваться как обычно, плавно */
+  .theme-switching, .theme-switching *{transition:none !important;}
+  .theme-switching .theme-toggle svg{transition:opacity .25s ease, transform .35s ease !important;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:var(--canvas); color:var(--ink-900); font-family:var(--font-body);
+    font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+    -webkit-user-select:none; user-select:none;
+  }
+  /* поля ввода остаются выделяемыми/редактируемыми, всё остальное — нет
+     (лейблы, кнопки, карточки ролей и т.п. не должны вести себя как текст) */
+  .field input{-webkit-user-select:text; user-select:text;}
+
+  .theme-toggle{position:fixed; top:16px; right:16px; z-index:60; width:40px; height:40px; border-radius:50%;
+    border:1px solid var(--line); background:var(--paper-0); cursor:pointer; padding:0;
+    display:flex; align-items:center; justify-content:center;}
+  .theme-toggle svg{position:absolute; width:20px; height:20px; color:var(--ink-700);
+    transition:opacity .25s ease, transform .35s ease;}
+  .theme-toggle .icon-sun{opacity:1; transform:rotate(0deg) scale(1);}
+  .theme-toggle .icon-moon{opacity:0; transform:rotate(90deg) scale(.5);}
+  :root[data-theme="dark"] .theme-toggle .icon-sun{opacity:0; transform:rotate(-90deg) scale(.5);}
+  :root[data-theme="dark"] .theme-toggle .icon-moon{opacity:1; transform:rotate(0deg) scale(1);}
+
+  /* Карточка чуть шире (396px) — под более компактные, приземистые карточки ролей,
+     чтобы пропорции читались приятнее, без ощущения вытянутости по вертикали.
+     Карточка снова реагирует на тёмную тему как обычно (не закреплена белой). */
+  .login-card{
+    width:100%; max-width:340px; background:var(--paper-0); border:none;
+    border-radius:var(--radius-card); box-shadow:var(--shadow-pop); padding:28px 24px;
+  }
+
+  /* лэйбл компании + название системы над «Вход в систему»; разделительная линия
+     чуть короче ширины карточки — со скромным отступом от краёв, стильнее сплошной во всю ширину */
+  .brand{display:flex; align-items:center; justify-content:center; gap:12px;
+    padding:0 12px 18px; margin:0 -12px 18px; border-bottom:1px solid var(--line);}
+  .brand-mark{width:46px; height:25px; flex-shrink:0;}
+  .brand-mark svg{width:100%; height:100%;}
+  /* сплошной var(--logo-blue) — тот же токен, что и у логотипа: раньше лого было
+     однотонным, а название градиентным, что давало рассинхрон цветовой логики
+     бренд-блока; теперь оба элемента читаются как один цветовой знак */
+  .brand-text .name{
+    font-family:var(--font-display); font-weight:800; font-size:19px; line-height:26px;
+    color:var(--logo-blue);
+  }
+
+  form{display:flex; flex-direction:column; gap:14px;}
+  .row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+
+  .field{display:flex; flex-direction:column; gap:6px;}
+  /* Caption-Medium (12/16, 600) */
+  .field label{font-size:11px; line-height:14px; font-weight:600; color:var(--ink-600); text-transform:uppercase; letter-spacing:.2px;}
+
+  /* Body2 (14/20, 400) */
+  .field input{
+    border:1px solid var(--line); border-radius:var(--radius-field); padding:9px 12px;
+    font-size:13px; line-height:18px; font-family:inherit; color:var(--ink-900); background:var(--paper-0); width:100%;
+  }
+  .field input:focus{outline:none; border-color:var(--accent-600); box-shadow:0 0 0 3px var(--accent-100);}
+  .field input.err{border-color:var(--red-700);}
+  .field .err-msg{font-size:12px; line-height:16px; color:var(--red-700); background:var(--red-50);
+    padding:4px 8px; border-radius:6px; margin-top:4px; display:none;}
+  .field.invalid .err-msg{display:inline-block;}
+
+  /* Плавающий лейбл — оформление поля Input из референса ds-2.0: лейбл сидит
+     внутри рамки как плейсхолдер, при фокусе/вводе плавно всплывает наверх
+     и уменьшается — так система «реагирует» на ввод данных. */
+  .field .input-float{position:relative;}
+  .field .input-float input{padding:16px 12px 6px;}
+  /* плейсхолдер-пример («Иван»/«19-1991») скрыт, пока лейбл не всплыл — иначе он
+     наложится на лейбл; появляется только в фокусе. Курсивом — чтобы визуально
+     отличаться от реально введённых данных (не путать пример формата со значением). */
+  .field .input-float input::placeholder{opacity:0; font-style:italic; transition:opacity .18s ease;}
+  .field .input-float input:focus::placeholder{opacity:1;}
+  .field .input-float label{
+    position:absolute; left:17px; top:50%; transform:translateY(-50%);
+    /* ink-600, а не ink-400 — на паре ink-400/paper-0 контраст ниже WCAG AA (~2.3:1) */
+    font-size:14px; line-height:20px; font-weight:400; color:var(--ink-600);
+    text-transform:none; letter-spacing:0; pointer-events:none; background:transparent; padding:0 2px;
+    transition:top .18s ease, transform .18s ease, font-size .18s ease, color .18s ease, left .18s ease, background-color .18s ease;
+  }
+  .field .input-float input:focus + label,
+  .field .input-float input:not(:placeholder-shown) + label{
+    top:0; transform:translateY(-50%); left:15px; font-size:12px; font-weight:400;
+    letter-spacing:0; text-transform:none; color:var(--ink-600); background:var(--paper-0);
+    /* сплошной белый ореол со всех сторон текста — надёжнее, чем просто фон:
+       гарантированно перекрывает линию рамки под лейблом, без тонких просветов */
+    box-shadow:0 0 0 4px var(--paper-0);
+  }
+  .field .input-float input:focus + label{color:var(--accent-600);}
+  /* короткая подпись-подсказка под полем — не путать с err-msg */
+  .field-hint{font-size:12px; line-height:16px; color:var(--ink-600); margin-top:4px;}
+  .field[data-field="role"] .field-hint{text-align:left;}
+
+  /* Карточки ролей с иконкой сверху и описанием (формат по референсу «Choose Your Role»),
+     цвета и иконки — корпоративные ds-2.0 */
+  /* Карточки ролей теперь — горизонтальные строки (иконка слева, текст справа),
+     сложены в один столбец, а не сетка 2×1 — другая композиция выбора роли. */
+  .role-cards{display:flex; flex-direction:column; gap:8px;}
+  .role-card{display:flex; flex-direction:row; align-items:center; text-align:left; gap:10px;
+    border:1px solid var(--line); border-radius:var(--radius-field); padding:10px 12px; cursor:pointer;
+    background:var(--paper-0); transition:border-color .25s ease, background-color .25s ease, box-shadow .25s ease;}
+  .role-card:hover{border-color:var(--accent-100); background:var(--accent-50); box-shadow:0 6px 14px -10px rgba(17,37,66,.25);}
+  .role-card-icon{width:30px; height:30px; border-radius:var(--radius-pill); background:var(--accent-50); color:var(--accent-600);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition:background-color .25s ease, color .25s ease, transform .3s cubic-bezier(.34,1.56,.64,1);}
+  .role-card-icon svg{width:16px; height:16px;}
+  .role-card-body{display:flex; flex-direction:column; gap:1px; min-width:0;}
+  .role-card-title{font-size:13px; line-height:18px; font-weight:600; color:var(--ink-900);}
+  .role-card-desc{font-size:11px; line-height:14px; color:var(--ink-600);}
+  /* активный стейт — граница + заливка + закрашенная иконка */
+  .role-card.active{border-color:var(--accent-600); background:var(--accent-50);}
+  .role-card.active .role-card-icon{background:var(--accent-600); color:#fff; transform:scale(1.08);}
+
+  .btn-row{display:flex; gap:12px; margin-top:6px;}
+  .reset-row{display:flex; justify-content:center; margin-top:6px;}
+  /* Body2-Bold / Body2-Medium (14/20, 700 / 600) */
+  .btn{flex:1; display:inline-flex; align-items:center; justify-content:center; gap:6px; white-space:nowrap;
+    border-radius:var(--radius-pill); padding:9px 16px; font-size:13px; line-height:18px; font-weight:700; border:1px solid transparent;
+    background:transparent; color:var(--ink-600); cursor:pointer; font-family:inherit;
+    transition:background-color .2s ease, border-color .2s ease, color .2s ease;}
+  .btn:hover{background:var(--canvas); border-color:var(--line); color:var(--ink-900);}
+  .btn-primary{background:var(--accent-600); border-color:var(--accent-600); color:#fff; flex:2;}
+  .btn-primary:hover{background:var(--accent-500); color:#fff;}
+  .btn-text{flex:none; font-weight:600; padding:8px 16px; border-radius:var(--radius-pill);}
+  /* «Очистить» — сброс формы, действие деструктивное: hover отдельно окрашен в red,
+     а не в нейтральный/accent тон общих кнопок, чтобы намерение читалось до клика */
+  .btn-text:hover{background:var(--red-50); color:var(--red-700); border-color:var(--red-50);}
+  /* secondary — как в референсе (variant="secondary"): светло-голубая заливка вместо обводки/прозрачности */
+  .btn-secondary{background:var(--accent-50); border-color:var(--accent-50); color:var(--accent-600);}
+  .btn-secondary:hover{background:var(--accent-100); border-color:var(--accent-100); color:var(--accent-600);}
+
+  .success{display:none; text-align:center;}
+  .success.show{display:block;}
+  .success .check{width:52px; height:52px; border-radius:50%; background:var(--green-50); color:var(--green-700);
+    display:flex; align-items:center; justify-content:center; margin:0 auto 16px;}
+  .success .check svg{width:24px; height:24px;}
+  @keyframes popIn{from{opacity:0; transform:scale(.5);} to{opacity:1; transform:scale(1);}}
+  .success.show .check{animation:popIn .35s cubic-bezier(.34,1.56,.64,1);}
+  /* Heading4 (20/28, 800) */
+  .success h2{font-size:20px; line-height:28px; font-weight:800; margin:0 0 8px;}
+  /* Body2 (14/20, 400) */
+  .success p{font-size:14px; line-height:20px; color:var(--ink-600); margin:0 0 24px;}
+  .summary{text-align:left; background:var(--canvas); border-radius:var(--radius-field); padding:16px; margin-bottom:16px;}
+  .summary div{display:flex; justify-content:space-between; font-size:14px; line-height:20px; padding:4px 0;}
+  .summary div span:first-child{color:var(--ink-600);}
+  .summary div span:last-child{font-family:var(--font-mono); color:var(--ink-900); font-weight:600;}
+
+  .login-form.hide, .success.hide{display:none;}
+
+  /* модальное окно ввода СПП — открывается поверх страницы, не сдвигая её содержимое */
+  /* модальное окно СПП — быстрое, но плавное появление (ease-out, без резкого скачка) */
+  .modal-overlay{position:fixed; inset:0; background:rgba(0,23,41,.45); display:flex; align-items:center;
+    justify-content:center; padding:24px; z-index:50; opacity:0; pointer-events:none; transition:opacity .18s ease-out;}
+  .modal-overlay.show{opacity:1; pointer-events:auto;}
+  .modal-card{
+    /* модалка теперь следует теме страницы (var(--paper-0)/var(--ink-900) и т.д.
+     * берутся из :root), а не зафиксирована на светлой — иначе в тёмном режиме
+     * она была бы ярким белым пятном поверх тёмного фона */
+    width:100%; max-width:308px; background:var(--paper-0); border:1px solid var(--line);
+    border-radius:var(--radius-card);
+    box-shadow:var(--shadow-modal); padding:24px; transform:scale(.96) translateY(6px);
+    transition:transform .22s cubic-bezier(.16,1,.3,1);}
+  .modal-overlay.show .modal-card{transform:scale(1) translateY(0);}
+  .modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;}
+  /* Body1-Bold (16/24, 700) — компактнее прежнего Subheading3 (20/28) */
+  .modal-head span{font-family:var(--font-display); font-size:16px; line-height:24px; font-weight:700; color:var(--ink-900);}
+  /* ink-600, а не ink-400 — контраст крестика на paper-0 был ниже WCAG AA для интерактивного элемента */
+  .modal-close{border:none; background:none; width:28px; height:28px; border-radius:50%; color:var(--ink-600);
+    padding:0; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition:background-color .2s ease, color .2s ease, transform .25s ease;}
+  .modal-close svg{width:16px; height:16px;}
+  .modal-close:hover{background:var(--canvas); color:var(--ink-900); transform:rotate(90deg);}
+
+  /* Рабочее пространство проекта — экран после входа риск-менеджера (СПП принят).
+     Полноэкранная раскладка (перекрывает центрированную карточку входа),
+     сайдбар — по референсу ds-2.0 Sidebar (orientation="vertical", MenuItem). */
+  .workspace{position:fixed; inset:0; z-index:10; display:none; background:var(--canvas);}
+  .workspace.show{display:flex;}
+
+  /* сворачивание/разворачивание — по наведению на сайдбар (без клика и без
+     подписи «Свернуть»); ширина и подписи анимируются одновременно одной
+     кривой, чтобы ничего не «прыгало» — раскладка (justify-content/padding)
+     не меняется скачком между состояниями, меняются только width/opacity/max-width */
+  .ws-sidebar{width:76px; flex-shrink:0; background:var(--navy-900); display:flex; flex-direction:column;
+    padding:20px 14px; gap:4px; transition:width .32s cubic-bezier(.4,0,.2,1); overflow:hidden;}
+  .ws-sidebar.expanded{width:248px;}
+  .ws-brand{display:flex; align-items:center; gap:10px; padding:8px 10px 20px;
+    border-bottom:1px solid rgba(255,255,255,.12); margin-bottom:12px;}
+  .ws-brand .brand-mark{width:36px; height:20px; flex-shrink:0;}
+  /* Body1-Bold (16/24, 700 — здесь 800 для веса бренд-знака) */
+  .ws-brand .name{font-family:var(--font-display); font-weight:800; font-size:16px; line-height:24px; color:#fff;
+    white-space:nowrap; overflow:hidden; opacity:0; max-width:0;
+    transition:opacity .2s ease, max-width .32s cubic-bezier(.4,0,.2,1);}
+  .ws-sidebar.expanded .ws-brand .name{opacity:1; max-width:160px;}
+
+  .ws-nav{flex:1; display:flex; flex-direction:column; min-height:0; overflow-y:auto; overflow-x:hidden;}
+  .ws-nav-group{display:flex; flex-direction:column; gap:2px;}
+  .ws-nav-item{display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:8px;
+    border:none; background:none; color:#aab4c4; font-family:inherit; font-size:14px; font-weight:600;
+    cursor:pointer; text-align:left; width:100%; transition:background-color .15s ease, color .15s ease;}
+  .ws-nav-item span{white-space:nowrap; overflow:hidden; opacity:0; max-width:0;
+    transition:opacity .2s ease, max-width .32s cubic-bezier(.4,0,.2,1);}
+  .ws-sidebar.expanded .ws-nav-item span{opacity:1; max-width:160px;}
+  .ws-nav-item svg{width:20px; height:20px; flex-shrink:0;}
+  .ws-nav-item:hover{background:rgba(255,255,255,.06); color:#fff;}
+  .ws-nav-item.active{background:rgba(255,255,255,.1); color:#fff;}
+  .ws-nav-item.active svg{color:var(--accent-500);}
+
+  .ws-user{margin-top:auto; display:flex; align-items:center; gap:10px; padding:12px 10px;
+    border-top:1px solid rgba(255,255,255,.12);}
+  .ws-user-avatar{width:32px; height:32px; border-radius:50%; background:var(--accent-600); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0;}
+  .ws-user-info{min-width:0; overflow:hidden; opacity:0; max-width:0;
+    transition:opacity .2s ease, max-width .32s cubic-bezier(.4,0,.2,1);}
+  .ws-sidebar.expanded .ws-user-info{opacity:1; max-width:140px;}
+  /* Body2-Bold (14/20, 700) для имени, Caption (12/16) для роли — было
+     произвольные 13px/11.5px без привязки к типографической шкале */
+  .ws-user-name{font-size:14px; line-height:20px; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .ws-user-role{font-size:12px; line-height:16px; color:#8b96aa; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .ws-signout{margin-left:auto; background:none; border:none; color:#8b96aa; cursor:pointer; padding:6px;
+    border-radius:6px; display:flex; flex-shrink:0; opacity:0; width:0; padding-left:0; padding-right:0;
+    transition:opacity .2s ease, width .32s cubic-bezier(.4,0,.2,1), padding .32s cubic-bezier(.4,0,.2,1),
+      background-color .2s ease, color .2s ease;}
+  .ws-sidebar.expanded .ws-signout{opacity:1; width:28px; padding-left:6px; padding-right:6px;}
+  .ws-signout svg{width:16px; height:16px; flex-shrink:0;}
+  .ws-signout:hover{background:rgba(255,255,255,.08); color:#fff;}
+
+  .ws-content{flex:1; overflow-y:auto; padding:36px 40px;}
+  .ws-content h1{font-family:var(--font-display); font-size:24px; line-height:32px; font-weight:800;
+    color:var(--ink-900); margin:0 0 6px;}
+  .ws-content .ws-desc{font-size:14px; line-height:20px; color:var(--ink-600); margin:0 0 28px; max-width:52ch;}
+  .ws-empty{border:1px dashed var(--line); border-radius:var(--radius-field); padding:48px 24px;
+    display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; color:var(--ink-400);}
+  .ws-empty svg{width:32px; height:32px; color:var(--ink-400);}
+  .ws-empty strong{font-size:14px; line-height:20px; color:var(--ink-600); font-weight:600;}
+  .ws-empty span{font-size:12px; line-height:16px; max-width:38ch;}
+  .ws-empty[hidden], .lessons-page[hidden], .kpi-grid[hidden]{display:none;}
+
+  /* ===== Выученные уроки: подбор по тегам + таблица + создание риска ===== */
+
+  /* select/textarea в том же визуальном языке, что и .field input */
+  .field select, .field textarea{
+    border:1px solid var(--line); border-radius:var(--radius-field); padding:12px 16px;
+    font-size:14px; line-height:20px; font-family:inherit; color:var(--ink-900);
+    background:var(--paper-0); width:100%;
+  }
+  .field select:focus, .field textarea:focus{outline:none; border-color:var(--accent-600); box-shadow:0 0 0 3px var(--accent-100);}
+  .field textarea{resize:vertical; min-height:72px;}
+  .field select{
+    cursor:pointer; appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2399a2a9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 14px center; background-size:16px; padding-right:40px;
+  }
+
+  /* панель подбора по тегам */
+  .tags-panel{background:var(--paper-0); border:1px solid var(--line); border-radius:var(--radius-field);
+    padding:20px; margin-bottom:20px;}
+  .tags-panel-head, .tags-drop-head{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:10px;}
+  .tags-drop-head{margin-top:18px;}
+  .tags-panel-title{font-size:12px; line-height:16px; font-weight:600; color:var(--ink-600);
+    text-transform:uppercase; letter-spacing:.2px;}
+  .tags-panel-hint{font-size:12px; color:var(--ink-400);}
+  /* Body1-Bold (16/24, 700) */
+  .tags-result-count{font-family:var(--font-display); font-size:16px; line-height:24px; font-weight:700; color:var(--accent-600);}
+
+  .tag-pool{display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; padding:16px;
+    background:var(--canvas); border:1px solid var(--line); border-radius:var(--radius-field); min-height:56px;}
+  .tag-chip{font-family:var(--font-body); font-weight:600; line-height:1.3; padding:3px 5px;
+    border-radius:6px; cursor:grab; user-select:none; background:none; border:none;
+    transition:background-color .15s ease, opacity .15s ease;}
+  .tag-chip:hover{background:var(--paper-0);}
+  .tag-chip.dragging{opacity:.4;}
+  .tag-chip:focus-visible{outline:2px solid var(--accent-500); outline-offset:2px;}
+
+  .tag-drop{display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:12px;
+    background:var(--paper-0); border:1.5px dashed var(--line); border-radius:var(--radius-field);
+    min-height:48px; transition:background-color .15s ease, border-color .15s ease;}
+  .tag-drop.over{background:var(--accent-50); border-color:var(--accent-500);}
+  .tag-drop-placeholder{font-size:13px; color:var(--ink-400);}
+  .tag-drop-pill{display:inline-flex; align-items:center; gap:6px; padding:5px 8px 5px 12px;
+    border-radius:999px; font-size:13px; font-weight:600; background:var(--accent-50);
+    border:1px solid var(--accent-100); color:var(--accent-600); cursor:grab; user-select:none;}
+  .tag-drop-remove{display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px;
+    border-radius:50%; font-size:11px; line-height:1; color:var(--accent-600); opacity:.7; cursor:pointer;
+    flex-shrink:0; transition:background-color .15s ease, opacity .15s ease;}
+  .tag-drop-remove:hover{background:var(--accent-100); opacity:1;}
+
+  /* поиск + таблица уроков */
+  .lessons-search-row{display:flex; gap:12px; align-items:center; margin-bottom:14px;}
+  .lessons-search{position:relative; flex:1;}
+  .lessons-search svg{position:absolute; left:12px; top:50%; transform:translateY(-50%);
+    width:16px; height:16px; color:var(--ink-400); pointer-events:none;}
+  .lessons-search input{width:100%; height:38px; padding:0 12px 0 36px; border-radius:var(--radius-field);
+    border:1px solid var(--line); background:var(--paper-0); color:var(--ink-900); font-family:inherit; font-size:13.5px;}
+  .lessons-search input:focus{outline:none; border-color:var(--accent-500); box-shadow:0 0 0 3px var(--accent-100);}
+  .lessons-row-count{font-size:12.5px; color:var(--ink-400); white-space:nowrap;}
+
+  /* скругление «таблицы» — тот же var(--radius-field), что у панелей и полей */
+  .lessons-table-wrap{border:1px solid var(--line); border-radius:var(--radius-field); overflow:hidden; background:var(--paper-0);}
+  .lessons-table{width:100%; border-collapse:collapse; table-layout:fixed; font-size:13px;}
+  .lessons-table thead th{text-align:left; padding:12px 14px; background:var(--canvas); color:var(--ink-600);
+    font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:.2px; border-bottom:1px solid var(--line);}
+  .lessons-table tbody td{padding:12px 14px; vertical-align:top; border-bottom:1px solid var(--line);
+    font-size:13px; line-height:19px; color:var(--ink-900);}
+  .lessons-table tbody tr:last-child td{border-bottom:none;}
+  .lessons-table tbody tr:hover td{background:var(--canvas);}
+  .lessons-table .lesson-code{font-family:var(--font-mono); font-size:11px; color:var(--ink-400);}
+
+  .lesson-tag-pill{display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px;
+    font-weight:700; margin:0 4px 4px 0;}
+
+  .risk-action-btn{padding:6px 12px; font-size:12px; font-weight:600; border:1px solid var(--line);
+    border-radius:var(--radius-field); background:var(--paper-0); color:var(--ink-700); cursor:pointer;
+    font-family:inherit; white-space:nowrap; transition:background-color .15s ease;}
+  .risk-action-btn:hover{background:var(--canvas);}
+  .risk-created-link{font-size:12px; font-weight:700; color:var(--green-700); display:inline-flex;
+    align-items:center; gap:4px; cursor:pointer; background:none; border:none; padding:0; font-family:inherit;}
+  .risk-created-link:hover{text-decoration:underline;}
+
+  .lessons-table-empty{padding:32px 20px; text-align:center; font-size:13px; color:var(--ink-400);}
+
+  /* модалки создания/просмотра риска */
+  .modal-card--wide{width:100%; max-width:560px; max-height:86vh; overflow-y:auto;}
+  .modal-sub{font-size:12.5px; color:var(--ink-400); margin:0 0 16px;}
+  .source-quote{background:var(--canvas); border-radius:var(--radius-field); padding:10px 12px;
+    margin:0 0 16px; font-size:13px; line-height:19px; color:var(--ink-600);}
+  .source-link{display:flex; align-items:center; gap:8px; width:100%; background:var(--accent-50);
+    border:none; border-radius:var(--radius-field); padding:10px 12px; margin:0 0 16px; font-size:12.5px;
+    font-weight:600; color:var(--accent-600); cursor:pointer; font-family:inherit; text-align:left;}
+  .source-link:hover{background:var(--accent-100);}
+  .source-link svg{width:14px; height:14px; flex-shrink:0;}
+
+  .risk-level-row{display:flex; align-items:center; justify-content:space-between; background:var(--canvas);
+    border-radius:var(--radius-field); padding:12px 16px; margin-bottom:4px;}
+  .risk-level-row .field-caption{font-size:12px; color:var(--ink-600);}
+  .risk-level-value{font-family:var(--font-display); font-size:14px; font-weight:700;}
+
+  .risk-detail-row{display:flex; justify-content:space-between; gap:12px; padding:8px 0;
+    font-size:13.5px; border-bottom:1px solid var(--line);}
+  .risk-detail-row:last-child{border-bottom:none;}
+  .risk-detail-row span:first-child{color:var(--ink-600);}
+  .risk-detail-row span:last-child{font-weight:600; color:var(--ink-900); text-align:right;}
+  .risk-view-desc{font-size:13.5px; line-height:20px; color:var(--ink-900); margin:0 0 14px;}
+
+  /* ===== KPI-карточки дэшборда (перевод React KpiCard в чистый HTML/CSS) ===== */
+  .kpi-grid{display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:28px;}
+  .kpi-card{display:flex; flex-direction:column; gap:8px; padding:16px; border-radius:var(--radius-field);
+    background:var(--paper-0); border:1px solid var(--line);}
+  .kpi-label{font-size:12px; font-weight:600; color:var(--ink-600);}
+  .kpi-value{font-family:var(--font-display); font-size:24px; line-height:32px; font-weight:800; color:var(--ink-900);}
+  .kpi-delta{display:flex; align-items:center; gap:4px; font-size:12px; font-weight:600;}
+  .kpi-delta svg{width:13px; height:13px; flex-shrink:0;}
+  .kpi-delta--good{color:var(--green-700);}
+  .kpi-delta--bad{color:var(--red-700);}
+  .kpi-delta--muted{color:var(--ink-400);}
+  /* подпись-порог прижата к низу карточки (margin-top:auto) — карточки
+     одной высоты в ряду выглядят выровненными независимо от длины текста */
+  .kpi-threshold{font-size:11px; line-height:15px; color:var(--ink-400); padding-top:8px;
+    margin-top:auto; border-top:1px solid var(--line);}
+  @media (max-width:900px){ .kpi-grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:560px){ .kpi-grid{grid-template-columns:1fr;} }
+
+  /* ===== бейдж "AI" в навигации — тот же .ai-* язык, что и AI-подсказки на входе ===== */
+  .ws-nav-badge{margin-left:auto; flex-shrink:0; opacity:0; max-width:0; overflow:hidden;
+    font-family:var(--font-body); font-size:10px; font-weight:800; letter-spacing:.3px;
+    padding:2px 6px; border-radius:var(--radius-pill); background:var(--ai-50); color:var(--ai-700);
+    transition:opacity .2s ease, max-width .32s cubic-bezier(.4,0,.2,1);}
+  .ws-sidebar.expanded .ws-nav-badge{opacity:1; max-width:28px;}
+
+  /* ===== страницы вкладок — контейнер вместо единственного wsDashboardPage/wsEmpty ===== */
+  .ws-page[hidden]{display:none;}
+
+  /* ===== Реестр рисков ===== */
+  .toolbar-row{display:flex; gap:10px; align-items:center; margin-bottom:18px; flex-wrap:wrap;}
+  .toolbar-row .lessons-search{flex:1; min-width:220px;}
+  .toolbar-row select{border:1px solid var(--line); border-radius:var(--radius-field); padding:9px 32px 9px 12px;
+    font-size:13px; font-family:inherit; background:var(--paper-0); color:var(--ink-900); cursor:pointer;}
+  .btn-add{flex:none; padding:9px 18px;}
+
+  .risk-card{background:var(--paper-0); border:1px solid var(--line); border-radius:var(--radius-field);
+    padding:18px 20px; margin-bottom:12px;}
+  .risk-card-top{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px;}
+  .risk-card-title{font-family:var(--font-display); font-size:15px; font-weight:700; color:var(--ink-900);}
+  .risk-card-cat{font-size:12.5px; color:var(--ink-600); margin-bottom:14px;}
+  .badge-pill{display:inline-flex; align-items:center; padding:3px 10px; border-radius:var(--radius-pill);
+    font-size:11px; font-weight:700;}
+  /* severity: Low=green, Medium=amber (впервые задействуем этот токен), High/Critical=red */
+  .badge-low{background:var(--green-50); color:var(--green-700);}
+  .badge-medium{background:var(--amber-50); color:var(--amber-700);}
+  .badge-high, .badge-critical{background:var(--red-50); color:var(--red-700);}
+  .badge-critical{font-weight:800;}
+  /* статус: gold переиспользуем ровно как на экране входа (Идентификация),
+     остальные статусы — по аналогии с .kpi-delta */
+  .badge-status-ident{background:var(--gold-50); color:var(--gold-700);}
+  .badge-status-progress{background:var(--accent-50); color:var(--accent-600);}
+  .badge-status-closed{background:var(--green-50); color:var(--green-700);}
+  .risk-card-grid{display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:16px; margin-bottom:14px; align-items:start;}
+  .risk-card-grid .v{line-height:1.4;}
+  .risk-card-grid .k{font-size:10.5px; color:var(--ink-400); text-transform:uppercase; letter-spacing:.2px;}
+  .risk-card-grid .v{font-size:13px; font-weight:600; color:var(--ink-900); margin-top:2px;}
+  .risk-card-foot{display:flex; align-items:center; gap:14px;}
+  .risk-card-mitig{flex:1; background:var(--canvas); border-radius:var(--radius-field); padding:10px 12px; font-size:12.5px;}
+  .risk-card-mitig b{display:block; font-size:10.5px; text-transform:uppercase; letter-spacing:.2px;
+    color:var(--ink-400); font-weight:700; margin-bottom:3px;}
+  .risk-card-links{font-size:11.5px; font-weight:700; color:var(--accent-600); cursor:pointer; margin-left:auto;}
+
+  /* ===== Матрица рисков ===== */
+  .matrix-shell{display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap;}
+  .matrix-grid{display:grid; grid-template-columns:34px repeat(5,1fr); grid-auto-rows:70px; gap:4px; flex:1; min-width:320px;}
+  .matrix-axis-y{grid-row:span 5; writing-mode:vertical-rl; transform:rotate(180deg); text-align:center;
+    font-size:11px; font-weight:700; color:var(--ink-600); display:flex; align-items:center; justify-content:center;}
+  .matrix-cell{border-radius:8px; position:relative; display:flex; align-items:flex-end; justify-content:flex-end; padding:6px;}
+  .matrix-axis-x{grid-column:2/-1; text-align:center; font-size:11px; font-weight:700; color:var(--ink-600); padding-top:4px;}
+  .matrix-dot{width:26px; height:26px; border-radius:50%; background:var(--navy-900); color:#fff;
+    font-family:var(--font-mono); font-size:9.5px; font-weight:700; display:flex; align-items:center;
+    justify-content:center; position:absolute; border:2px solid var(--paper-0); box-shadow:var(--shadow-pop); cursor:pointer;}
+  .matrix-legend{width:220px; flex-shrink:0;}
+  .matrix-legend-row{display:flex; align-items:center; gap:8px; font-size:12.5px; padding:6px 0; color:var(--ink-700);}
+  .matrix-legend-sw{width:14px; height:14px; border-radius:4px; flex-shrink:0;}
+
+  /* ===== Календарь ===== */
+  .cal-head{display:flex; align-items:center; gap:14px; margin-bottom:16px;}
+  .cal-head button{background:none; border:1px solid var(--line); border-radius:8px; width:30px; height:30px;
+    color:var(--ink-600); cursor:pointer;}
+  .cal-head h3{font-family:var(--font-display); margin:0; font-size:16px; font-weight:700; color:var(--ink-900);}
+  .cal-legend{display:flex; gap:16px; margin-bottom:16px; font-size:12px; color:var(--ink-600); flex-wrap:wrap;}
+  .cal-legend span{display:flex; align-items:center; gap:6px;}
+  .cal-legend .sw{width:9px; height:9px; border-radius:2px; display:inline-block;}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:8px;}
+  .cal-dow{text-align:center; font-size:11px; color:var(--ink-400); font-weight:700; padding-bottom:4px;}
+  .cal-cell{min-height:86px; background:var(--paper-0); border:1px solid var(--line); border-radius:8px; padding:8px;}
+  .cal-cell.empty{background:transparent; border:none;}
+  .cal-cell .dnum{font-size:12px; font-weight:700; color:var(--ink-600); margin-bottom:6px;}
+  .cal-cell.today{border-color:var(--accent-600);}
+  .cal-cell.today .dnum{color:var(--accent-600);}
+  .cal-ev{font-size:10.5px; padding:3px 6px; border-radius:5px; margin-bottom:3px; font-weight:700; line-height:1.3;}
+
+  /* ===== Карта взаимосвязей ===== */
+  .map-toolbar{display:flex; gap:6px; margin-bottom:16px; background:var(--paper-0); border:1px solid var(--line);
+    border-radius:var(--radius-field); padding:5px; width:fit-content;}
+  .map-toolbar button{padding:7px 14px; font-size:12.5px; font-weight:700; border-radius:8px; border:none;
+    background:transparent; color:var(--ink-600); cursor:pointer; font-family:inherit;}
+  .map-toolbar button.active{background:var(--navy-900); color:#fff;}
+  .map-canvas{position:relative; height:440px; border:1px solid var(--line); border-radius:var(--radius-field);
+    background:
+      linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:24px 24px; background-color:var(--canvas); overflow:hidden;}
+  .map-node{position:absolute; transform:translate(-50%,-50%); width:104px; padding:10px 12px;
+    border-radius:var(--radius-field); background:var(--paper-0); border:2px solid var(--line);
+    box-shadow:var(--shadow-pop); font-size:11.5px; text-align:center; cursor:pointer;}
+  .map-node.project{width:92px; height:92px; border-radius:50%; background:var(--navy-900); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; border-color:var(--navy-900);}
+  .map-node .id{font-family:var(--font-mono); font-weight:700; font-size:12px;}
+  .map-node .cat{font-size:10px; color:var(--ink-400); margin-top:2px;}
+  .map-hint{margin-top:10px; font-size:12px; color:var(--ink-600);}
+
+  /* ===== Privacy Reports & Analytics ===== */
+  .exec-summary{background:var(--paper-0); border:1px solid var(--line); border-radius:var(--radius-card);
+    padding:22px 24px; margin-bottom:16px;}
+  .exec-summary h3{font-family:var(--font-display); margin:0 0 14px; font-size:15px; font-weight:700;}
+  .es-metrics{display:flex; gap:40px; flex-wrap:wrap; margin-bottom:20px;}
+  .es-metric .k{font-size:11.5px; color:var(--ink-600);}
+  .es-metric .v{font-family:var(--font-display); font-size:22px; font-weight:800; color:var(--ink-900); margin-top:2px;}
+  .es-cols{display:grid; grid-template-columns:1fr 1fr; gap:28px;}
+  .es-cols h4{font-size:12px; text-transform:uppercase; letter-spacing:.2px; color:var(--ink-600); margin:0 0 10px;}
+  .es-cols li{font-size:13px; margin-bottom:8px; line-height:1.4; color:var(--ink-900);}
+  .kg-card{background:var(--paper-0); border:1px solid var(--line); border-radius:var(--radius-card); padding:20px 22px;}
+  .kg-card h3{font-family:var(--font-display); margin:0 0 4px; font-size:15px; font-weight:700;}
+  .kg-card .hint{font-size:12.5px; color:var(--ink-600); margin:0 0 14px;}
+  .kg-canvas{position:relative; height:340px; background:var(--canvas); border:1px solid var(--line);
+    border-radius:var(--radius-field);}
+  .kg-node{position:absolute; transform:translate(-50%,-50%); text-align:center; cursor:pointer;}
+  .kg-node .c{width:16px; height:16px; border-radius:50%; margin:0 auto 4px; border:2px solid var(--paper-0); box-shadow:var(--shadow-pop);}
+  .kg-node span{font-size:10px; color:var(--ink-600); white-space:nowrap;}
+  .kg-legend{display:flex; gap:18px; margin-top:14px; font-size:12px; color:var(--ink-600); flex-wrap:wrap;}
+  .kg-legend span{display:flex; align-items:center; gap:6px;}
+  .kg-legend .sw{width:10px; height:10px; border-radius:50%;}
+</style>
+
+</head>
+<body>
+<button class="theme-toggle" id="themeBtn" type="button" aria-label="Переключить тему">
+  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.5M12 19v2.5M4.5 12H2M22 12h-2.5M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8"/></svg>
+  <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.4 14.7A8.5 8.5 0 1 1 9.3 3.6a7 7 0 0 0 11.1 11.1z"/></svg>
+</button>
+
+<div class="workspace show">
+  <aside class="ws-sidebar">
+    <div class="ws-brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 105 57" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="НЛМК"><path fill-rule="evenodd" clip-rule="evenodd" d="M20.7303 19.0532H15.5128V36.6192H20.7303V29.6627H26.2956V36.6192H31.5164V19.0532H26.2956V25.4881H20.7303V19.0532ZM50.1263 36.6192V19.0532H36.7291V28.2701C36.7291 31.7491 36.0337 32.794 33.2518 32.2708V36.6112C36.2075 37.1328 38.8155 36.6112 40.208 34.8725C41.5989 33.3076 41.7728 30.524 41.7728 28.2621V23.2198H45.0746V36.6192H50.1263ZM59.6905 19.0532H54.4745L52.0324 36.6208H56.9022L58.1193 27.23L60.898 36.6192H64.3752L67.1619 27.23L68.3789 36.6192H73.2551L70.821 19.0532H65.6035L62.6478 29.4888L59.6905 19.0532ZM80.3852 19.0532H75.1676L75.1613 36.6192H80.3788V29.4888L85.0748 36.6192H91.3323L84.5532 27.75L91.1728 19.0532H85.4305L80.3852 26.1836V19.0532ZM0.731079 28.2701C0.731079 11.575 21.4258 0.271667 52.7311 0.271667C84.2054 0.271667 104.731 11.575 104.731 28.2701C104.731 44.7865 84.2086 56.2717 52.7311 56.2717C21.4258 56.2717 0.731079 44.7928 0.731079 28.2701ZM3.68997 28.2701C3.68997 43.4018 23.3415 53.662 52.7311 53.662C82.2945 53.662 101.772 43.4018 101.772 28.2701C101.772 12.966 82.2945 2.87977 52.7311 2.87977C23.3383 2.87977 3.68678 12.966 3.68997 28.2701ZM7.64417 28.2707C7.64417 21.9298 11.8809 16.4671 19.7642 12.536C27.6444 8.60642 38.9979 6.31464 52.7312 6.31464C66.462 6.31464 77.8143 8.60563 85.6939 12.5348C93.5766 16.4655 97.8134 21.9281 97.8134 28.2707C97.8134 34.6134 93.5776 40.0764 85.6956 44.0075C77.8167 47.937 66.4644 50.2284 52.7312 50.2284C38.9979 50.2284 27.6444 47.9362 19.7643 44.0063C11.8809 40.0747 7.64417 34.6117 7.64417 28.2707ZM6.64417 28.2707C6.64417 14.5331 25.0786 5.31464 52.7312 5.31464C80.3789 5.31464 98.8134 14.5299 98.8134 28.2707C98.8134 42.0115 80.3837 51.2284 52.7312 51.2284C25.0786 51.2284 6.64417 42.0083 6.64417 28.2707Z" fill="#fff"/></svg>
+      </div>
+      <div class="name">RiskLesson</div>
+    </div>
+    <nav class="ws-nav" id="wsNav">
+      <div class="ws-nav-group">
+        <button type="button" class="ws-nav-item active" data-page="dashboard" title="Дэшборд">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
+          <span>Дэшборд</span>
+        </button>
+
+        <button type="button" class="ws-nav-item" data-page="register" title="Реестр рисков">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6z"/><path d="M15 3v3h3"/><path d="M9 12h6M9 16h6"/></svg>
+          <span>Реестр рисков</span>
+        </button>
+
+        <button type="button" class="ws-nav-item" data-page="matrix" title="Матрица рисков">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+          <span>Матрица рисков</span>
+        </button>
+
+        <button type="button" class="ws-nav-item" data-page="lessons" title="Выученные уроки">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H12v16H5.5C4.7 20 4 19.3 4 18.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H12v16h6.5c.8 0 1.5-.7 1.5-1.5z"/></svg>
+          <span>Выученные уроки</span>
+        </button>
+
+        <button type="button" class="ws-nav-item" data-page="calendar" title="Календарь">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+          <span>Календарь</span>
+        </button>
+
+        <button type="button" class="ws-nav-item" data-page="map" title="Карта взаимосвязей">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M8.5 10.8L15.5 7M8.5 13.2L15.5 17"/></svg>
+          <span>Карта взаимосвязей</span>
+        </button>
+
+        <button type="button" class="ws-nav-item" data-page="reports" title="Privacy Reports & Analytics">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.8 5.6L19 9l-5.2 1.4L12 16l-1.8-5.6L5 9l5.2-1.4L12 2z"/></svg>
+          <span>Reports &amp; Analytics</span>
+          <span class="ws-nav-badge">AI</span>
+        </button>
+      </div>
+    </nav>
+
+    <div class="ws-user">
+      <div class="ws-user-avatar" id="wsAvatar"></div>
+      <div class="ws-user-info">
+        <div class="ws-user-name" id="wsUserName"></div>
+        <div class="ws-user-role" id="wsUserRole"></div>
+      </div>
+      <button type="button" class="ws-signout" id="wsSignOut" aria-label="Выйти">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <main class="ws-content">
+    <h1 id="wsTitle">Дэшборд</h1>
+    <p class="ws-desc" id="wsDesc">Общая сводка по рискам программы: количество, критичность, статус мероприятий.</p>
+
+    <!-- ===== ДЭШБОРД ===== -->
+    <div class="ws-page" data-page="dashboard">
+      <!-- KPI-карточки — посчитаны по реальным 15 рискам проекта ЦГП-2 (ЦГП-2_ТОП-Риски_апр_26.pdf) -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-label">Всего активных рисков</span>
+          <span class="kpi-value">15</span>
+          <span class="kpi-delta kpi-delta--muted">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            все в статусе «Мониторинг и Контроль»
+          </span>
+          <span class="kpi-threshold">проект ЦГП-2</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Высокая критичность (RRA=H)</span>
+          <span class="kpi-value">12</span>
+          <span class="kpi-delta kpi-delta--bad">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            80% портфеля
+          </span>
+          <span class="kpi-threshold">RRA 6–9 из 3×3 матрицы</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Выполнено мероприятий</span>
+          <span class="kpi-value">4</span>
+          <span class="kpi-delta kpi-delta--good">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            из 54 мероприятий всего
+          </span>
+          <span class="kpi-threshold">риски 36, 92, 99</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Просрочено мероприятий</span>
+          <span class="kpi-value">16</span>
+          <span class="kpi-delta kpi-delta--bad">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            плановый срок раньше сегодняшней даты
+          </span>
+          <span class="kpi-threshold">8 из 15 рисков — светофор красный</span>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--ink-400);margin:-16px 0 20px;">Дата отсчёта для просрочки — 12.09.2026. Реальные плановые сроки мероприятий часто указаны на середину 2026 года и на момент этой демонстрации уже прошли — отсюда много красных светофоров в Реестре рисков, это не ошибка макета.</p>
+    </div>
+
+    <!-- ===== РЕЕСТР РИСКОВ ===== -->
+    <div class="ws-page" data-page="register" hidden>
+      <div class="toolbar-row">
+        <div class="lessons-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input type="text" placeholder="Поиск по рискам...">
+        </div>
+        <select id="regFiltCat"><option value="">Все категории</option></select>
+        <select id="regFiltStatus">
+          <option value="">Все статусы</option>
+          <option>Идентификация</option><option>Анализ и оценка</option><option>Управление</option>
+          <option>Мониторинг и Контроль</option><option>Закрыт</option>
+        </select>
+        <button type="button" class="btn btn-primary btn-add">+ Добавить риск</button>
+      </div>
+      <div id="registerList"></div>
+    </div>
+
+    <!-- ===== МАТРИЦА РИСКОВ ===== -->
+    <div class="ws-page" data-page="matrix" hidden>
+      <div class="matrix-shell">
+        <div class="matrix-grid" id="matrixGrid"></div>
+        <div class="matrix-legend">
+          <div class="matrix-legend-row"><span class="matrix-legend-sw" style="background:var(--green-50); border:1px solid var(--green-700)"></span>Low — принять</div>
+          <div class="matrix-legend-row"><span class="matrix-legend-sw" style="background:var(--amber-50); border:1px solid var(--amber-700)"></span>Medium — снизить</div>
+          <div class="matrix-legend-row"><span class="matrix-legend-sw" style="background:var(--red-50); border:1px solid var(--red-700)"></span>High — управлять активно</div>
+          <div class="matrix-legend-row"><span class="matrix-legend-sw" style="background:var(--red-700)"></span>Critical — эскалация комитету</div>
+          <div id="matrixSelected" style="margin-top:16px; font-size:12.5px; color:var(--ink-600);">Кликните точку риска для деталей.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ВЫУЧЕННЫЕ УРОКИ (используем уже готовые классы tags-panel/lessons-table) ===== -->
+    <div class="ws-page" data-page="lessons" hidden>
+      <div class="tags-panel">
+        <div class="tags-panel-head">
+          <span class="tags-panel-title">Подбор по тегам</span>
+          <span class="tags-panel-hint">Перетащите теги вниз, чтобы отфильтровать уроки</span>
+        </div>
+        <div class="tag-pool" id="tagPool">
+          <button type="button" class="tag-chip" style="color:var(--accent-600); background:var(--accent-50);">#тендер</button>
+          <button type="button" class="tag-chip" style="color:var(--gold-700); background:var(--gold-50);">#управлениеизменениями</button>
+          <button type="button" class="tag-chip" style="color:var(--ink-700); background:var(--canvas);">#график</button>
+          <button type="button" class="tag-chip" style="color:var(--red-700); background:var(--red-50);">#дефицитресурсов</button>
+          <button type="button" class="tag-chip" style="color:#8a6d00; background:#ffffe6;">#выборпоставщика</button>
+        </div>
+        <div class="tags-drop-head">
+          <span class="tags-panel-title">Выбранные теги</span>
+          <span class="tags-result-count" id="tagResultCount">10 уроков</span>
+        </div>
+        <div class="tag-drop" id="tagDrop">
+          <span class="tag-drop-placeholder">Тег не выбран — показаны все уроки</span>
+        </div>
+      </div>
+
+      <div class="lessons-search-row">
+        <div class="lessons-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input type="text" placeholder="Поиск уроков...">
+        </div>
+        <span class="lessons-row-count" id="lessonsRowCount">10 из 10</span>
+        <button type="button" class="btn btn-primary btn-add">+ Добавить урок</button>
+      </div>
+      <div class="lessons-table-wrap">
+        <table class="lessons-table">
+          <thead><tr><th style="width:24%">Урок</th><th style="width:16%">Категория</th><th style="width:8%">Фаза</th><th style="width:10%">Стратегия</th><th style="width:20%">Хештеги</th><th style="width:10%">Действия</th></tr></thead>
+          <tbody id="lessonsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== КАЛЕНДАРЬ ===== -->
+    <div class="ws-page" data-page="calendar" hidden>
+      <div class="cal-head">
+        <button type="button" id="calPrev">‹</button>
+        <h3 id="calMonthLabel">—</h3>
+        <button type="button" id="calNext">›</button>
+      </div>
+      <div class="cal-legend">
+        <span><i class="sw" style="background:var(--accent-600)"></i>Срок мероприятия</span>
+        <span><i class="sw" style="background:#8C6CF0"></i>Пересмотр риска</span>
+        <span><i class="sw" style="background:var(--gold-700)"></i>Согласование</span>
+        <span><i class="sw" style="background:var(--red-700)"></i>Просрочено</span>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+
+    <!-- ===== КАРТА ВЗАИМОСВЯЗЕЙ ===== -->
+    <div class="ws-page" data-page="map" hidden>
+      <div class="map-toolbar" id="mapToolbar">
+        <button type="button" class="active" data-mode="cursor">Курсор</button>
+        <button type="button" data-mode="risk">Риск</button>
+        <button type="button" data-mode="link">Связать</button>
+        <button type="button" data-mode="merge">Объединить</button>
+      </div>
+      <div class="map-canvas" id="mapCanvas"></div>
+      <p class="map-hint" id="mapHint">Режим «Курсор»: кликните узел, чтобы посмотреть карточку риска.</p>
+    </div>
+
+    <!-- ===== PRIVACY REPORTS & ANALYTICS ===== -->
+    <div class="ws-page" data-page="reports" hidden>
+      <div class="exec-summary">
+        <h3>Executive Summary</h3>
+        <div class="es-metrics">
+          <div class="es-metric"><div class="k">Общий уровень риска</div><div class="v">Высокий</div></div>
+          <div class="es-metric"><div class="k">Выявлено рисков</div><div class="v">15</div></div>
+          <div class="es-metric"><div class="k">Из них Высокий (H)</div><div class="v">12</div></div>
+          <div class="es-metric"><div class="k">Требуют решения комитета (I=3)</div><div class="v">9</div></div>
+        </div>
+        <div class="es-cols">
+          <div>
+            <h4>Ключевые достижения</h4>
+            <ul style="padding-left:18px; margin:0;">
+              <li>По риску 99 (КИИ) выполнены 2 из 3 мероприятий — актуализация стоимости и оптимизация количества оборудования</li>
+              <li>По риску 36 завершено имитационное моделирование склада слябов</li>
+              <li>Сформировано 10 уроков по проекту БВН, доступны для AI-подсказок при подаче новых рисков</li>
+            </ul>
+          </div>
+          <div>
+            <h4>Приоритетные действия</h4>
+            <ul style="padding-left:18px; margin:0;">
+              <li>Риск 97 — мероприятие по приёму воды в оборотный цикл отклонено, нужен альтернативный план</li>
+              <li>Риск 36 — мероприятие «повышение скорости тележки» запланировано на дек.26, статус ещё не начат</li>
+              <li>Риски 92, 26, 17 — единственные со статусом «Средний», проверить, не пора ли переоценить</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="kg-card">
+        <h3>Knowledge Graph — взаимосвязи рисков</h3>
+        <p class="hint">AI-обнаруженные корреляции между рисками и уроками (в отличие от ручной Карты взаимосвязей — эти связи предлагает алгоритм)</p>
+        <div class="kg-canvas" id="kgCanvas"></div>
+        <div class="kg-legend">
+          <span><i class="sw" style="background:var(--accent-600)"></i>Риск</span>
+          <span><i class="sw" style="background:var(--ai-700)"></i>Урок</span>
+          <span><i class="sw" style="background:var(--navy-900)"></i>Проект</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ws-empty" id="wsEmpty" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      <strong>Раздел в разработке</strong>
+      <span>СПП проекта принят, вход выполнен — содержимое этого раздела появится на следующем этапе.</span>
+    </div>
+  </main>
+</div>
+
+<script>
+  const WS_PAGES = {
+    dashboard: {title:'Дэшборд', desc:'Общая сводка по рискам программы: количество, критичность, статус мероприятий.'},
+    register: {title:'Реестр рисков', desc:'Полный список зарегистрированных рисков проекта с владельцем, оценкой и статусом.'},
+    matrix: {title:'Матрица рисков', desc:'Визуализация рисков по вероятности и влиянию (P×I).'},
+    lessons: {title:'Выученные уроки', desc:'База знаний по прошлым проектам — риски, которые уже случались, и как их избежать.'},
+    calendar: {title:'Календарь', desc:'Сроки мероприятий, согласований и пересмотра рисков.'},
+    map: {title:'Карта взаимосвязей', desc:'Ручное построение причинно-следственных связей между рисками и объединение дублей.'},
+    reports: {title:'Privacy Reports & Analytics', desc:'AI-анализ портфеля рисков: сводка для руководства и граф взаимосвязей.'},
+  };
+
+  // ===== переключение вкладок: один .ws-page на раздел, вместо единственного
+  // wsDashboardPage/wsEmpty — заглушка "Раздел в разработке" больше не нужна,
+  // но элемент оставлен в разметке (hidden) на случай будущих пустых разделов
+  document.getElementById('wsNav').addEventListener('click', (e) => {
+    const btn = e.target.closest('.ws-nav-item');
+    if (!btn || btn.disabled) return;
+    const pageKey = btn.dataset.page;
+    const page = WS_PAGES[pageKey];
+    if (!page) return;
+
+    document.querySelectorAll('.ws-nav-item').forEach(o => o.classList.remove('active'));
+    btn.classList.add('active');
+
+    document.getElementById('wsTitle').textContent = page.title;
+    document.getElementById('wsDesc').textContent = page.desc;
+
+    document.querySelectorAll('.ws-page').forEach(p => { p.hidden = (p.dataset.page !== pageKey); });
+    document.getElementById('wsEmpty').hidden = true;
+  });
+
+  // ===== РЕАЛЬНЫЕ ДАННЫЕ: 15 рисков проекта ЦГП-2 (из "ЦГП-2_ТОП-Риски_апр_26.pdf")
+  // и 10 уроков проекта БВН/ДП-4 (из "Reestr_urokov_BVN_shablon.xlsx"). Не демо-выдумка. =====
+  const CATS = [
+    {name:'Технологические', color:'var(--red-700)'},
+    {name:'Технические', color:'var(--accent-600)'},
+    {name:'Процессные', color:'var(--ink-700)'},
+    {name:'Регуляторные', color:'var(--gold-700)'},
+    {name:'ПИР', color:'#8C6CF0'},
+    {name:'СМР/ПНР', color:'var(--green-700)'},
+    {name:'Снабжение', color:'var(--logo-blue)'},
+    {name:'Экономические', color:'#8a6d00'},
+  ];
+
+  // вид мероприятия (4 значения по реальной методологии) и статус выполнения
+  const actionKindLabel = {cause:'Причина', consequence:'Следствие', contingency:'Запасной план', existing:'Существующая процедура'};
+  const actionStatusLabel = {in_progress:'В работе', done:'Выполнено', planned:'Планируется', rejected:'Отклонено'};
+  const actionStatusColor = {in_progress:'var(--accent-600)', done:'var(--green-700)', planned:'var(--ink-400)', rejected:'var(--red-700)'};
+
+  // грубый парсер русских сокращённых дат "июн.26" -> Date, для проверки просрочки
+  const RU_MONTHS = {'янв':0,'фев':1,'мар':2,'апр':3,'май':4,'июн':5,'июл':6,'авг':7,'сен':8,'окт':9,'ноя':10,'дек':11};
+  function parseRuShortDate(s){
+    if (!s) return null;
+    const m = /^([а-я]{3})\.(\d{2})$/i.exec(s.trim());
+    if (!m) return null;
+    const mon = RU_MONTHS[m[1].toLowerCase()];
+    if (mon === undefined) return null;
+    return new Date(2000 + parseInt(m[2], 10), mon, 28);
+  }
+  const TODAY = new Date(2026, 8, 12);
+
+  function trafficLight(actions){
+    if (!actions || actions.length === 0) return {color:'var(--red-700)', label:'Нет мероприятий'};
+    const statuses = actions.map(a => a.status);
+    if (statuses.every(s => s === 'done')) return {color:'var(--green-700)', label:'Все мероприятия выполнены'};
+    if (statuses.every(s => s === 'rejected')) return {color:'var(--ink-400)', label:'Все мероприятия отклонены'};
+    if (statuses.every(s => s === 'planned')) return {color:'var(--gold-700)', label:'Работа по риску не начата'};
+    const overdue = actions.some(a => a.status === 'in_progress' && a.planned && parseRuShortDate(a.planned) && parseRuShortDate(a.planned) < TODAY);
+    if (overdue) return {color:'var(--red-700)', label:'Есть просроченное мероприятие'};
+    return {color:'var(--accent-600)', label:'Работа идёт по плану'};
+  }
+
+  // p/i подобраны так, чтобы попасть в верный сектор матрицы 3×3 (реальные паспорта дают только
+  // итоговый уровень критичности "Высокий"/"Средний", а не исходные баллы P и I по чек-листу)
+  const risks = [
+    {id:'90', title:'Недостижение требуемого качества г/к проката при выборе типа контроллера SIMATIC S7-1500 (Siemens)', cat:'Технологические', status:'Мониторинг и Контроль', sev:'high', p:3, i:3, owner:'Якубов Е.В.',
+      cause:'Контроллеры SIMATIC S7-1500 — новая линейка Siemens без подтверждённых референций для НШСГП; отсутствие собственного опыта эксплуатации на НЛМК',
+      event:'Необеспечение требуемого качества регулирования, быстродействия технологических процессов прокатки',
+      consequence:'Появление брака конечного продукта, недостижение целевой производительности 4 млн т/год',
+      actions:[
+        {text:'Проверка референций применения контроллеров SIMATIC S7-1500 для НШСГП', kind:'cause', resp:'Мордовкин Д.С.', planned:'июн.26', cost:'tbd', status:'in_progress', strategy:'Снижение'},
+        {text:'Создание испытательного полигона на базе SIMATIC S7-1500 для проверки тех. решений', kind:'cause', resp:'Диденко Е.Е.', planned:'июн.26', cost:'7 млн руб.', status:'in_progress', strategy:'Снижение'},
+      ]},
+    {id:'92', title:'Недостижение свойств ВПС второго поколения в конечном продукте в случае неточного определения требований к процессу из-за недоступности референций', cat:'Технологические', status:'Мониторинг и Контроль', sev:'medium', p:2, i:2, owner:'Кузюк М.В.',
+      cause:'Ограниченный доступ к референсным данным и решениям ключевых Интеграторов вследствие коммерческой тайны',
+      event:'Неточное определение требований к процессу и оборудованию стана горячей прокатки для ВПС',
+      consequence:'Выход негодного продукта при формальном соблюдении проектных параметров; невозможность целевой стоимости продукта',
+      actions:[
+        {text:'Подтверждение оптимальности конфигурации стана 1700 через референс-визиты в Китай', kind:'cause', resp:'Мордовкин Д.С.', planned:'май.26', cost:'tbd', status:'in_progress', strategy:'Снижение'},
+        {text:'Математическое моделирование конфигураций для подтверждения температурных режимов', kind:'cause', resp:'Сараев Д.В., Мощенко М.Г., Долгов А.В.', planned:'мар.26', cost:'Не требуется', status:'done', strategy:'Снижение'},
+        {text:'Приобретение и переработка экспериментального подката других производителей', kind:'cause', resp:'Мощенко М.Г.', planned:'май.26', cost:'tbd', status:'in_progress', strategy:'Снижение'},
+        {text:'Отработка технологии холодного передела до положительного результата. Триггер: непрохождение аттестации готовой продукции ВПС', kind:'contingency', resp:'Мощенко М.Г.', planned:'2030', cost:'tbd', status:'planned', strategy:'Снижение'},
+      ]},
+    {id:'36', title:'Недостижение целевой производительности стана 4 млн т/год из-за низкой скорости передачи слябов рольганг-тележки ОНРС КЦ-2', cat:'Технические', status:'Мониторинг и Контроль', sev:'high', p:2, i:3, owner:'Мордовкин Д.С.',
+      cause:'Удлинение пути движения рольганг-тележки; низкая скорость позиционирования и движения существующей тележки',
+      event:'Невыполнение требуемых объёмов передачи слябов из КЦ-2 на склад слябов ЦГП-2',
+      consequence:'Нарушение внутренней логистики КЦ-2; недостижение целевой производительности 4 млн т/год стана',
+      actions:[
+        {text:'Проведение имитационного моделирования склада слябов', kind:'cause', resp:'Кулигин М.А.', planned:'июл.25', cost:'2,7 млн руб.', status:'done', strategy:'Снижение'},
+        {text:'Повышение скорости перемещения тележки за счёт модернизации АСУ ТП, электропривода, мех. части', kind:'cause', resp:'Раздорских Д.А.', planned:'дек.26', cost:'tbd', status:'planned', strategy:'Снижение'},
+        {text:'Рассмотреть передачу слябов по рольгангу МНЛЗ-9 на склад слябов ЦГП-2', kind:'cause', resp:'Раздорских Д.А.', planned:'июн.26', cost:'tbd', status:'in_progress', strategy:'Снижение'},
+        {text:'Привлечение Интегратора (CISDI) для оценки альтернативных способов передачи слябов', kind:'cause', resp:'Кулигин М.А.', planned:'июн.26', cost:'tbd', status:'in_progress', strategy:'Передача'},
+        {text:'Проработка альтернативных способов передачи слябов на стан 1700', kind:'cause', resp:'Раздорских Д.А.', planned:'июн.26', cost:'tbd', status:'in_progress', strategy:'Уклонение'},
+      ]},
+    {id:'32', title:'Недостижение эконом. КПЭ Программы из-за изменения конъюнктуры рынка слябов (продление квоты на поставку слябов в Европу после 2028 г.)', cat:'Экономические', status:'Мониторинг и Контроль', sev:'high', p:3, i:2, owner:'Аршакуни К.В., Гущин И.В., Хорн С.О.',
+      cause:'Продление квоты на поставку слябов в Европу после 2028 г.',
+      event:'Опубликование решений органов ЕС с отменой или увеличением квот на поставку слябов',
+      consequence:'Изменение IRR Программы ЦГП-2 в обе стороны в зависимости от сценария; рост эффективности основного бизнеса при сохранении внутригрупповых поставок',
+      actions:[
+        {text:'Поиск возможностей поставок г/к проката совместно с поставкой слябов в Европу', kind:'consequence', resp:'Поляков Д., Кожевников А.В.', planned:'2028', cost:'tbd', status:'planned', strategy:'Принятие'},
+        {text:'Дальнейшее развитие downstream через M&A в РФ или строительство мощностей (трубное производство, ЦХПП)', kind:'consequence', resp:'Долгов М.В., Кожевников А.В.', planned:'2028', cost:'tbd', status:'planned', strategy:'Снижение'},
+        {text:'Дальнейшее развитие downstream через M&A в MENAT', kind:'consequence', resp:'Кожевников А.В., Поляков Д.', planned:'2028', cost:'tbd', status:'planned', strategy:'Снижение'},
+        {text:'Мониторинг ввода импортных квот на поставку слябов в Европу после 2028 г.', kind:'cause', resp:'Кожевников А.В., Поляков Д.', planned:'2028', cost:'tbd', status:'planned', strategy:'Снижение'},
+      ]},
+    {id:'86', title:'Недостижение уровня продаж в объёме 3,2–3,5 млн т/год из-за изменения конъюнктуры рынка / отсутствия спроса на г/к прокат', cat:'Экономические', status:'Мониторинг и Контроль', sev:'high', p:2, i:3, owner:'Аршакуни К.В., Гущин И.В., Хорн С.О.',
+      cause:'Изменение конъюнктуры рынка относительно прогнозных сценариев по г/к прокату',
+      event:'Отсутствие перспективного спроса/продаж ниже целевого объёма ~3,2–3,5 млн т/год',
+      consequence:'Вынужденное снижение объёмов производства стана, снижение EBITDA',
+      actions:[
+        {text:'Дальнейшее развитие downstream через M&A в РФ или строительство мощностей (трубное производство, ЦХПП)', kind:'cause', resp:'Долгов М.В., Кожевников А.В.', planned:'2030', cost:'tbd', status:'planned', strategy:'Снижение'},
+        {text:'Дальнейшее развитие downstream через M&A в MENAT и ЮВА', kind:'cause', resp:'Кожевников А.В., Поляков Д.', planned:'2030', cost:'tbd', status:'planned', strategy:'Снижение'},
+      ]},
+    {id:'26', title:'Увеличение сроков проектирования и строительства из-за нехватки ресурсов генпроектировщика', cat:'ПИР', status:'Мониторинг и Контроль', sev:'medium', p:1, i:3, owner:'Тимошкин А.В.',
+      cause:'Нехватка человеческих ресурсов Генпроектировщика; неверная оценка трудоёмкости ПИР; неэффективное управление документооборотом',
+      event:'Задержка выдачи проектной и рабочей документации по критическим объектам, рост объёма замечаний и возвратов на доработку',
+      consequence:'Смещение плановых сроков начала и завершения СМР',
+      actions:[
+        {text:'Подготовка ресурсных планов генпроектировщика при переходе на Фазу-3', kind:'cause', resp:'Терешкова Ю.В., Раздорских Д.А.', planned:'июл.26', cost:'Не требуется', status:'in_progress', strategy:'Снижение'},
+        {text:'Передача разработки отдельных разделов ПД/РД субподрядным проектным организациям', kind:'cause', resp:'Раздорских Д.А.', planned:'Фазы 3, 4', cost:'tbd', status:'planned', strategy:'Снижение'},
+        {text:'Включение в договор требования о 100% занятости ключевых специалистов на Программе ЦГП-2', kind:'cause', resp:'Тимошкин А.В.', planned:'Фазы 3, 4', cost:'Не требуется', status:'planned', strategy:'Снижение'},
+      ]},
+    {id:'78', title:'Увеличение CAPEX в связи с уточнением требований ГГЭ в части огнезащиты строительных конструкций ЦГП-2', cat:'ПИР', status:'Мониторинг и Контроль', sev:'high', p:3, i:3, owner:'Мордовкин Д.С.',
+      cause:'Увеличение объёмов работ по огнезащите относительно проектных решений на этапе ОПР из-за требований регулятора',
+      event:'Заключение ГГЭ по отнесению зданий ЦГП-2 к категории В3 по пожарной опасности',
+      consequence:'Увеличение CAPEX, снижение эффективности проекта',
+      actions:[
+        {text:'Разработка специальных ТУ с привлечением специализированных организаций', kind:'cause', resp:'Раздорских Д.А.', planned:'сен.26', cost:'Не требуется', status:'in_progress', strategy:'Снижение'},
+        {text:'Разработка проектных решений по созданию пожаробезопасных зон внутри цеха', kind:'cause', resp:'Раздорских Д.А.', planned:'сен.26', cost:'Не требуется', status:'in_progress', strategy:'Снижение'},
+        {text:'Разработка проектных решений по созданию пожаростойких строительных конструкций', kind:'cause', resp:'Раздорских Д.А.', planned:'сен.26', cost:'Не требуется', status:'in_progress', strategy:'Снижение'},
+      ]},
+    {id:'15', title:'Недостижение целевых показателей по срокам поставки и монтажа ОТО, КВО и ВО из-за смещения сроков разработки базисного и детального инжиниринга (БИ, ДИ)', cat:'Снабжение', status:'Мониторинг и Контроль', sev:'high', p:2, i:3, owner:'Азимов Х.А.',
+      cause:'Дефицит квалифицированных инженеров-проектировщиков у подрядчика по разработке инжиниринга в соответствии с нормами РФ',
+      event:'Систематическое отклонение БИ и ДИ от требований нормативной базы РФ, массовый возврат чертежей на доработку',
+      consequence:'Критическое смещение сроков выдачи БИ и ДИ, смещение сроков начала СМР по разделам ОТО, КВО и ВО',
+      actions:[
+        {text:'Резерв в графике на мобилизацию ресурсов генпроектировщика по месту пребывания поставщика БИ', kind:'cause', resp:'Азимов Х.А., Шабельников А.В.', planned:'сен.26', cost:'Не требуется', status:'planned', strategy:'Снижение'},
+        {text:'Совместное проектирование с привлечением специалистов генпроектировщика по месту пребывания Интегратора', kind:'cause', resp:'Азимов Х.А., Шабельников А.В.', planned:'мар.27', cost:'tbd', status:'planned', strategy:'Снижение'},
+        {text:'Разработка и внедрение процедур EXPD для своевременного выявления отклонений в БИ и ДИ', kind:'cause', resp:'Азимов Х.А., Шабельников А.В.', planned:'мар.27', cost:'tbd', status:'planned', strategy:'Снижение'},
+        {text:'Внедрение в договор процедур MDR (Main Document Register) и VDR (Vendor Document Register)', kind:'existing', resp:'Азимов Х.А., Шабельников А.В.', planned:'сен.26', cost:'tbd', status:'planned', strategy:'Снижение'},
+      ]},
+    {id:'17', title:'Недостижение целевых объёмов производства 4 млн т/год из-за несоответствия качества изготовления технологического оборудования (ОТО и КВО)', cat:'Снабжение', status:'Мониторинг и Контроль', sev:'medium', p:2, i:2, owner:'Азимов Х.А.',
+      cause:'Нарушение параметров и технических характеристик ОТО и КВО, указанных в договоре на поставку',
+      event:'Выход из строя отдельных узлов, снижение срока работоспособности оборудования на этапе ХПНР/ГПНР',
+      consequence:'Претензионная работа в части ремонта и замены оборудования; смещение графика реализации',
+      actions:[
+        {text:'Разработка и внедрение процедур по EXPD', kind:'cause', resp:'Азимов Х.А., Шабельников А.В.', planned:'янв.28', cost:'tbd', status:'planned', strategy:'Снижение'},
+        {text:'Привлечение специализированных компаний для проведения EXPD (инспекционный контроль качества)', kind:'existing', resp:'Азимов Х.А., Шабельников А.В.', planned:'янв.28', cost:'tbd', status:'planned', strategy:'Снижение'},
+        {text:'Организация приёмо-сдаточных испытаний ключевых узлов ОТО и КВО на заводе-изготовителе', kind:'existing', resp:'Азимов Х.А., Шабельников А.В.', planned:'июн.28', cost:'tbd', status:'planned', strategy:'Снижение'},
+        {text:'Проведение осмотра (вскрытие упаковки) оборудования до начала монтажных работ', kind:'existing', resp:'Азимов Х.А., Шабельников А.В., Мордовкин Д.С.', planned:'янв.29', cost:'Не требуется', status:'planned', strategy:'Снижение'},
+      ]},
+    {id:'89', title:'Недостижение целевой производительности 4 млн т/год при выборе типа контроллера SIMATIC TDC (Siemens) ввиду невозможности будущих поставок ЗиП', cat:'Снабжение', status:'Мониторинг и Контроль', sev:'high', p:3, i:2, owner:'Азимов Х.А.',
+      cause:'Контроллеры TDC сняты с производства в окт.25; поставки ЗиП только до 2033 г.; невозможность будущих поставок ЗиП',
+      event:'Аварийная остановка стана 1700',
+      consequence:'Невозможность восстановления работоспособности АСУ ТП стана, снижение производительности стана вплоть до полной остановки',
+      actions:[
+        {text:'Переход на другую линейку контроллеров (SIMATIC S7-1500)', kind:'cause', resp:'Диденко Е.Е.', planned:'июн.26', cost:'Не требуется', status:'in_progress', strategy:'Уклонение'},
+        {text:'Организация поставки новой линейки в соответствии с потребностью НЛМК', kind:'cause', resp:'Азимов Х.А., Шабельников А.В.', planned:'мар.28', cost:'Не требуется', status:'in_progress', strategy:'Снижение'},
+        {text:'Предусмотреть возможность поставки собственными силами при невозможности поставки от Интегратора', kind:'contingency', resp:'Азимов Х.А., Шабельников А.В.', planned:'июн.26', cost:'Не требуется', status:'in_progress', strategy:'Снижение'},
+      ]},
+    {id:'2', title:'Увеличение сроков и бюджета земляных работ из-за высокого уровня грунтовых вод на участке строительства ЦГП-2', cat:'СМР/ПНР', status:'Мониторинг и Контроль', sev:'high', p:3, i:3, owner:'Мордовкин Д.С.',
+      cause:'Недостаточность стандартных мероприятий по водопонижению в зоне проведения СМР ЦГП-2',
+      event:'Получение отчёта о невозможности водопонижения стандартными строительными практиками',
+      consequence:'Повторная разработка мероприятий по водопонижению для обеспечения темпов СМР на весь период строительства',
+      actions:[
+        {text:'Создание системы водопонижения мощностью до 1000 м³/час (1 этап) в 2026 г.', kind:'cause', resp:'Волков П.А.', planned:'дек.26', cost:'tbd', status:'in_progress', strategy:'Снижение'},
+        {text:'Привлечение специализированной организации для проработки альтернативных вариантов водопонижения', kind:'cause', resp:'Раздорских Д.А.', planned:'май.26', cost:'tbd', status:'in_progress', strategy:'Снижение'},
+        {text:'Повторная разработка мероприятий по водопонижению. Триггер: неудовлетворительный результат оценки мероприятий водопонижения', kind:'contingency', resp:'Раздорских Д.А.', planned:'май.26', cost:'tbd', status:'planned', strategy:'Снижение'},
+      ]},
+    {id:'6', title:'Увеличение сроков и стоимости СМР из-за недостаточного опыта генподрядчиков РФ при строительстве уникального сооружения — циклонного отстойника', cat:'СМР/ПНР', status:'Мониторинг и Контроль', sev:'high', p:2, i:3, owner:'Мордовкин Д.С.',
+      cause:'Недостаточный опыт генподрядчиков РФ при строительстве аналогичных объектов (циклонных отстойников)',
+      event:'Отказ перспективных генподрядных организаций РФ от реализации строительства «под ключ»',
+      consequence:'Переход на отдельные виды работ разными подрядчиками, ручное управление процессом СМР силами заказчика',
+      actions:[
+        {text:'Проверка референций среди Интеграторов КНР на возможность комплексного строительства без диверсификации', kind:'cause', resp:'Сунцова Н.А., Мордовкин Д.С.', planned:'июн.26', cost:'tbd', status:'in_progress', strategy:'Снижение'},
+        {text:'Запрос КП о стоимости и возможности строительства циклонного отстойника силами Интегратора', kind:'cause', resp:'Мордовкин Д.С.', planned:'май.26', cost:'Не требуется', status:'in_progress', strategy:'Передача'},
+        {text:'Гибридная схема: китайский подрядчик на СМР во главе с генподрядчиком РФ. Триггер: отсутствие доступных китайских Интеграторов «под ключ»', kind:'contingency', resp:'Сунцова Н.А., Мордовкин Д.С.', planned:'июн.26', cost:'tbd', status:'planned', strategy:'Снижение'},
+        {text:'Определить технологию нулевого цикла и оценить доступные в РФ технологии СМР. Триггер: отказ китайского Интегратора от субподряда', kind:'contingency', resp:'Сунцова Н.А., Мордовкин Д.С.', planned:'ноя.26', cost:'tbd', status:'in_progress', strategy:'Снижение'},
+      ]},
+    {id:'9', title:'Увеличение сроков СМР по причине недостаточной мобилизации ресурсов строительных подрядных организаций', cat:'СМР/ПНР', status:'Мониторинг и Контроль', sev:'high', p:3, i:3, owner:'Мордовкин Д.С.',
+      cause:'Недостаточный объём квалифицированных человеческих ресурсов у подрядных организаций',
+      event:'Невыполнение плана мобилизации человеческих ресурсов согласно договору',
+      consequence:'Снижение темпов СМР и срыв графика ключевых событий',
+      actions:[
+        {text:'Сформировать оптимальную контрактную стратегию с учётом объёмов работ и графика строительства', kind:'cause', resp:'Сунцова Н.А.', planned:'июн.26', cost:'Не требуется', status:'planned', strategy:'Снижение'},
+        {text:'Оценка референций потенциальных подрядных организаций', kind:'cause', resp:'Мордовкин Д.С.', planned:'ноя.26', cost:'tbd', status:'planned', strategy:'Снижение'},
+        {text:'Привлечь строительно-монтажные организации с опытом сопоставимых объектов, включая иностранные', kind:'cause', resp:'Сунцова Н.А., Хебнев А.В.', planned:'апр.27', cost:'tbd', status:'planned', strategy:'Снижение'},
+        {text:'Проработать с гос. органами вопрос квот на привлечение рабочей силы из иностранных государств', kind:'cause', resp:'Мордовкин Д.С.', planned:'ноя.26', cost:'tbd', status:'planned', strategy:'Снижение'},
+        {text:'Развитие СМТ НЛМК и его привлечение для выполнения СМР', kind:'cause', resp:'Хебнев А.В.', planned:'апр.27', cost:'tbd', status:'planned', strategy:'Снижение'},
+      ]},
+    {id:'97', title:'Увеличение сроков СМР из-за ограничения по утилизации откачанных грунтовых вод из системы строительного водопонижения', cat:'СМР/ПНР', status:'Мониторинг и Контроль', sev:'high', p:3, i:2, owner:'Гуськов Е.В.',
+      cause:'Ограниченность мощности приёма и транспортировки грунтовой воды (инфраструктурная, экологическая, водный баланс НЛМК)',
+      event:'Отсутствие возможности СМР в обводнённых грунтах',
+      consequence:'Снижение темпов выполнения СМР',
+      actions:[
+        {text:'Привлечение организации для подтверждения приёма воды в оборотный цикл комбината водопонижения', kind:'cause', resp:'Харин А.Н.', planned:'авг.26', cost:'tbd', status:'rejected', strategy:'Снижение'},
+        {text:'Разработка альтернативных вариантов сброса и очистки воды (дренажный водоём, реверс на МУП ЛиСА)', kind:'cause', resp:'Харин А.Н.', planned:'авг.26', cost:'tbd', status:'in_progress', strategy:'Снижение'},
+        {text:'Герметизация котлованов (буросекущие сваи, изменение коэф. фильтрации грунтов)', kind:'cause', resp:'Волков П.А.', planned:'дек.26', cost:'tbd', status:'in_progress', strategy:'Снижение'},
+        {text:'Пересмотр очерёдности строительства с учётом объёма утилизации грунтовых вод', kind:'consequence', resp:'Волков П.А.', planned:'апр.26', cost:'Не требуется', status:'in_progress', strategy:'Снижение'},
+        {text:'Разработка технических решений по 1 очереди системы водопонижения и транспортировки воды', kind:'cause', resp:'Волков П.А.', planned:'июн.26', cost:'tbd', status:'in_progress', strategy:'Снижение'},
+      ]},
+    {id:'99', title:'Увеличение CAPEX Программы из-за отнесения объектов ЦГП-2 к 3 категории критической информационной инфраструктуры (КИИ)', cat:'Регуляторные', status:'Мониторинг и Контроль', sev:'high', p:2, i:3, owner:'Якубов Е.В.',
+      cause:'Ужесточение требований регулятора к объектам КИИ; необходимость локализации и сертификации оборудования и ПО; отнесение к 3 категории значимости',
+      event:'Необходимость включения сертифицированного оборудования и ПО российского производства в проектные решения',
+      consequence:'Значимый рост CAPEX на ~2,5 млрд руб. относительно текущей сметы',
+      actions:[
+        {text:'Проработать возможность отнесения объектов ЦГП-2 к незначимой категории КИИ (окончательное решение за регулятором)', kind:'cause', resp:'Комиссия по кат. объектов КИИ (председатель — УД)', planned:'2026', cost:'Не требуется', status:'in_progress', strategy:'Снижение'},
+        {text:'Проработать предложения поставщиков для актуализации стоимости оборудования и ПО', kind:'cause', resp:'Шабельников А.В.', planned:'мар.26', cost:'tbd', status:'done', strategy:'Снижение'},
+        {text:'Проработка вариантов реализации (по сайзингу ЦГП) для оптимизации количества оборудования', kind:'cause', resp:'Кожевников Д.Б.', planned:'апр.26', cost:'tbd', status:'done', strategy:'Снижение'},
+      ]},
+  ];
+
+  // ===== РЕАЛЬНЫЕ 10 УРОКОВ проекта БВН (ДП-4, НЛМК) — из xlsx-шаблона, включая хештеги
+  // для панели подбора по тегам, которая раньше была пустой =====
+  const lessons = [
+    {id:'L-01', title:'Всегда закладывать ≥2 альтернативы размещения вспомогательных объектов', cat:'Проектирование / компоновка', phase:'Фаза 2', strategy:'Снижение', desc:'Компоновка БВН не учла ограничения действующей инфраструктуры; при разработке ПД выявлены коллизии, потребовавшие изменения конфигурации и переноса сетей.', tags:['#компоновка','#инфраструктура','#коллизии','#ОПР']},
+    {id:'L-02', title:'Выбирать поставщика уникального ОТО по ТСО и референциям, а не по цене', cat:'Закупки / тендер', phase:'Фаза 2', strategy:'Снижение', desc:'Поставщик ОТО выбран по минимальной цене оборудования без учёта фактического разделения поставки и рисков изготовления, принятых НЛМК.', tags:['#выборпоставщика','#тендер','#ТСО','#референции']},
+    {id:'L-03', title:'Спец. допуски поставщика переносить в РД/КД явными значениями, а не ссылкой', cat:'Проектирование / изготовление', phase:'Фаза 4', strategy:'Снижение', desc:'Элементы кожуха ВН-12 не соответствовали допускам PW; часть смонтированных поясов демонтирована и переделана.', tags:['#КМД','#допускиРК','#изготовление']},
+    {id:'L-04', title:'Указывать требования по герметичности в ТЗ на оборудование для опасных сред явно', cat:'Закупки / ТЗ', phase:'Фаза 2', strategy:'Снижение', desc:'ТЗ на вентиляторы ВГГ-1,2 не содержало требования по герметичности; оборудование не соответствовало нормам эксплуатации на доменном газе.', tags:['#ТЗ','#герметичность','#безопасность']},
+    {id:'L-05', title:'Синхронизировать поставку материалов с ограниченным сроком годности с графиком СМР', cat:'СМР / материалы', phase:'Фаза 4', strategy:'Снижение', desc:'Лакокрасочные покрытия и огнеупоры утратили эксплуатационные свойства из-за сдвига пуска ВН-12 на 20 мес.', tags:['#хранение','#огнеупоры','#срокгодности']},
+    {id:'L-06', title:'Применять поэтапную контрактацию, привязанную к фактическому графику СМР', cat:'Закупки / логистика', phase:'Фаза 2', strategy:'Снижение', desc:'Оборудование для ВН-13 и ВН-14 закуплено под первоначальный график; при сдвиге сроков ~908 млн ₽ ТМЦ простаивают на складах.', tags:['#закупки','#склад','#ТМЦ']},
+    {id:'L-07', title:'Синхронизировать график вывода/ввода оборудования с остановками смежных агрегатов', cat:'График', phase:'Фаза 2', strategy:'Снижение', desc:'График БВН не учитывал привязку вывода ВН к плановым остановкам ДП-4 (доступны только 7–8 сут. при капремонтах).', tags:['#график','#технологическаязависимость','#капремонт']},
+    {id:'L-08', title:'Вести сквозной план загрузки ресурсов по всему портфелю капремонтов и инвестпроектов', cat:'Ресурсы / портфель проектов', phase:'Фаза 4', strategy:'Снижение', desc:'В 2023–2024 проект столкнулся с дефицитом ресурсов СМТ НЛМК (~40%) на фоне приоритета капремонтов.', tags:['#дефицитресурсов','#портфельпроектов','#приоритизация']},
+    {id:'L-09', title:'Проводить двухэтапные тендеры на монтаж уникального оборудования с оценкой компетенций', cat:'Закупки / подрядчики', phase:'Фаза 4', strategy:'Снижение', desc:'Тендер на монтаж ВН-12 не учитывал требования PW к точности; победитель выбран по цене, без опыта работы на аналогичных кауперах.', tags:['#выборподрядчика','#качествомонтажа','#тендер']},
+    {id:'L-10', title:'Фиксировать требования заказчика на Фазе 2 и «замораживать» их после ОПР', cat:'Управление изменениями', phase:'Фаза 2', strategy:'Снижение', desc:'По ходу реализации возникли доп. требования заказчика и изменения СМР без сквозного реестра требований, что привело к росту сметы.', tags:['#управлениеизменениями','#границыпроекта','#требованиязаказчика']},
+  ];
+
+  const sevBadge = {low:'badge-low', medium:'badge-medium', high:'badge-high'};
+  const sevLabel = {low:'Низкий', medium:'Средний', high:'Высокий'};
+  const statusBadge = (s) => s === 'Закрыт' ? 'badge-status-closed' : (s === 'Идентификация' ? 'badge-status-ident' : 'badge-status-progress');
+
+  let expandedRisk = null;
+  function toggleAccordion(id){
+    expandedRisk = (expandedRisk === id) ? null : id;
+    renderRegister();
+  }
+
+  function renderRegister(){
+    const catSel = document.getElementById('regFiltCat');
+    if (catSel.options.length <= 1){
+      CATS.forEach(c => { const o = document.createElement('option'); o.textContent = c.name; catSel.appendChild(o); });
+    }
+    document.getElementById('registerList').innerHTML = risks.map(r => {
+      const tl = trafficLight(r.actions);
+      const open = expandedRisk === r.id;
+      return `
+      <div class="risk-card">
+        <div class="risk-card-top" style="cursor:pointer" onclick="toggleAccordion('${r.id}')">
+          <span title="${tl.label}" style="width:10px;height:10px;border-radius:50%;background:${tl.color};flex-shrink:0;"></span>
+          <span class="risk-card-title">${r.title}</span>
+          <span class="badge-pill ${sevBadge[r.sev]}">${sevLabel[r.sev]}</span>
+          <span class="badge-pill ${statusBadge(r.status)}">${r.status}</span>
+          <span style="margin-left:auto;color:var(--ink-400);font-size:12px;">${open ? '▲ Скрыть мероприятия' : '▼ Мероприятия ('+r.actions.length+')'}</span>
+        </div>
+        <div class="risk-card-cat">Категория: ${r.cat} · <span style="font-family:var(--font-mono)">ID ${r.id}</span> · Владелец: ${r.owner}</div>
+        <div class="risk-card-grid">
+          <div><div class="k">Причина</div><div class="v" style="font-weight:400">${r.cause}</div></div>
+          <div><div class="k">Риск-событие</div><div class="v" style="font-weight:400">${r.event}</div></div>
+          <div><div class="k">Прямое следствие</div><div class="v" style="font-weight:400">${r.consequence}</div></div>
+          <div><div class="k">P × I (оценочно)</div><div class="v">${r.p} × ${r.i}</div></div>
+        </div>
+        ${open ? `
+        <div class="lessons-table-wrap" style="margin-top:4px;">
+          <table class="lessons-table">
+            <thead><tr><th style="width:8%">Стратегия</th><th style="width:32%">Мероприятие</th><th style="width:12%">Вид</th><th style="width:16%">Ответственный</th><th style="width:10%">Срок</th><th style="width:10%">Стоимость</th><th style="width:12%">Статус</th></tr></thead>
+            <tbody>
+              ${r.actions.map(a => `
+                <tr>
+                  <td>${a.strategy}</td>
+                  <td>${a.text}</td>
+                  <td>${actionKindLabel[a.kind]}</td>
+                  <td>${a.resp}</td>
+                  <td class="lesson-code">${a.planned}</td>
+                  <td class="lesson-code">${a.cost}</td>
+                  <td><span style="display:inline-flex;align-items:center;gap:6px;"><i style="width:7px;height:7px;border-radius:50%;background:${actionStatusColor[a.status]};display:inline-block;"></i>${actionStatusLabel[a.status]}</span></td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  function renderMatrix(){
+    const grid = document.getElementById('matrixGrid');
+    let html = `<div class="matrix-axis-y">Влияние (I)</div>`;
+    for (let i = 3; i >= 1; i--){
+      for (let p = 1; p <= 3; p++){
+        const score = i * p;
+        let bg = 'var(--green-50)';
+        if (score >= 6) bg = 'var(--red-50)';
+        else if (score >= 3) bg = 'var(--amber-50)';
+        html += `<div class="matrix-cell" style="background:${bg}" data-p="${p}" data-i="${i}"></div>`;
+      }
+    }
+    html += `<div class="matrix-axis-x">Вероятность (P)</div>`;
+    grid.innerHTML = html;
+    risks.forEach(r => {
+      const cell = grid.querySelector(`.matrix-cell[data-p="${r.p}"][data-i="${r.i}"]`);
+      if (cell){
+        const dot = document.createElement('div');
+        dot.className = 'matrix-dot';
+        dot.textContent = r.id;
+        dot.style.right = (4 + Math.random()*30) + 'px';
+        dot.style.bottom = (4 + Math.random()*30) + 'px';
+        dot.onclick = () => {
+          document.getElementById('matrixSelected').innerHTML = `<b>ID ${r.id}</b> — ${r.title}<br>P=${r.p}, I=${r.i} · RRA=${r.p*r.i} · Владелец: ${r.owner}`;
+        };
+        cell.appendChild(dot);
+      }
+    });
+  }
+
+  function renderLessons(){
+    document.getElementById('lessonsBody').innerHTML = lessons.map(l => `
+      <tr>
+        <td><strong>${l.title}</strong><div style="color:var(--ink-600); font-size:12.5px; margin-top:2px;">${l.desc}</div></td>
+        <td>${l.cat}</td>
+        <td>${l.phase}</td>
+        <td>${l.strategy}</td>
+        <td>${l.tags.map(t => `<span class="lesson-tag-pill" style="background:var(--accent-50); color:var(--accent-600);">${t}</span>`).join('')}</td>
+        <td><button type="button" class="risk-action-btn" onclick="alert('Открывается форма создания риска, предзаполненная из ${l.id}')">Создать риск</button></td>
+      </tr>`).join('');
+  }
+
+  const calEvents = {
+    16: [['Согласование риска 99', 'var(--gold-700)', 'var(--gold-50)']],
+    18: [['Срок: ТУ по огнезащите (риск 78)', 'var(--accent-600)', 'var(--accent-50)']],
+    20: [['Срок: испытательный полигон (риск 90)', 'var(--accent-600)', 'var(--accent-50)']],
+    25: [['Пересмотр риска 92', '#8C6CF0', '#F1ECFC']],
+    8:  [['Просрочено: риск 36, повышение скорости тележки', 'var(--red-700)', 'var(--red-50)']],
+  };
+  let calDate = new Date(2026, 8, 1);
+  function renderCalendar(){
+    const names = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+    const y = calDate.getFullYear(), m = calDate.getMonth();
+    document.getElementById('calMonthLabel').textContent = names[m] + ' ' + y;
+    const first = new Date(y, m, 1);
+    const startDow = (first.getDay() + 6) % 7;
+    const daysInMonth = new Date(y, m+1, 0).getDate();
+    let html = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(d => `<div class="cal-dow">${d}</div>`).join('');
+    for (let i = 0; i < startDow; i++) html += '<div class="cal-cell empty"></div>';
+    const today = new Date(2026, 8, 12);
+    for (let d = 1; d <= daysInMonth; d++){
+      const isToday = (y === today.getFullYear() && m === today.getMonth() && d === today.getDate());
+      const evs = (m === 8 ? (calEvents[d] || []) : []).map(([txt, fg, bg]) => `<div class="cal-ev" style="background:${bg};color:${fg}">${txt}</div>`).join('');
+      html += `<div class="cal-cell${isToday ? ' today' : ''}"><div class="dnum">${d}</div>${evs}</div>`;
+    }
+    document.getElementById('calGrid').innerHTML = html;
+  }
+  document.getElementById('calPrev').addEventListener('click', () => { calDate.setMonth(calDate.getMonth()-1); renderCalendar(); });
+  document.getElementById('calNext').addEventListener('click', () => { calDate.setMonth(calDate.getMonth()+1); renderCalendar(); });
+
+  const mapNodes = [
+    {id:'proj', type:'project', x:50, y:50, label:'ЦГП-2'},
+    {id:'90', type:'risk', x:20, y:20, cat:'Технологические'},
+    {id:'89', type:'risk', x:78, y:18, cat:'Снабжение'},
+    {id:'2', type:'risk', x:14, y:70, cat:'СМР/ПНР'},
+    {id:'97', type:'risk', x:82, y:72, cat:'СМР/ПНР'},
+  ];
+  let mapLinks = [{from:'90', to:'89', label:'дублирует причину (контроллер Siemens)'}, {from:'2', to:'97', label:'усиливает'}];
+  let mapMode = 'cursor', mapSelected = [];
+  document.getElementById('mapToolbar').addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    document.querySelectorAll('#mapToolbar button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    mapMode = btn.dataset.mode;
+    mapSelected = [];
+    renderMap();
+    const hints = {
+      cursor:'Режим «Курсор»: кликните узел, чтобы посмотреть карточку риска.',
+      risk:'Режим «Риск»: клик по пустому месту холста добавит новый узел риска.',
+      link:'Режим «Связать»: кликните риск-источник, затем риск-следствие.',
+      merge:'Режим «Объединить»: выделите два узла-дубликата и подтвердите объединение.'
+    };
+    document.getElementById('mapHint').textContent = hints[mapMode];
+  });
+  function renderMap(){
+    const canvas = document.getElementById('mapCanvas');
+    canvas.innerHTML = '<svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></svg>';
+    const svg = canvas.querySelector('svg');
+    const svgNs = 'http://www.w3.org/2000/svg';
+    const proj = mapNodes.find(n => n.type === 'project');
+    mapNodes.filter(n => n.type === 'risk').forEach(n => {
+      const line = document.createElementNS(svgNs, 'line');
+      line.setAttribute('x1', proj.x+'%'); line.setAttribute('y1', proj.y+'%');
+      line.setAttribute('x2', n.x+'%'); line.setAttribute('y2', n.y+'%');
+      line.setAttribute('stroke', '#D5D8E8'); line.setAttribute('stroke-dasharray', '4 4');
+      svg.appendChild(line);
+    });
+    mapLinks.forEach(l => {
+      const a = mapNodes.find(n => n.id === l.from), b = mapNodes.find(n => n.id === l.to);
+      if (!a || !b) return;
+      const line = document.createElementNS(svgNs, 'line');
+      line.setAttribute('x1', a.x+'%'); line.setAttribute('y1', a.y+'%');
+      line.setAttribute('x2', b.x+'%'); line.setAttribute('y2', b.y+'%');
+      line.setAttribute('stroke', '#167ffb'); line.setAttribute('stroke-width', '2');
+      svg.appendChild(line);
+    });
+    mapNodes.forEach(n => {
+      const el = document.createElement('div');
+      el.className = 'map-node' + (n.type === 'project' ? ' project' : '');
+      el.style.left = n.x + '%'; el.style.top = n.y + '%';
+      el.innerHTML = n.type === 'project' ? n.label : `<div class="id">${n.id}</div><div class="cat">${n.cat}</div>`;
+      el.onclick = () => {
+        if (n.type === 'project' || mapMode !== 'link') return;
+        if (!mapSelected.includes(n.id)) mapSelected.push(n.id);
+        if (mapSelected.length === 2){
+          const label = prompt('Тип связи (усиливает / ведёт к / зависит от):', 'ведёт к');
+          if (label) mapLinks.push({from:mapSelected[0], to:mapSelected[1], label});
+          mapSelected = [];
+          renderMap();
+        }
+      };
+      canvas.appendChild(el);
+    });
+  }
+
+  function renderKG(){
+    const nodes = [
+      {id:'ЦГП-2', type:'proj', x:50, y:50},
+      {id:'90', type:'risk', x:15, y:20}, {id:'6', type:'risk', x:25, y:78},
+      {id:'15', type:'risk', x:80, y:18}, {id:'26', type:'risk', x:55, y:12},
+      {id:'L-02', type:'lesson', x:8, y:48}, {id:'L-09', type:'lesson', x:12, y:90}, {id:'L-03', type:'lesson', x:95, y:30}, {id:'L-08', type:'lesson', x:40, y:6},
+    ];
+    const edges = [['90','L-02'],['6','L-09'],['15','L-03'],['26','L-08']];
+    const colorOf = t => t === 'proj' ? 'var(--navy-900)' : t === 'lesson' ? 'var(--ai-700)' : 'var(--accent-600)';
+    let svg = `<svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none">`;
+    edges.forEach(([a,b]) => {
+      const A = nodes.find(n=>n.id===a), B = nodes.find(n=>n.id===b);
+      if (A && B) svg += `<line x1="${A.x}%" y1="${A.y}%" x2="${B.x}%" y2="${B.y}%" stroke="#D5D8E8" stroke-width="1.5"/>`;
+    });
+    svg += `</svg>`;
+    document.getElementById('kgCanvas').innerHTML = svg + nodes.map(n => `
+      <div class="kg-node" style="left:${n.x}%; top:${n.y}%;">
+        <div class="c" style="background:${colorOf(n.type)}"></div><span>${n.id}</span>
+      </div>`).join('');
+  }
+
+  function gotoPage(key){ document.querySelector(`.ws-nav-item[data-page="${key}"]`).click(); }
+
+  renderRegister(); renderMatrix(); renderLessons(); renderCalendar(); renderMap(); renderKG();
+
+  const STORAGE_KEY = 'riskassess_session';
+  document.getElementById('wsSignOut').addEventListener('click', () => {
+    try { localStorage.removeItem(STORAGE_KEY); } catch (err) {}
+    window.location.href = 'login-variant-b.html';
+  });
+
+  // сайдбар раскрывается по наведению и сворачивается обратно при уходе курсора
+  const wsSidebar = document.querySelector('.ws-sidebar');
+  wsSidebar.addEventListener('mouseenter', () => wsSidebar.classList.add('expanded'));
+  wsSidebar.addEventListener('mouseleave', () => wsSidebar.classList.remove('expanded'));
+
+  // данные пользователя — сохранены на экране входа перед переходом сюда
+  function initials(first, last){
+    return ((first || '')[0] || '' ) .concat((last || '')[0] || '').toUpperCase() || '—';
+  }
+  try {
+    let raw = localStorage.getItem(STORAGE_KEY);
+    // ===== ТОЛЬКО ДЛЯ ЭТОГО ПРЕВЬЮ: если открыть файл напрямую (не через реальный
+    // вход), сессии нет и оригинальный код уводит на login-variant-b.html — здесь
+    // вместо редиректа подставляем демо-сессию, чтобы макет можно было посмотреть
+    // изолированно. В реальном коде эту замену убрать, оставить redirect как было.
+    if (!raw) {
+      raw = JSON.stringify({firstName:'Иван', lastName:'Петров', role:'riskmanager'});
+      localStorage.setItem(STORAGE_KEY, raw);
+    }
+    const data = JSON.parse(raw);
+    document.getElementById('wsAvatar').textContent = initials(data.firstName, data.lastName);
+    document.getElementById('wsUserName').textContent = [data.firstName, data.lastName].filter(Boolean).join(' ') || '—';
+    document.getElementById('wsUserRole').textContent = data.role === 'riskmanager' ? 'Риск-менеджер' : (data.role === 'riskowner' ? 'Владелец риска' : 'Инициатор');
+  } catch (err) {}
+
+  // тема — идентично странице входа
+  const themeBtn = document.getElementById('themeBtn');
+  const THEME_KEY = 'riskassess-theme';
+  function applyTheme(isDark){
+    const root = document.documentElement;
+    root.classList.add('theme-switching');
+    root.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('theme-switching')));
+  }
+  let storedTheme = null;
+  try { storedTheme = localStorage.getItem(THEME_KEY); } catch (err) {}
+  applyTheme(storedTheme === 'dark');
+  themeBtn.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'dark';
+    applyTheme(isDark);
+    try { localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light'); } catch (err) {}
+  });
+</script>
+</body>
+</html>
