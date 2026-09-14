@@ -671,10 +671,19 @@
   .diff-opt{border:1px solid var(--line); border-radius:var(--radius-field); padding:8px 10px; cursor:pointer;}
   .diff-opt.selected{border-color:var(--accent-600); background:var(--accent-50);}
 
-  .toast{position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--navy-900); color:#fff;
-    padding:11px 18px; border-radius:18px; font-size:12.5px; font-weight:600; box-shadow:var(--shadow-modal);
-    z-index:100; opacity:0; pointer-events:none; transition:.25s ease; max-width:min(480px, calc(100vw - 40px)); text-align:center; line-height:1.4;}
-  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  /* Всплывающее уведомление — карточка в стиле NotificationCard/NotificationGroup
+     (@nlmk/ds-2.0): заголовок + текст + время, снизу справа. */
+  .toast{position:fixed; bottom:22px; right:22px; left:auto; transform:translateX(0) translateY(12px);
+    width:340px; max-width:calc(100vw - 40px); background:var(--paper-0); color:var(--ink-900);
+    border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow-modal);
+    padding:14px 16px; display:flex; gap:10px; align-items:flex-start;
+    z-index:100; opacity:0; pointer-events:none; transition:.25s ease;}
+  .toast.show{opacity:1; transform:translateX(0) translateY(0);}
+  .toast-dot{width:8px; height:8px; border-radius:50%; background:var(--accent-600); flex-shrink:0; margin-top:5px;}
+  .toast-body{flex:1; min-width:0;}
+  .toast-title{font-family:var(--font-display); font-size:var(--fs-body2); line-height:var(--lh-body2); font-weight:700; color:var(--ink-900);}
+  .toast-text{font-size:var(--fs-caption); line-height:var(--lh-caption); color:var(--ink-600); margin-top:3px;}
+  .toast-time{font-size:var(--fs-additional); line-height:var(--lh-additional); color:var(--ink-400); margin-top:6px; text-transform:none; letter-spacing:0; font-weight:600;}
 
   .empty-state{border:1px dashed var(--line); border-radius:var(--radius-field); padding:34px 20px; text-align:center; color:var(--ink-400); font-size:13px;}
 </style>
@@ -1013,7 +1022,14 @@
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast">
+  <span class="toast-dot"></span>
+  <div class="toast-body">
+    <div class="toast-title" id="toastTitle"></div>
+    <div class="toast-text" id="toastText" hidden></div>
+    <div class="toast-time" id="toastTime"></div>
+  </div>
+</div>
 
 <script>
 /* =====================================================================
@@ -1434,12 +1450,22 @@ function scopedRisks(){
   return state.session.role === 'riskowner' ? base.filter(isMyRisk) : base;
 }
 
-function toast(msg, duration){
+// toast(title) — короткое уведомление одной строкой (как раньше).
+// toast(title, {body, duration}) — карточка в стиле NotificationCard: заголовок + текст + время.
+// toast(title, 5000) — та же короткая форма с нестандартной длительностью показа (обратная совместимость).
+function toast(title, opts){
+  let body = '', duration = 2600;
+  if (typeof opts === 'number') duration = opts;
+  else if (opts && typeof opts === 'object'){ body = opts.body || ''; duration = opts.duration || duration; }
   const t = document.getElementById('toast');
-  t.textContent = msg;
+  document.getElementById('toastTitle').textContent = title;
+  const textEl = document.getElementById('toastText');
+  textEl.textContent = body;
+  textEl.hidden = !body;
+  document.getElementById('toastTime').textContent = 'только что';
   t.classList.add('show');
   clearTimeout(toast._tm);
-  toast._tm = setTimeout(() => t.classList.remove('show'), duration || 2600);
+  toast._tm = setTimeout(() => t.classList.remove('show'), duration);
 }
 
 function openModal(id){
@@ -2247,7 +2273,7 @@ function submitNewRisk(){
   saveState();
 
   if (state.session.role === 'initiator'){
-    toast('Риск отправлен в реестр со статусом «Идентификация». Плановый срок рассмотрения риск-менеджером — до 5 рабочих дней.', 5000);
+    toast('Риск отправлен в реестр со статусом «Идентификация»', {body:'Плановый срок рассмотрения риск-менеджером — до 5 рабочих дней.', duration:5000});
     returnToRoleSelect();
   } else {
     closeModal('riskModalOverlay');
