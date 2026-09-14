@@ -244,7 +244,7 @@
   .role-card[data-value="riskowner"] .role-card-icon{background:linear-gradient(135deg,var(--role-owner-1),var(--role-owner-2));}
   .role-card[data-value="initiator"] .role-card-icon{background:linear-gradient(135deg,var(--role-initiator-1),var(--role-initiator-2));}
   .role-card:hover .role-card-icon{transform:scale(1.07);}
-  .role-card-icon svg{width:26px; height:26px;}
+  .role-card-icon svg{width:32px; height:32px; display:block;}
   .role-card-body{position:relative; display:flex; flex-direction:column; gap:3px; min-width:0;}
   .role-card-title{font-size:15.5px; font-weight:700; color:var(--ink-900);}
   .role-card-desc{font-size:12.5px; line-height:16px; color:var(--ink-600);}
@@ -758,21 +758,21 @@
     </div>
     <div class="role-cards" id="roleCards">
       <div class="role-card" data-value="riskmanager">
-        <span class="role-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/></svg></span>
+        <span class="role-card-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L4 5v6c0 5.25 3.4 9.74 8 11 4.6-1.26 8-5.75 8-11V5l-8-3z"/></svg></span>
         <span class="role-card-body">
           <span class="role-card-title">Риск-менеджер</span>
           <span class="role-card-desc">Доступ для риск-менеджеров</span>
         </span>
       </div>
       <div class="role-card" data-value="riskowner">
-        <span class="role-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg></span>
+        <span class="role-card-icon"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8v1H4v-1z"/></svg></span>
         <span class="role-card-body">
           <span class="role-card-title">Владелец риска</span>
           <span class="role-card-desc">Управляй своими рисками</span>
         </span>
       </div>
       <div class="role-card" data-value="initiator">
-        <span class="role-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h13l-3 4 3 4H5"/></svg></span>
+        <span class="role-card-icon"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="4.2" y="2" width="1.6" height="20" rx="0.8"/><path d="M5.8 3h13l-3.2 4.2 3.2 4.2h-13z"/></svg></span>
         <span class="role-card-body">
           <span class="role-card-title">Инициатор</span>
           <span class="role-card-desc">Если обнаружил риск</span>
