@@ -480,19 +480,38 @@
 
   /* ===== Карта связей ===== */
   .map-toolbar{display:flex; gap:6px; margin-bottom:14px; background:var(--paper-0); border:1px solid var(--line);
-    border-radius:var(--radius-field); padding:5px; width:fit-content;}
+    border-radius:var(--radius-field); padding:5px; width:fit-content; flex-wrap:wrap; align-items:center;}
   .map-toolbar button{padding:7px 13px; font-size:12px; font-weight:700; border-radius:8px; border:none; background:transparent; color:var(--ink-600); cursor:pointer;}
   .map-toolbar button.active{background:var(--navy-900); color:#fff;}
-  .map-canvas{position:relative; height:420px; border:1px solid var(--line); border-radius:var(--radius-field);
+  .map-shell{position:relative; height:560px; border:1px solid var(--line); border-radius:var(--radius-field); overflow:hidden;}
+  .map-canvas{position:relative; width:100%; height:100%;
     background:linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
-    background-size:22px 22px; background-color:var(--canvas); overflow:hidden;}
-  .map-node{position:absolute; transform:translate(-50%,-50%); width:100px; padding:8px 10px; border-radius:var(--radius-field);
-    background:var(--paper-0); border:2px solid var(--line); box-shadow:var(--shadow-pop); font-size:11px; text-align:center; cursor:pointer;}
-  .map-node.selected{border-color:var(--accent-600);}
-  .map-node.project{width:86px; height:86px; border-radius:50%; background:var(--navy-900); color:#fff; display:flex;
-    align-items:center; justify-content:center; font-weight:700; font-size:11.5px; border-color:var(--navy-900);}
-  .map-node .id{font-family:var(--font-mono); font-weight:700; font-size:11.5px;}
-  .map-node .cat{font-size:9.5px; color:var(--ink-400); margin-top:1px;}
+    background-size:22px 22px; background-color:var(--canvas); overflow:hidden; cursor:grab;}
+  .map-canvas.panning{cursor:grabbing;}
+  .map-canvas svg{width:100%; height:100%; display:block;}
+  .map-node-g{cursor:grab;}
+  .map-node-g.dragging{cursor:grabbing;}
+  .map-node-label{font-size:10.5px; font-weight:700; fill:var(--ink-900); text-anchor:middle; pointer-events:none; font-family:var(--font-body);}
+  .map-node-sub{font-size:8.5px; fill:var(--ink-400); text-anchor:middle; pointer-events:none; font-family:var(--font-body);}
+  .map-zoom-controls{position:absolute; bottom:12px; left:12px; display:flex; flex-direction:row; gap:6px; z-index:5;}
+  .map-zoom-btn{width:30px; height:30px; border-radius:8px; border:1px solid var(--line); background:var(--paper-0); color:var(--ink-700);
+    cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-pop);}
+  .map-zoom-btn:hover{background:var(--canvas);}
+  .map-zoom-btn svg{width:15px; height:15px;}
+  .map-legend{position:absolute; top:12px; left:12px; background:var(--paper-0); border:1px solid var(--line); border-radius:var(--radius-field);
+    padding:10px 12px; font-size:11px; z-index:5; box-shadow:var(--shadow-pop);}
+  .map-legend .lg-title{font-weight:700; margin-bottom:6px; font-size:10.5px; text-transform:uppercase; color:var(--ink-600);}
+  .map-legend-row{display:flex; align-items:center; gap:7px; margin-bottom:4px;}
+  .map-legend-sw{width:16px; height:0; border-top:2.5px solid; flex-shrink:0;}
+  .map-link-picker{position:absolute; bottom:12px; left:50%; transform:translateX(-50%); background:var(--paper-0); border:1px solid var(--line);
+    border-radius:var(--radius-field); padding:10px 12px; box-shadow:var(--shadow-pop); z-index:6; display:flex; align-items:center; gap:8px; font-size:12px;}
+  .map-detail-panel{position:absolute; top:0; right:0; width:300px; height:100%; background:var(--paper-0); border-left:1px solid var(--line);
+    box-shadow:-8px 0 24px -12px rgba(0,0,0,.25); z-index:7; overflow-y:auto; padding:18px; transform:translateX(0); transition:transform .2s ease;}
+  .map-detail-panel[hidden]{display:none;}
+  .map-detail-close{float:right; border:none; background:none; cursor:pointer; color:var(--ink-600); padding:2px;}
+  .map-detail-related-item{display:block; width:100%; text-align:left; padding:8px 10px; border-radius:8px; border:1px solid var(--line);
+    background:var(--paper-0); cursor:pointer; margin-bottom:6px; font-size:12px;}
+  .map-detail-related-item:hover{background:var(--canvas);}
   .map-hint{margin-top:10px; font-size:12px; color:var(--ink-600);}
   .dep-table-wrap{margin-top:14px;}
 
@@ -2031,6 +2050,18 @@ function canManage(r){
   if (state.session.role === 'riskowner') return isMyRisk(r);
   return false;
 }
+// «Связан с таким-то риском» — единая таблица RiskDependency, используется и
+// Картой связей, и паспортом (та же информация, разное представление).
+function relatedRisksHtml(riskId){
+  const rows = state.deps.filter(d => d.fromId===riskId || d.toId===riskId).map(d => {
+    const otherId = d.fromId===riskId ? d.toId : d.fromId;
+    const other = findRisk(otherId);
+    if (!other) return '';
+    const dir = d.fromId===riskId ? '→' : '←';
+    return `<div style="margin-bottom:3px;"><span style="color:${DEP_TYPE_COLOR[d.type]||'var(--accent-600)'};font-weight:700;">${dir} ${esc(d.type)}</span> <a href="#" data-related-risk="${other.id}">${esc(other.title.slice(0,44))}${other.title.length>44?'…':''}</a></div>`;
+  }).join('');
+  return rows || '<span class="muted">не связан с другими рисками</span>';
+}
 function renderPassport(){
   const r = findRisk(currentPassportId);
   const mount = document.getElementById('passportMount');
@@ -2062,6 +2093,7 @@ function renderPassport(){
         <div class="k" style="margin-top:10px;">Категория</div><div class="v">${esc(r.category)}</div>
         <div class="k" style="margin-top:10px;">Владелец(ы)</div><div class="v">${esc(r.ownerNames.join(', ')||'—')}</div>
         <div class="k" style="margin-top:10px;">Светофор</div><div class="v"><span class="status-dot" style="background:${tl.color}"></span> ${tl.label}</div>
+        <div class="k" style="margin-top:10px;">Связанные риски</div><div class="v">${relatedRisksHtml(r.id)}</div>
       </div>
       <div class="passport-block">
         <div class="k">Причина</div><div class="v">${esc(r.cause)||'<span class="muted">не заполнено — заполняется на оценке</span>'}</div>
@@ -2148,6 +2180,7 @@ function renderPassport(){
   if (advBtn) advBtn.addEventListener('click', () => advanceStatus(r));
   const mergeBtn = document.getElementById('pMergeBtn');
   if (mergeBtn) mergeBtn.addEventListener('click', () => openMergePicker(r));
+  mount.querySelectorAll('[data-related-risk]').forEach(el => el.addEventListener('click', () => openPassport(el.dataset.relatedRisk)));
   const printBtn = document.getElementById('pPrintBtn');
   if (printBtn) printBtn.addEventListener('click', () => window.print());
   const residualBtn = document.getElementById('pResidualBtn');
@@ -2634,16 +2667,24 @@ function renderCalendar(){
 // КАРТА ВЗАИМОСВЯЗЕЙ
 // ===================================================================
 let mapMode = 'cursor', mapSelected = [];
+const DEP_TYPE_COLOR = {'усиливает':'#f59e0b','ведёт_к':'#3b82f6','зависит_от':'#8b5cf6','дублирует':'#ef4444'};
+// Позиции узлов — если риск ещё не перетаскивали, раскладываем по кругу
+// вокруг проекта; после drag координаты сохраняются в r.mapPos (персистентно).
 function mapNodesFor(){
   const risks = scopedRisks();
-  const R = 170;
-  return [{id:'__project', type:'project', x:50, y:50, label:state.session.spp}].concat(
+  return [{id:'__project', type:'project', x:500, y:500, label:state.session.spp}].concat(
     risks.map((r,idx) => {
-      const angle = (idx / risks.length) * Math.PI * 2 - Math.PI/2;
-      return {id:r.id, type:'risk', x:50 + Math.cos(angle)*38, y:50 + Math.sin(angle)*38, cat:r.category, num:r.displayNumber};
+      let pos = r.mapPos;
+      if (!pos){
+        const angle = (idx / risks.length) * Math.PI * 2 - Math.PI/2;
+        pos = {x: 500 + Math.cos(angle)*320, y: 500 + Math.sin(angle)*320};
+      }
+      const zone = zoneOf(rraOf(r.p, r.iLevel));
+      return {id:r.id, type:'risk', x:pos.x, y:pos.y, cat:r.category, num:r.displayNumber, title:r.title, zone};
     })
   );
 }
+const mapView = {scale:1, x:0, y:0};
 function renderMap(){
   const mount = document.getElementById('mapMount');
   mount.innerHTML = `
@@ -2652,50 +2693,176 @@ function renderMap(){
       <button type="button" data-mode="link" class="${mapMode==='link'?'active':''}">Связать</button>
       <button type="button" data-mode="merge" class="${mapMode==='merge'?'active':''}">Объединить</button>
     </div>
-    <div class="map-canvas" id="mapCanvas"></div>
+    <div class="map-shell">
+      <div class="map-canvas" id="mapCanvas"></div>
+      <div class="map-legend">
+        <div class="lg-title">Тип связи</div>
+        ${DEP_TYPES.map(t => `<div class="map-legend-row"><span class="map-legend-sw" style="border-color:${DEP_TYPE_COLOR[t]}"></span>${t}</div>`).join('')}
+      </div>
+      <div class="map-zoom-controls">
+        <button type="button" class="map-zoom-btn" id="mapZoomIn" title="Приблизить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M11 8v6M8 11h6"/></svg></button>
+        <button type="button" class="map-zoom-btn" id="mapZoomOut" title="Отдалить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M8 11h6"/></svg></button>
+        <button type="button" class="map-zoom-btn" id="mapZoomReset" title="Сбросить вид"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg></button>
+      </div>
+      <div class="map-detail-panel" id="mapDetailPanel" hidden></div>
+      <div id="mapLinkPicker"></div>
+    </div>
     <p class="map-hint" id="mapHint"></p>
     <div class="dep-table-wrap panel"><h3>Связи риска (RiskDependency)</h3><div id="depTable"></div></div>`;
-  const hints = {cursor:'Кликните узел, чтобы открыть паспорт риска.', link:'Кликните риск-источник, затем риск-цель — укажите тип связи.', merge:'Выделите два узла-дубликата, чтобы объединить их.'};
+  const hints = {cursor:'Перетаскивайте узлы мышью, кликните узел — детали справа. Колесо/кнопки — масштаб, фон — перетащить холст.', link:'Кликните риск-источник, затем риск-цель — укажите тип связи из списка.', merge:'Выделите два узла-дубликата, чтобы объединить их.'};
   document.getElementById('mapHint').textContent = hints[mapMode];
   document.getElementById('mapToolbar').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
-    mapMode = b.dataset.mode; mapSelected = []; renderMap();
+    mapMode = b.dataset.mode; mapSelected = []; document.getElementById('mapLinkPicker').innerHTML = ''; renderMap();
   });
+  document.getElementById('mapZoomIn').addEventListener('click', () => { mapView.scale = Math.min(mapView.scale + 0.2, 3); drawMap(); });
+  document.getElementById('mapZoomOut').addEventListener('click', () => { mapView.scale = Math.max(mapView.scale - 0.2, 0.4); drawMap(); });
+  document.getElementById('mapZoomReset').addEventListener('click', () => { mapView.scale = 1; mapView.x = 0; mapView.y = 0; drawMap(); });
   drawMap();
   renderDepTable();
 }
 function drawMap(){
   const canvas = document.getElementById('mapCanvas');
   const nodes = mapNodesFor();
-  const svgNs = 'http://www.w3.org/2000/svg';
-  let svgLines = '';
   const proj = nodes.find(n=>n.type==='project');
-  nodes.filter(n=>n.type==='risk').forEach(n => { svgLines += `<line x1="${proj.x}%" y1="${proj.y}%" x2="${n.x}%" y2="${n.y}%" stroke="#D5D8E8" stroke-dasharray="3 4"/>`; });
+  let edgesHtml = '';
+  nodes.filter(n=>n.type==='risk').forEach(n => { edgesHtml += `<line x1="${proj.x}" y1="${proj.y}" x2="${n.x}" y2="${n.y}" stroke="#D5D8E8" stroke-width="1.5" stroke-dasharray="4 5"/>`; });
   state.deps.forEach(d => {
     const a = nodes.find(n=>n.id===d.fromId), b = nodes.find(n=>n.id===d.toId);
-    if (a && b) svgLines += `<line x1="${a.x}%" y1="${a.y}%" x2="${b.x}%" y2="${b.y}%" stroke="var(--accent-600)" stroke-width="2"/>`;
+    if (!a || !b) return;
+    const color = DEP_TYPE_COLOR[d.type] || 'var(--accent-600)';
+    const mx = (a.x+b.x)/2, my = (a.y+b.y)/2;
+    edgesHtml += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${color}" stroke-width="2.5" marker-end="url(#mapArrow)"/>
+      <text x="${mx}" y="${my}" font-size="10" fill="${color}" text-anchor="middle" style="pointer-events:none;paint-order:stroke;stroke:var(--canvas);stroke-width:3px;">${esc(d.type)}</text>`;
   });
-  canvas.innerHTML = `<svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none">${svgLines}</svg>` +
-    nodes.map(n => `<div class="map-node ${n.type==='project'?'project':''}${mapSelected.includes(n.id)?' selected':''}" style="left:${n.x}%;top:${n.y}%;" data-node="${n.id}">
-      ${n.type==='project' ? esc(n.label) : `<div class="id">${n.num}</div><div class="cat">${esc(n.cat)}</div>`}</div>`).join('');
-  canvas.querySelectorAll('.map-node').forEach(el => el.addEventListener('click', () => onMapNodeClick(el.dataset.node)));
+  const zoneFill = {high:'var(--red-700)', medium:'var(--amber-700)', low:'var(--green-700)'};
+  const nodesHtml = nodes.map(n => {
+    const sel = mapSelected.includes(n.id);
+    if (n.type === 'project'){
+      return `<g class="map-node-g" data-node="${n.id}" data-fixed="1"><circle cx="${n.x}" cy="${n.y}" r="46" fill="var(--navy-900)" stroke="#fff" stroke-width="3"/>
+        <text x="${n.x}" y="${n.y+4}" class="map-node-label" fill="#fff" font-size="11">${esc(n.label)}</text></g>`;
+    }
+    const r = 30;
+    return `<g class="map-node-g" data-node="${n.id}">
+      <circle cx="${n.x}" cy="${n.y}" r="${r}" fill="${zoneFill[n.zone]||'var(--ink-400)'}" stroke="${sel?'var(--accent-600)':'#fff'}" stroke-width="${sel?4:2.5}"/>
+      <text x="${n.x}" y="${n.y+4}" class="map-node-label" fill="#fff" font-size="12">${n.num||''}</text>
+      <text x="${n.x}" y="${n.y+r+13}" class="map-node-sub">${esc((n.cat||'').slice(0,12))}</text>
+    </g>`;
+  }).join('');
+  canvas.innerHTML = `<svg id="mapSvg" viewBox="0 0 1000 1000">
+    <defs><marker id="mapArrow" markerWidth="8" markerHeight="8" refX="7" refY="2.5" orient="auto"><polygon points="0 0, 8 2.5, 0 5" fill="var(--accent-600)"/></marker></defs>
+    <g id="mapViewport" transform="translate(${mapView.x} ${mapView.y}) scale(${mapView.scale})">
+      <g>${edgesHtml}</g>
+      <g>${nodesHtml}</g>
+    </g>
+  </svg>`;
+  wireMapInteractions();
+}
+// Состояние drag/pan держим на уровне модуля, а не в замыкании wireMapInteractions —
+// эта функция перевызывается на КАЖДЫЙ drawMap() (включая во время самого
+// перетаскивания), и переподписка window-обработчиков при каждом вызове
+// плодила бы дубликаты. Поэтому mousemove/mouseup на window навешиваются
+// один раз (см. mapWindowListenersReady), а per-node/per-svg обработчики —
+// заново при каждой перерисовке (сам SVG каждый раз новый через innerHTML).
+const mapDrag = {panning:false, panStart:{x:0,y:0}, viewStart:{x:0,y:0}, nodeId:null, offset:{x:0,y:0}};
+let mapWindowListenersReady = false;
+function mapToGraphPoint(svg, clientX, clientY){
+  const rect = svg.getBoundingClientRect();
+  const svgX = (clientX - rect.left) / rect.width * 1000;
+  const svgY = (clientY - rect.top) / rect.height * 1000;
+  return {x: (svgX - mapView.x) / mapView.scale, y: (svgY - mapView.y) / mapView.scale};
+}
+function wireMapInteractions(){
+  const svg = document.getElementById('mapSvg');
+  svg.querySelectorAll('.map-node-g').forEach(g => {
+    g.addEventListener('mousedown', e => {
+      e.stopPropagation();
+      if (g.dataset.fixed || mapMode !== 'cursor') return;
+      mapDrag.nodeId = g.dataset.node;
+      const pt = mapToGraphPoint(svg, e.clientX, e.clientY);
+      const node = mapNodesFor().find(n=>n.id===mapDrag.nodeId);
+      mapDrag.offset = {x: pt.x - node.x, y: pt.y - node.y};
+      g.classList.add('dragging');
+    });
+    g.addEventListener('click', e => { e.stopPropagation(); onMapNodeClick(g.dataset.node); });
+  });
+  svg.addEventListener('mousedown', e => {
+    if (e.target.closest('.map-node-g')) return;
+    mapDrag.panning = true; mapDrag.panStart = {x:e.clientX, y:e.clientY}; mapDrag.viewStart = {x:mapView.x, y:mapView.y};
+    document.getElementById('mapCanvas').classList.add('panning');
+  });
+  if (!mapWindowListenersReady){
+    mapWindowListenersReady = true;
+    window.addEventListener('mousemove', e => {
+      const svgEl = document.getElementById('mapSvg');
+      if (mapDrag.nodeId && svgEl){
+        const pt = mapToGraphPoint(svgEl, e.clientX, e.clientY);
+        const r = findRisk(mapDrag.nodeId);
+        if (r) r.mapPos = {x: pt.x - mapDrag.offset.x, y: pt.y - mapDrag.offset.y};
+        drawMap();
+      } else if (mapDrag.panning){
+        mapView.x = mapDrag.viewStart.x + (e.clientX - mapDrag.panStart.x);
+        mapView.y = mapDrag.viewStart.y + (e.clientY - mapDrag.panStart.y);
+        const vp = document.getElementById('mapViewport');
+        if (vp) vp.setAttribute('transform', `translate(${mapView.x} ${mapView.y}) scale(${mapView.scale})`);
+      }
+    });
+    window.addEventListener('mouseup', () => {
+      if (mapDrag.nodeId){ saveState(); mapDrag.nodeId = null; }
+      if (mapDrag.panning){ mapDrag.panning = false; const c = document.getElementById('mapCanvas'); if (c) c.classList.remove('panning'); }
+    });
+  }
 }
 function onMapNodeClick(id){
   if (id === '__project') return;
-  if (mapMode === 'cursor'){ openPassport(id); return; }
+  if (mapMode === 'cursor'){ openMapDetailPanel(id); return; }
   if (!mapSelected.includes(id)) mapSelected.push(id);
   if (mapSelected.length === 2){
-    if (mapMode === 'link') openLinkTypeModal(mapSelected[0], mapSelected[1]);
-    if (mapMode === 'merge') openMergeModal(mapSelected[0], mapSelected[1]);
-    mapSelected = [];
+    if (mapMode === 'link') showLinkTypePicker(mapSelected[0], mapSelected[1]);
+    if (mapMode === 'merge'){ openMergeModal(mapSelected[0], mapSelected[1]); mapSelected = []; }
   }
   drawMap();
 }
-function openLinkTypeModal(fromId, toId){
-  const type = prompt('Тип связи:\n' + DEP_TYPES.join(' / '), DEP_TYPES[0]);
-  if (!type || !DEP_TYPES.includes(type.trim())) { if (type) toast('Тип связи должен быть одним из: ' + DEP_TYPES.join(', ')); return; }
-  state.deps.push({id:uid('d'), fromId, toId, type:type.trim(), source:'manual', author:sessionName(), createdAt:nowStr()});
-  saveState(); toast('Связь добавлена'); renderMap();
+// Тип связи — фиксированный список (SimpleSelect), не свободный текст.
+function showLinkTypePicker(fromId, toId){
+  const el = document.getElementById('mapLinkPicker');
+  el.innerHTML = `<div class="map-link-picker">
+    <span>${fromId.split('-')[2]} → ${toId.split('-')[2]}:</span>
+    <select id="mapLinkType">${DEP_TYPES.map(t=>`<option value="${t}">${t}</option>`).join('')}</select>
+    <button type="button" class="btn btn-primary btn-sm" id="mapLinkConfirm">Добавить связь</button>
+    <button type="button" class="btn btn-text btn-sm" id="mapLinkCancel">Отмена</button>
+  </div>`;
+  document.getElementById('mapLinkConfirm').addEventListener('click', () => {
+    const type = document.getElementById('mapLinkType').value;
+    state.deps.push({id:uid('d'), fromId, toId, type, source:'manual', author:sessionName(), createdAt:nowStr()});
+    saveState(); toast('Связь добавлена'); mapSelected = []; el.innerHTML = ''; renderMap();
+  });
+  document.getElementById('mapLinkCancel').addEventListener('click', () => { mapSelected = []; el.innerHTML = ''; drawMap(); });
+}
+function openMapDetailPanel(id){
+  const r = findRisk(id);
+  const panel = document.getElementById('mapDetailPanel');
+  if (!r || !panel) return;
+  const zone = zoneOf(rraOf(r.p, r.iLevel));
+  const related = state.deps.filter(d => d.fromId===id || d.toId===id).map(d => {
+    const otherId = d.fromId===id ? d.toId : d.fromId;
+    const other = findRisk(otherId);
+    return other ? {other, type:d.type, dir: d.fromId===id ? '→' : '←'} : null;
+  }).filter(Boolean);
+  panel.hidden = false;
+  panel.innerHTML = `
+    <button type="button" class="map-detail-close" id="mapDetailCloseBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div style="font-family:var(--font-display);font-weight:800;font-size:15px;margin:24px 0 6px;">${esc(r.title)}</div>
+    <div class="badge-pill ${ZONE_BADGE[zone]||''}" style="display:inline-block;margin-bottom:10px;">${zone?ZONE_LABEL[zone]:'Не оценён'}</div>
+    <div class="k" style="font-size:10px;color:var(--ink-400);text-transform:uppercase;">Категория</div><div class="v" style="margin-bottom:8px;">${esc(r.category)}</div>
+    <div class="k" style="font-size:10px;color:var(--ink-400);text-transform:uppercase;">Риск-событие</div><div class="v" style="margin-bottom:14px;font-size:12.5px;">${esc(r.event)}</div>
+    <button type="button" class="btn btn-primary btn-sm" id="mapDetailOpenPassport" style="width:100%;margin-bottom:14px;">Открыть паспорт</button>
+    <div style="font-family:var(--font-display);font-weight:700;font-size:12.5px;margin-bottom:8px;">Связанные риски (${related.length})</div>
+    ${related.length ? related.map(rel => `<button type="button" class="map-detail-related-item" data-rel="${rel.other.id}"><b style="color:${DEP_TYPE_COLOR[rel.type]||'var(--accent-600)'};">${rel.dir} ${esc(rel.type)}</b><br>${esc(rel.other.title.slice(0,60))}</button>`).join('') : '<p class="muted" style="font-size:12px;">Связей пока нет.</p>'}
+  `;
+  document.getElementById('mapDetailCloseBtn').addEventListener('click', () => { panel.hidden = true; });
+  document.getElementById('mapDetailOpenPassport').addEventListener('click', () => openPassport(r.id));
+  panel.querySelectorAll('[data-rel]').forEach(b => b.addEventListener('click', () => openMapDetailPanel(b.dataset.rel)));
 }
 function renderDepTable(){
   const scopedIds = new Set(scopedRisks().map(r=>r.id));
