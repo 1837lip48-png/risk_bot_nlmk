@@ -68,6 +68,8 @@
   body{background:var(--canvas); color:var(--ink-900); font-family:var(--font-body); font-size:var(--fs-body2); line-height:var(--lh-body2);
     -webkit-font-smoothing:antialiased; min-height:100vh;
     -webkit-user-select:none; user-select:none;}
+  /* см. openModal/closeModal — блокирует скролл страницы, пока открыта модалка */
+  body.modal-open{overflow:hidden;}
   /* Ввод/выделение текста разрешены только внутри реальных полей формы —
      без этого заголовки, названия карточек и т.п. ведут себя как выделяемый/
      редактируемый текст (кликом можно было "продолжить набор" не в том месте). */
@@ -269,14 +271,21 @@
   .modal-overlay{position:fixed; inset:0; background:rgba(0,23,41,.45); display:flex; align-items:center;
     justify-content:center; padding:20px; z-index:90; opacity:0; pointer-events:none; transition:opacity .18s ease-out;}
   .modal-overlay.show{opacity:1; pointer-events:auto;}
+  /* .modal-card обрезает (overflow:hidden) по скруглённым углам и сам НЕ
+     скроллится — иначе родной (не overlay) скроллбар Windows/Chrome рисуется
+     прямоугольником поверх скруглённых углов, торча за пределы карточки.
+     Скроллится и держит padding вложенный .modal-card-scroll. */
   .modal-card{width:100%; max-width:320px; background:var(--paper-0); border:1px solid var(--line);
-    border-radius:var(--radius-card); box-shadow:var(--shadow-modal); padding:22px; transform:scale(.97) translateY(6px);
-    transition:transform .2s cubic-bezier(.16,1,.3,1); max-height:88vh; overflow-y:auto;}
+    border-radius:var(--radius-card); box-shadow:var(--shadow-modal); transform:scale(.97) translateY(6px);
+    transition:transform .2s cubic-bezier(.16,1,.3,1); max-height:88vh; overflow:hidden;
+    display:flex; flex-direction:column;}
+  .modal-card-scroll{padding:22px; overflow-y:auto; min-height:0;}
   .modal-overlay.show .modal-card{transform:scale(1) translateY(0);}
   .modal-card--wide{max-width:620px;}
   /* шаг 2 входа — поля Имя/Фамилия/СПП идут одно под другим (не сжаты в ряд),
      модалка узкая и пропорциональная, без лишней ширины. */
-  .modal-card--entry{max-width:360px; padding:24px 26px;}
+  .modal-card--entry{max-width:360px;}
+  .modal-card--entry .modal-card-scroll{padding:24px 26px;}
   .modal-card--entry .modal-head span{font-size:17px;}
   .modal-card--entry .modal-head{margin-bottom:12px;}
   .modal-card--entry form{gap:20px;}
@@ -743,6 +752,7 @@
 <!-- ============ ВХОД — шаг 2: имя/фамилия + СПП, плавающие лейблы ============ -->
 <div class="modal-overlay" id="sppModalOverlay">
   <div class="modal-card modal-card--entry" role="dialog" aria-modal="true">
+   <div class="modal-card-scroll">
     <div class="modal-head"><span>Вход в систему</span>
       <button type="button" class="modal-close" id="sppClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
@@ -782,6 +792,7 @@
       <button type="button" class="btn btn-secondary" id="sppCancel">Назад</button>
       <button type="button" class="btn btn-primary" id="sppSubmit">Войти в систему</button>
     </div>
+   </div>
   </div>
 </div>
 
@@ -851,6 +862,7 @@
 <!-- Risk create/edit modal -->
 <div class="modal-overlay" id="riskModalOverlay">
   <div class="modal-card modal-card--wide" role="dialog" aria-modal="true">
+   <div class="modal-card-scroll">
     <div class="modal-head"><span id="riskModalTitle">Новый риск</span>
       <button type="button" class="modal-close" data-close="riskModalOverlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
@@ -892,12 +904,14 @@
       <button type="button" class="btn btn-text" data-close="riskModalOverlay">Отмена</button>
       <button type="button" class="btn btn-primary" id="riskFormSubmit" style="flex:2;">Добавить риск</button>
     </div>
+   </div>
   </div>
 </div>
 
 <!-- Assessment modal (P/I) -->
 <div class="modal-overlay" id="assessModalOverlay">
   <div class="modal-card modal-card--wide" role="dialog" aria-modal="true">
+   <div class="modal-card-scroll">
     <div class="modal-head"><span>Качественная и количественная оценка</span>
       <button type="button" class="modal-close" data-close="assessModalOverlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
@@ -944,12 +958,14 @@
       <button type="button" class="btn btn-text" data-close="assessModalOverlay">Отмена</button>
       <button type="button" class="btn btn-primary" id="assessSubmit" style="flex:2;">Сохранить оценку</button>
     </div>
+   </div>
   </div>
 </div>
 
 <!-- Action (мероприятие) modal -->
 <div class="modal-overlay" id="actionModalOverlay">
   <div class="modal-card" role="dialog" aria-modal="true">
+   <div class="modal-card-scroll">
     <div class="modal-head"><span id="actionModalTitle">Новое мероприятие</span>
       <button type="button" class="modal-close" data-close="actionModalOverlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
@@ -976,22 +992,26 @@
       <button type="button" class="btn btn-text" data-close="actionModalOverlay">Отмена</button>
       <button type="button" class="btn btn-primary" id="actionFormSubmit" style="flex:2;">Сохранить</button>
     </div>
+   </div>
   </div>
 </div>
 
 <!-- Passport modal -->
 <div class="modal-overlay" id="passportModalOverlay">
   <div class="modal-card modal-card--xwide" role="dialog" aria-modal="true">
+   <div class="modal-card-scroll">
     <div class="modal-head"><span>Паспорт риска</span>
       <button type="button" class="modal-close" data-close="passportModalOverlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
     <div id="passportMount"></div>
+   </div>
   </div>
 </div>
 
 <!-- Merge modal -->
 <div class="modal-overlay" id="mergeModalOverlay">
   <div class="modal-card modal-card--wide" role="dialog" aria-modal="true">
+   <div class="modal-card-scroll">
     <div class="modal-head"><span>Объединение дублей</span>
       <button type="button" class="modal-close" data-close="mergeModalOverlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
@@ -1001,27 +1021,32 @@
       <button type="button" class="btn btn-text" data-close="mergeModalOverlay">Отмена</button>
       <button type="button" class="btn btn-primary" id="mergeSubmit" style="flex:2;">Объединить</button>
     </div>
+   </div>
   </div>
 </div>
 
 <!-- Lesson view/create modal -->
 <div class="modal-overlay" id="lessonModalOverlay">
   <div class="modal-card modal-card--wide" role="dialog" aria-modal="true">
+   <div class="modal-card-scroll">
     <div class="modal-head"><span id="lessonModalTitle">Урок</span>
       <button type="button" class="modal-close" data-close="lessonModalOverlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
     <div id="lessonMount"></div>
+   </div>
   </div>
 </div>
 
 <!-- Универсальная модалка "развернуть график/диаграмму" -->
 <div class="modal-overlay" id="chartModalOverlay">
   <div class="modal-card modal-card--wide" role="dialog" aria-modal="true">
+   <div class="modal-card-scroll">
     <div class="modal-head"><span id="chartModalTitle">Детали</span>
       <button type="button" class="modal-close" data-close="chartModalOverlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
     <p class="modal-sub" id="chartModalSub"></p>
     <div id="chartModalMount"></div>
+   </div>
   </div>
 </div>
 
@@ -1471,6 +1496,13 @@ function toast(title, opts){
   toast._tm = setTimeout(() => t.classList.remove('show'), duration);
 }
 
+// Пока открыта хотя бы одна модалка — страница за ней не должна скроллиться:
+// иначе при длинном контенте модалки (например, заметки дня) появляется
+// СТРАНИЧНЫЙ скроллбар окна браузера, который проходит через модалку прямо
+// поверх её скруглённых углов (родной скроллбар не скруглён и не обрезается
+// border-radius самой модалки). Считаем открытые модалки счётчиком, т.к.
+// они могут открываться друг над другом.
+let openModalCount = 0;
 function openModal(id){
   const el = document.getElementById(id);
   // модалки открываются друг над другом (например, Оценка P/I поверх Паспорта
@@ -1479,10 +1511,19 @@ function openModal(id){
   // визуально перекрывало новое и перехватывало клики. Re-parent решает это
   // без ручного отслеживания "какое окно открыто поверх какого".
   document.body.appendChild(el);
+  if (!el.classList.contains('show')){
+    openModalCount++;
+    if (openModalCount === 1) document.body.classList.add('modal-open');
+  }
   el.classList.add('show');
 }
 function closeModal(id){
-  document.getElementById(id).classList.remove('show');
+  const el = document.getElementById(id);
+  if (el.classList.contains('show')){
+    openModalCount = Math.max(0, openModalCount - 1);
+    if (openModalCount === 0) document.body.classList.remove('modal-open');
+  }
+  el.classList.remove('show');
   // снимаем фокус с любого поля внутри — иначе курсор/ввод мог "висеть" в
   // уже скрытом поле, а клик мимо полей выглядел как продолжение набора
   if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
