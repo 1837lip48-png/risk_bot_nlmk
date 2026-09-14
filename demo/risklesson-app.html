@@ -67,6 +67,22 @@
   #loginScreen{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;}
   .login-card{width:100%; max-width:360px; background:var(--paper-0); border-radius:var(--radius-card);
     box-shadow:var(--shadow-pop); padding:28px 26px;}
+  /* шаг 1 (выбор роли) — шире, под 3 карточки в ряд */
+  .login-card--role{max-width:600px; padding:32px 30px;}
+  .login-step-title{font-family:var(--font-display); font-weight:700; font-size:15px; color:var(--ink-900);
+    text-align:center; margin:0 0 16px;}
+  /* краткое резюме выбранной роли на шаге 2 — контекст без возврата назад */
+  .role-recap{display:flex; align-items:center; gap:10px; background:var(--canvas); border-radius:var(--radius-field);
+    padding:10px 12px; font-size:13px;}
+  .role-recap .role-recap-icon{width:30px; height:30px; border-radius:9px; color:#fff; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;}
+  .role-recap .role-recap-icon svg{width:15px; height:15px;}
+  .role-recap b{color:var(--ink-900);}
+  .role-recap-icon[data-value="riskmanager"]{background:linear-gradient(135deg,var(--role-manager-1),var(--role-manager-2));}
+  .role-recap-icon[data-value="riskowner"]{background:linear-gradient(135deg,var(--role-owner-1),var(--role-owner-2));}
+  .role-recap-icon[data-value="initiator"]{background:linear-gradient(135deg,var(--role-initiator-1),var(--role-initiator-2));}
+  .role-recap button{margin-left:auto; background:none; border:none; color:var(--accent-600); font-weight:600;
+    font-size:12px; cursor:pointer; font-family:inherit;}
   .brand{display:flex; align-items:center; justify-content:center; gap:10px; padding:0 8px 16px;
     margin:0 -8px 18px; border-bottom:1px solid var(--line);}
   .brand-mark{width:40px; height:22px; flex-shrink:0;}
@@ -199,8 +215,17 @@
   /* ===== APP SHELL ===== */
   #appShell{position:fixed; inset:0; z-index:10; display:flex; background:var(--canvas);}
   .ws-sidebar{width:74px; flex-shrink:0; background:var(--navy-900); display:flex; flex-direction:column;
-    padding:18px 12px; gap:4px; transition:width .3s cubic-bezier(.4,0,.2,1); overflow:hidden;}
+    padding:18px 12px; gap:4px; transition:width .3s cubic-bezier(.4,0,.2,1), background-color .3s ease; overflow:hidden;}
   .ws-sidebar.expanded{width:238px;}
+  /* Личное пространство владельца риска — отдельный оттенок сайдбара (тот же
+     бирюзовый акцент, что и у роли на входе), чтобы пространство читалось как
+     своё, а не как урезанная версия менеджерского. */
+  .ws-sidebar--owner{background:linear-gradient(165deg,#0e2f3a,var(--navy-900) 55%);}
+  .ws-owner-badge{display:inline-flex; align-items:center; gap:6px; font-size:10px; font-weight:700;
+    text-transform:uppercase; letter-spacing:.3px; color:#7bdce8; background:rgba(23,182,196,.16);
+    padding:3px 8px; border-radius:var(--radius-pill); white-space:nowrap; overflow:hidden; opacity:0; max-width:0;
+    transition:opacity .2s ease, max-width .32s cubic-bezier(.4,0,.2,1); margin:0 8px 10px;}
+  .ws-sidebar.expanded .ws-owner-badge{opacity:1; max-width:180px;}
   .ws-brand{display:flex; align-items:center; gap:10px; padding:6px 8px 18px; border-bottom:1px solid rgba(255,255,255,.12); margin-bottom:10px;}
   .ws-brand .brand-mark{width:34px; height:19px;}
   .ws-brand .name{font-family:var(--font-display); font-weight:800; font-size:15px; color:#fff; white-space:nowrap;
@@ -249,6 +274,12 @@
   .muted{color:var(--ink-600);}
 
   .toolbar-row{display:flex; gap:10px; align-items:center; margin-bottom:16px; flex-wrap:wrap;}
+  .quick-chip{display:inline-flex; align-items:center; gap:8px; background:var(--accent-50); color:var(--accent-600);
+    border:1px solid var(--accent-100); border-radius:var(--radius-pill); padding:5px 8px 5px 12px; font-size:12.5px;
+    font-weight:600; margin:-6px 0 14px;}
+  .quick-chip button{background:none; border:none; color:inherit; cursor:pointer; width:18px; height:18px;
+    border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; line-height:1;}
+  .quick-chip button:hover{background:var(--accent-100);}
   .search-box{position:relative; flex:1; min-width:200px;}
   .search-box svg{position:absolute; left:11px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:var(--ink-400);}
   .search-box input{width:100%; height:36px; padding:0 12px 0 34px; border-radius:var(--radius-field); border:1px solid var(--line);
@@ -359,6 +390,8 @@
   .es-metrics{display:flex; gap:32px; flex-wrap:wrap; margin-bottom:16px;}
   .es-metric .k{font-size:11px; color:var(--ink-600);}
   .es-metric .v{font-family:var(--font-display); font-size:20px; font-weight:800; margin-top:2px;}
+  .es-metric.clickable{cursor:pointer; border-radius:10px; padding:4px 8px; margin:-4px -8px; transition:background-color .15s ease;}
+  .es-metric.clickable:hover{background:var(--canvas);}
   .ai-suggest-row{display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--purple-50);
     background:var(--purple-50); border-radius:var(--radius-field); margin-bottom:8px; font-size:12.5px; flex-wrap:wrap;}
   .ai-suggest-row .t{flex:1; min-width:220px; color:var(--ink-900);}
@@ -406,35 +439,15 @@
   <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.4 14.7A8.5 8.5 0 1 1 9.3 3.6a7 7 0 0 0 11.1 11.1z"/></svg>
 </button>
 
-<!-- ============ ВХОД ============ -->
+<!-- ============ ВХОД — шаг 1: роль ============ -->
 <div id="loginScreen">
-  <div class="login-card">
+  <div class="login-card login-card--role">
     <div class="brand">
       <div class="brand-mark"><svg viewBox="0 0 105 57" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M20.7303 19.0532H15.5128V36.6192H20.7303V29.6627H26.2956V36.6192H31.5164V19.0532H26.2956V25.4881H20.7303V19.0532ZM50.1263 36.6192V19.0532H36.7291V28.2701C36.7291 31.7491 36.0337 32.794 33.2518 32.2708V36.6112C36.2075 37.1328 38.8155 36.6112 40.208 34.8725C41.5989 33.3076 41.7728 30.524 41.7728 28.2621V23.2198H45.0746V36.6192H50.1263ZM59.6905 19.0532H54.4745L52.0324 36.6208H56.9022L58.1193 27.23L60.898 36.6192H64.3752L67.1619 27.23L68.3789 36.6192H73.2551L70.821 19.0532H65.6035L62.6478 29.4888L59.6905 19.0532ZM80.3852 19.0532H75.1676L75.1613 36.6192H80.3788V29.4888L85.0748 36.6192H91.3323L84.5532 27.75L91.1728 19.0532H85.4305L80.3852 26.1836V19.0532ZM0.731079 28.2701C0.731079 11.575 21.4258 0.271667 52.7311 0.271667C84.2054 0.271667 104.731 11.575 104.731 28.2701C104.731 44.7865 84.2086 56.2717 52.7311 56.2717C21.4258 56.2717 0.731079 44.7928 0.731079 28.2701ZM3.68997 28.2701C3.68997 43.4018 23.3415 53.662 52.7311 53.662C82.2945 53.662 101.772 43.4018 101.772 28.2701C101.772 12.966 82.2945 2.87977 52.7311 2.87977C23.3383 2.87977 3.68678 12.966 3.68997 28.2701ZM7.64417 28.2707C7.64417 21.9298 11.8809 16.4671 19.7642 12.536C27.6444 8.60642 38.9979 6.31464 52.7312 6.31464C66.462 6.31464 77.8143 8.60563 85.6939 12.5348C93.5766 16.4655 97.8134 21.9281 97.8134 28.2707C97.8134 34.6134 93.5776 40.0764 85.6956 44.0075C77.8167 47.937 66.4644 50.2284 52.7312 50.2284C38.9979 50.2284 27.6444 47.9362 19.7643 44.0063C11.8809 40.0747 7.64417 34.6117 7.64417 28.2707ZM6.64417 28.2707C6.64417 14.5331 25.0786 5.31464 52.7312 5.31464C80.3789 5.31464 98.8134 14.5299 98.8134 28.2707C98.8134 42.0115 80.3837 51.2284 52.7312 51.2284C25.0786 51.2284 6.64417 42.0083 6.64417 28.2707Z" fill="#fff"/></svg></div>
       <div class="name">RiskLesson</div>
     </div>
-    <form id="entryForm" onsubmit="return false;">
-      <div class="row2">
-        <div class="field" data-field="firstName"><label>Имя</label><input type="text" id="firstName" placeholder="Иван"></div>
-        <div class="field" data-field="lastName"><label>Фамилия</label><input type="text" id="lastName" placeholder="Петров"></div>
-      </div>
-    </form>
-    <div class="btn-row" style="margin-top:4px;">
-      <button type="button" class="btn btn-text" id="resetBtn">Очистить</button>
-      <button type="button" class="btn btn-primary" id="continueBtn" style="flex:2;">Далее</button>
-    </div>
-  </div>
-</div>
-
-<!-- Роль + SPP modal — роль перенесена сюда с первого экрана (та же механика
-     карточек: клик переключает .active), имя/фамилия остаются на первом экране -->
-<div class="modal-overlay" id="sppModalOverlay">
-  <div class="modal-card modal-card--wide" role="dialog" aria-modal="true">
-    <div class="modal-head"><span>Роль и проект</span>
-      <button type="button" class="modal-close" id="sppClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-    </div>
+    <p class="login-step-title">Выберите роль</p>
     <div class="field" data-field="role">
-      <label>Роль</label>
       <div class="role-cards" id="roleCards">
         <div class="role-card" data-value="riskmanager">
           <span class="role-card-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
@@ -455,9 +468,26 @@
           <span class="role-card-desc">Только подаёт риски по проекту</span>
         </div>
       </div>
-      <div class="err-msg">Выберите роль</div>
+      <div class="field-hint" style="text-align:center; margin-top:12px;">Выберите роль, чтобы перейти к следующему шагу</div>
     </div>
-    <div class="field" data-field="spp" style="margin-top:14px;">
+  </div>
+</div>
+
+<!-- ============ ВХОД — шаг 2: имя/фамилия + СПП (та же механика полей,
+     что и раньше — просто перенесены сюда вместе) ============ -->
+<div class="modal-overlay" id="sppModalOverlay">
+  <div class="modal-card" role="dialog" aria-modal="true">
+    <div class="modal-head"><span>Данные для входа</span>
+      <button type="button" class="modal-close" id="sppClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="role-recap" id="roleRecap"></div>
+    <form id="entryForm" onsubmit="return false;" style="margin-top:14px;">
+      <div class="row2">
+        <div class="field" data-field="firstName"><label>Имя</label><input type="text" id="firstName" placeholder="Иван"></div>
+        <div class="field" data-field="lastName"><label>Фамилия</label><input type="text" id="lastName" placeholder="Петров"></div>
+      </div>
+    </form>
+    <div class="field" data-field="spp" style="margin-top:10px;">
       <label>СПП</label>
       <input type="text" id="sppInput" placeholder="12-1111" inputmode="numeric" maxlength="7">
       <div class="err-msg">СПП должен состоять ровно из 6 цифр</div>
@@ -493,16 +523,8 @@
       <div class="brand-mark"><svg viewBox="0 0 105 57" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M20.7303 19.0532H15.5128V36.6192H20.7303V29.6627H26.2956V36.6192H31.5164V19.0532H26.2956V25.4881H20.7303V19.0532ZM50.1263 36.6192V19.0532H36.7291V28.2701C36.7291 31.7491 36.0337 32.794 33.2518 32.2708V36.6112C36.2075 37.1328 38.8155 36.6112 40.208 34.8725C41.5989 33.3076 41.7728 30.524 41.7728 28.2621V23.2198H45.0746V36.6192H50.1263ZM59.6905 19.0532H54.4745L52.0324 36.6208H56.9022L58.1193 27.23L60.898 36.6192H64.3752L67.1619 27.23L68.3789 36.6192H73.2551L70.821 19.0532H65.6035L62.6478 29.4888L59.6905 19.0532ZM80.3852 19.0532H75.1676L75.1613 36.6192H80.3788V29.4888L85.0748 36.6192H91.3323L84.5532 27.75L91.1728 19.0532H85.4305L80.3852 26.1836V19.0532ZM0.731079 28.2701C0.731079 11.575 21.4258 0.271667 52.7311 0.271667C84.2054 0.271667 104.731 11.575 104.731 28.2701C104.731 44.7865 84.2086 56.2717 52.7311 56.2717C21.4258 56.2717 0.731079 44.7928 0.731079 28.2701ZM3.68997 28.2701C3.68997 43.4018 23.3415 53.662 52.7311 53.662C82.2945 53.662 101.772 43.4018 101.772 28.2701C101.772 12.966 82.2945 2.87977 52.7311 2.87977C23.3383 2.87977 3.68678 12.966 3.68997 28.2701ZM7.64417 28.2707C7.64417 21.9298 11.8809 16.4671 19.7642 12.536C27.6444 8.60642 38.9979 6.31464 52.7312 6.31464C66.462 6.31464 77.8143 8.60563 85.6939 12.5348C93.5766 16.4655 97.8134 21.9281 97.8134 28.2707C97.8134 34.6134 93.5776 40.0764 85.6956 44.0075C77.8167 47.937 66.4644 50.2284 52.7312 50.2284C38.9979 50.2284 27.6444 47.9362 19.7643 44.0063C11.8809 40.0747 7.64417 34.6117 7.64417 28.2707ZM6.64417 28.2707C6.64417 14.5331 25.0786 5.31464 52.7312 5.31464C80.3789 5.31464 98.8134 14.5299 98.8134 28.2707C98.8134 42.0115 80.3837 51.2284 52.7312 51.2284C25.0786 51.2284 6.64417 42.0083 6.64417 28.2707Z" fill="#fff"/></svg></div>
       <div class="name">RiskLesson</div>
     </div>
-    <nav class="ws-nav" id="wsNav">
-      <button type="button" class="ws-nav-item active" data-page="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg><span>Дэшборд</span></button>
-      <button type="button" class="ws-nav-item" data-page="mytasks" id="navMyTasks" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span>Мои риски</span></button>
-      <button type="button" class="ws-nav-item" data-page="register"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6z"/><path d="M15 3v3h3"/><path d="M9 12h6M9 16h6"/></svg><span>Реестр рисков</span></button>
-      <button type="button" class="ws-nav-item" data-page="matrix"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg><span>Матрица рисков</span></button>
-      <button type="button" class="ws-nav-item" data-page="lessons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H12v16H5.5C4.7 20 4 19.3 4 18.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H12v16h6.5c.8 0 1.5-.7 1.5-1.5z"/></svg><span>Реестр уроков</span></button>
-      <button type="button" class="ws-nav-item" data-page="calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg><span>Календарь</span></button>
-      <button type="button" class="ws-nav-item" data-page="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M8.5 10.8L15.5 7M8.5 13.2L15.5 17"/></svg><span>Карта взаимосвязей</span></button>
-      <button type="button" class="ws-nav-item" data-page="reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.8 5.6L19 9l-5.2 1.4L12 16l-1.8-5.6L5 9l5.2-1.4L12 2z"/></svg><span>Reports &amp; Analytics</span></button>
-    </nav>
+    <div class="ws-owner-badge" id="wsOwnerBadge" hidden><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>Личное пространство</div>
+    <nav class="ws-nav" id="wsNav"></nav>
     <div class="ws-user">
       <div class="ws-user-avatar" id="wsAvatar"></div>
       <div class="ws-user-info"><div class="ws-user-name" id="wsUserName"></div><div class="ws-user-role" id="wsUserRole"></div></div>
@@ -526,6 +548,7 @@
         <span class="result-count" id="regCount"></span>
         <button type="button" class="btn btn-primary" id="btnAddRisk">+ Добавить риск</button>
       </div>
+      <div id="regQuickChip"></div>
       <div id="registerList"></div>
     </div>
 
@@ -1080,6 +1103,15 @@ function isMyRisk(r){
   if (surname && r.ownerNames.some(o => o.toLowerCase().startsWith(surname))) return true;
   return r.authorName === sessionName();
 }
+// Активные риски в области видимости текущей роли — владелец риска видит
+// только свои (отдельное рабочее пространство, не общий портфель), риск-менеджер
+// видит всё. Используется Матрицей/Картой/Календарём, чтобы владелец риска не
+// просто заходил в общее пространство с одной скрытой вкладкой, а работал в
+// действительно своём наборе данных на каждом разделе.
+function scopedRisks(){
+  const base = state.risks.filter(r => r.status !== 'Архивирован');
+  return state.session.role === 'riskowner' ? base.filter(isMyRisk) : base;
+}
 
 function toast(msg){
   const t = document.getElementById('toast');
@@ -1110,22 +1142,23 @@ let selectedRole = '';
 const firstNameInput = document.getElementById('firstName');
 const lastNameInput = document.getElementById('lastName');
 
-// «Далее» — первый экран отвечает только за имя/фамилию; роль и СПП теперь
-// собраны на втором шаге (той же модалке), механика самих карточек роли и
-// поля СПП не изменилась, только их расположение.
-document.getElementById('continueBtn').addEventListener('click', () => {
-  const fn = firstNameInput.value.trim(), ln = lastNameInput.value.trim();
-  if (!fn){ firstNameInput.focus(); return; }
-  if (!ln){ lastNameInput.focus(); return; }
-  openModal('sppModalOverlay');
-});
-
+// Шаг 1 — клик по карточке роли сразу открывает шаг 2 (имя/фамилия + СПП).
+// Механика самой карточки (переключение .active, галочка) не изменилась —
+// просто роль теперь выбирается первой, а не после ввода имени.
 document.querySelectorAll('.role-card').forEach(card => {
   card.addEventListener('click', () => {
     document.querySelectorAll('.role-card').forEach(c => c.classList.remove('active'));
     card.classList.add('active');
     selectedRole = card.dataset.value;
-    document.querySelector('.field[data-field="role"]').classList.remove('invalid');
+    const icon = card.querySelector('.role-card-icon').innerHTML;
+    const title = card.querySelector('.role-card-title').textContent;
+    document.getElementById('roleRecap').innerHTML =
+      `<span class="role-recap-icon" data-value="${selectedRole}">${icon}</span>` +
+      `<span>Роль: <b>${title}</b></span>` +
+      `<button type="button" id="roleRecapChange">Изменить</button>`;
+    document.getElementById('roleRecapChange').addEventListener('click', () => closeModal('sppModalOverlay'));
+    openModal('sppModalOverlay');
+    setTimeout(() => firstNameInput.focus(), 150);
   });
 });
 document.getElementById('sppClose').addEventListener('click', () => closeModal('sppModalOverlay'));
@@ -1136,28 +1169,26 @@ sppInput.addEventListener('input', () => {
   sppInput.value = digits.length > 2 ? digits.slice(0,2) + '-' + digits.slice(2) : digits;
   if (digits.length === 6) document.querySelector('.field[data-field="spp"]').classList.remove('invalid');
 });
+[firstNameInput, lastNameInput].forEach(inp => inp.addEventListener('input', () => {
+  document.querySelector(`.field[data-field="${inp.id}"]`).classList.remove('invalid');
+}));
 document.getElementById('sppSubmit').addEventListener('click', () => {
-  const roleField = document.querySelector('.field[data-field="role"]');
-  roleField.classList.toggle('invalid', !selectedRole);
+  const fn = firstNameInput.value.trim(), ln = lastNameInput.value.trim();
+  document.querySelector('.field[data-field="firstName"]').classList.toggle('invalid', !fn);
+  document.querySelector('.field[data-field="lastName"]').classList.toggle('invalid', !ln);
   const spp = sppInput.value.trim();
   const sppField = document.querySelector('.field[data-field="spp"]');
   const sppOk = spp.replace(/\D/g,'').length === 6;
   sppField.classList.toggle('invalid', !sppOk);
   sppInput.classList.toggle('err', !sppOk);
-  if (!selectedRole || !sppOk) return;
+  if (!fn){ firstNameInput.focus(); return; }
+  if (!ln){ lastNameInput.focus(); return; }
+  if (!sppOk) return;
 
-  state.session = {firstName: firstNameInput.value.trim(), lastName: lastNameInput.value.trim(), role: selectedRole, spp};
+  state.session = {firstName: fn, lastName: ln, role: selectedRole, spp};
   saveState();
   closeModal('sppModalOverlay');
   enterApp();
-});
-document.getElementById('resetBtn').addEventListener('click', () => {
-  document.getElementById('entryForm').reset();
-  document.querySelectorAll('.role-card').forEach(c => c.classList.remove('active'));
-  document.querySelectorAll('#sppModalOverlay .field').forEach(f => f.classList.remove('invalid'));
-  sppInput.value = '';
-  selectedRole = '';
-  closeModal('sppModalOverlay');
 });
 
 function enterApp(){
@@ -1184,8 +1215,9 @@ function renderInitiatorSubmitted(){
   const el = document.getElementById('initiatorAfterList');
   if (!mine.length){ el.innerHTML = ''; return; }
   el.innerHTML = `<div class="fs-title" style="margin-bottom:8px;">Поданные вами риски в этом проекте</div>` +
-    mine.map(r => `<div class="risk-card" style="padding:10px 14px;"><div class="risk-card-title" style="font-size:13px;">${esc(r.title)}</div>
+    mine.map(r => `<div class="risk-card" style="padding:10px 14px;cursor:pointer;" data-risk-id="${r.id}"><div class="risk-card-title" style="font-size:13px;">${esc(r.title)}</div>
       <div class="risk-card-meta">ID <code class="mono">${r.id}</code> · статус: ${r.status}</div></div>`).join('');
+  el.querySelectorAll('.risk-card').forEach(c => c.addEventListener('click', () => openPassport(c.dataset.riskId)));
 }
 document.getElementById('initiatorSignOut').addEventListener('click', signOut);
 document.getElementById('initiatorSubmitBtn').addEventListener('click', () => submitNewRisk(document.getElementById('initiatorSubmitBtn')));
@@ -1199,12 +1231,50 @@ function signOut(){
 // ===================================================================
 // WORKSPACE SHELL
 // ===================================================================
+// Иконки вкладок сайдбара — вынесены в объект, чтобы собирать разный набор
+// вкладок для риск-менеджера и владельца риска одним и тем же шаблоном.
+const NAV_ICONS = {
+  dashboard:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>',
+  mytasks:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
+  register:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6z"/><path d="M15 3v3h3"/><path d="M9 12h6M9 16h6"/></svg>',
+  matrix:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>',
+  lessons:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H12v16H5.5C4.7 20 4 19.3 4 18.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H12v16h6.5c.8 0 1.5-.7 1.5-1.5z"/></svg>',
+  calendar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>',
+  map:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M8.5 10.8L15.5 7M8.5 13.2L15.5 17"/></svg>',
+  reports:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.8 5.6L19 9l-5.2 1.4L12 16l-1.8-5.6L5 9l5.2-1.4L12 2z"/></svg>',
+};
+// Риск-менеджер — портфель проекта целиком, 7 вкладок.
+// Владелец риска — ОТДЕЛЬНОЕ рабочее пространство (process_full_v4.md, 3.1):
+// свой «Обзор» вместо общего Дэшборда, без Reports & Analytics (это уровень
+// комитета/менеджера), остальные разделы показывают только его риски.
+const NAV_BY_ROLE = {
+  riskmanager:[
+    ['dashboard','Дэшборд'], ['register','Реестр рисков'], ['matrix','Матрица рисков'],
+    ['lessons','Реестр уроков'], ['calendar','Календарь'], ['map','Карта взаимосвязей'], ['reports','Reports & Analytics'],
+  ],
+  riskowner:[
+    ['mytasks','Обзор'], ['register','Мои риски'], ['matrix','Матрица (мои риски)'],
+    ['map','Карта связей (мои риски)'], ['lessons','Реестр уроков'], ['calendar','Календарь (мои сроки)'],
+  ],
+};
+function buildNav(role){
+  const items = NAV_BY_ROLE[role] || NAV_BY_ROLE.riskmanager;
+  document.getElementById('wsNav').innerHTML = items.map(([key,label], i) =>
+    `<button type="button" class="ws-nav-item${i===0?' active':''}" data-page="${key}">${NAV_ICONS[key]}<span>${label}</span></button>`
+  ).join('');
+}
+
 function enterWorkspace(){
   document.getElementById('appShell').hidden = false;
   document.getElementById('wsAvatar').textContent = ((state.session.firstName[0]||'')+(state.session.lastName[0]||'')).toUpperCase();
   document.getElementById('wsUserName').textContent = sessionName();
   document.getElementById('wsUserRole').textContent = roleLabel(state.session.role);
-  document.getElementById('navMyTasks').hidden = state.session.role !== 'riskowner';
+
+  const isOwner = state.session.role === 'riskowner';
+  buildNav(state.session.role);
+  document.getElementById('wsSidebar').classList.toggle('ws-sidebar--owner', isOwner);
+  document.getElementById('wsOwnerBadge').hidden = !isOwner;
+
   populateCategorySelect(document.getElementById('rCategory'));
   populateCategorySelect(document.getElementById('regFiltCat'));
   const statusSel = document.getElementById('regFiltStatus');
@@ -1221,11 +1291,11 @@ function enterWorkspace(){
   });
   document.getElementById('wsSignOut').addEventListener('click', signOut);
 
-  gotoPage(state.session.role === 'riskowner' ? 'mytasks' : 'dashboard');
+  gotoPage(isOwner ? 'mytasks' : 'dashboard');
 }
 const PAGE_META = {
   dashboard:{title:'Дэшборд', desc:'Общая сводка по рискам программы: количество, критичность, статус мероприятий.'},
-  mytasks:{title:'Мои риски', desc:'Риски, где вы указаны владельцем — плюс список того, что от вас требуется.'},
+  mytasks:{title:'Обзор', desc:'Ваши риски и то, что от вас требуется — согласовать, выполнить или отклонить с комментарием.'},
   register:{title:'Реестр рисков', desc:'Полный список зарегистрированных рисков проекта с владельцем, оценкой и статусом.'},
   matrix:{title:'Матрица рисков', desc:'Визуализация рисков по вероятности и влиянию (P×I), сетка 3×3.'},
   lessons:{title:'Реестр уроков', desc:'База знаний по прошлым проектам — риски, которые уже случались, и как их избежать.'},
@@ -1233,10 +1303,21 @@ const PAGE_META = {
   map:{title:'Карта взаимосвязей', desc:'Ручное построение связей между рисками и объединение дублей.'},
   reports:{title:'Privacy Reports & Analytics', desc:'Executive Summary и AI-подсказки связей — считаются из текущих данных.'},
 };
+// Заголовки вкладок для владельца риска — то же пространство физически
+// (одни и те же контейнеры и функции рендера), но подписи и описания честно
+// отражают, что видно только подмножество, ограниченное его рисками.
+const PAGE_META_OWNER_OVERRIDE = {
+  register:{title:'Мои риски', desc:'Риски, где вы указаны владельцем. Фильтр по владельцу заблокирован — это не общий реестр проекта.'},
+  matrix:{title:'Матрица (мои риски)', desc:'P×I только по вашим рискам.'},
+  map:{title:'Карта связей (мои риски)', desc:'Связи и объединение дублей — только в рамках ваших рисков.'},
+  calendar:{title:'Календарь (мои сроки)', desc:'Только сроки мероприятий по вашим рискам.'},
+};
 function gotoPage(key){
   document.querySelectorAll('.ws-nav-item').forEach(b => b.classList.toggle('active', b.dataset.page === key));
-  document.getElementById('wsTitle').textContent = PAGE_META[key].title;
-  document.getElementById('wsDesc').textContent = PAGE_META[key].desc;
+  const isOwner = state.session.role === 'riskowner';
+  const meta = (isOwner && PAGE_META_OWNER_OVERRIDE[key]) || PAGE_META[key];
+  document.getElementById('wsTitle').textContent = meta.title;
+  document.getElementById('wsDesc').textContent = meta.desc;
   document.querySelectorAll('.ws-page').forEach(p => p.hidden = p.dataset.page !== key);
   ({dashboard:renderDashboard, mytasks:renderMyTasks, register:renderRegister, matrix:renderMatrix,
     lessons:renderLessons, calendar:renderCalendar, map:renderMap, reports:renderReports})[key]();
@@ -1270,56 +1351,109 @@ function renderDashboard(){
   const escalated = risks.filter(r => r.committeeFlag);
   const byCat = CATEGORIES.map(c => ({name:c, count:risks.filter(r=>r.category===c).length}));
   const byStatus = STATUSES.filter(s=>s!=='Закрыт').map(s => ({name:s, count:risks.filter(r=>r.status===s).length}));
-  const byActionStatus = Object.keys(ACTION_STATUS_LABEL).map(k => ({name:ACTION_STATUS_LABEL[k], count:allActions.filter(a=>a.status===k).length, color:ACTION_STATUS_COLOR[k]}));
+  const ACTION_STATUS_QF = {planned:'hasPlanned', in_progress:'hasInProgress', done:'hasDone', rejected:'hasRejected'};
+  const byActionStatus = Object.keys(ACTION_STATUS_LABEL).map(k => ({name:ACTION_STATUS_LABEL[k], count:allActions.filter(a=>a.status===k).length, color:ACTION_STATUS_COLOR[k], qf:ACTION_STATUS_QF[k]}));
   const recentAudit = state.audit.slice(-6).reverse();
 
   const el = document.getElementById('dashMount');
   el.innerHTML = `
     <div class="kpi-grid">
-      <div class="kpi-card"><span class="kpi-label">Активные риски</span><span class="kpi-value">${risks.length}</span><span class="kpi-sub">проект СПП ${state.session.spp}</span></div>
-      <div class="kpi-card clickable" id="kpiHigh"><span class="kpi-label">Высокая критичность (RRA=H)</span><span class="kpi-value" style="color:var(--red-700)">${highCount}</span><span class="kpi-sub">RRA 6–9 из матрицы 3×3</span></div>
-      <div class="kpi-card"><span class="kpi-label">Выполнено мероприятий</span><span class="kpi-value" style="color:var(--green-700)">${doneActions}</span><span class="kpi-sub">из ${allActions.length} всего</span></div>
-      <div class="kpi-card"><span class="kpi-label">Просрочено мероприятий</span><span class="kpi-value" style="color:var(--red-700)">${overdueActions}</span><span class="kpi-sub">плановый срок раньше 12.09.2026</span></div>
+      <div class="kpi-card clickable" data-goto-register="_all"><span class="kpi-label">Активные риски</span><span class="kpi-value">${risks.length}</span><span class="kpi-sub">проект СПП ${state.session.spp}</span></div>
+      <div class="kpi-card clickable" data-goto-register="high"><span class="kpi-label">Высокая критичность (RRA=H)</span><span class="kpi-value" style="color:var(--red-700)">${highCount}</span><span class="kpi-sub">RRA 6–9 из матрицы 3×3</span></div>
+      <div class="kpi-card clickable" data-goto-register="hasDone"><span class="kpi-label">Выполнено мероприятий</span><span class="kpi-value" style="color:var(--green-700)">${doneActions}</span><span class="kpi-sub">из ${allActions.length} всего</span></div>
+      <div class="kpi-card clickable" data-goto-register="overdue"><span class="kpi-label">Просрочено мероприятий</span><span class="kpi-value" style="color:var(--red-700)">${overdueActions}</span><span class="kpi-sub">плановый срок раньше 12.09.2026</span></div>
     </div>
     <div class="panel-2col">
-      <div class="panel"><h3>Риски по категориям</h3><ul>${byCat.filter(c=>c.count).map(c=>`<li>${c.name} — <b>${c.count}</b> (${Math.round(c.count/risks.length*100)}%)</li>`).join('') || '<li class="muted">Нет данных</li>'}</ul></div>
-      <div class="panel"><h3>Риски по статусу</h3><ul>${byStatus.filter(s=>s.count).map(s=>`<li>${s.name} — <b>${s.count}</b> (${Math.round(s.count/risks.length*100)}%)</li>`).join('') || '<li class="muted">Нет данных</li>'}</ul></div>
+      <div class="panel"><h3>Риски по категориям</h3><ul>${byCat.filter(c=>c.count).map(c=>`<li><a href="#" data-goto-cat="${esc(c.name)}">${c.name}</a> — <b>${c.count}</b> (${Math.round(c.count/risks.length*100)}%)</li>`).join('') || '<li class="muted">Нет данных</li>'}</ul></div>
+      <div class="panel"><h3>Риски по статусу</h3><ul>${byStatus.filter(s=>s.count).map(s=>`<li><a href="#" data-goto-status="${esc(s.name)}">${s.name}</a> — <b>${s.count}</b> (${Math.round(s.count/risks.length*100)}%)</li>`).join('') || '<li class="muted">Нет данных</li>'}</ul></div>
     </div>
     <div class="panel-2col">
-      <div class="panel"><h3>Мероприятия по статусу выполнения</h3><ul>${byActionStatus.map(s=>`<li><span class="status-dot" style="background:${s.color}"></span> ${s.name} — <b>${s.count}</b></li>`).join('')}</ul></div>
+      <div class="panel"><h3>Мероприятия по статусу выполнения</h3><ul>${byActionStatus.map(s=>`<li><a href="#" data-goto-register="${s.qf}"><span class="status-dot" style="background:${s.color}"></span> ${s.name}</a> — <b>${s.count}</b></li>`).join('')}</ul></div>
       <div class="panel"><h3>На эскалации (I=3) — ${escalated.length}</h3>
         ${escalated.length ? `<ul>${escalated.slice(0,6).map(r=>`<li><a href="#" data-open-risk="${r.id}">${esc(r.title.slice(0,64))}${r.title.length>64?'…':''}</a></li>`).join('')}</ul>` : '<p class="muted" style="margin:0;">Рисков, требующих решения комитета, нет.</p>'}
       </div>
     </div>
     <div class="panel"><h3>Audit Log — последние переходы статусов</h3>
-      ${recentAudit.length ? `<div class="audit-list">${recentAudit.map(a=>`<div class="audit-row"><span class="t">${a.timestamp}</span><span class="desc">${esc(a.actorName)} · <code class="mono">${a.riskId}</code>: ${esc(a.fromStatus||'—')} → <b>${esc(a.toStatus)}</b>${a.comment?' — '+esc(a.comment):''}</span></div>`).join('')}</div>` : '<p class="muted" style="margin:0;">Пока не было ни одного перехода статуса в этой демо-сессии.</p>'}
+      ${recentAudit.length ? `<div class="audit-list">${recentAudit.map(a=>`<div class="audit-row"><span class="t">${a.timestamp}</span><span class="desc">${esc(a.actorName)} · <a href="#" data-open-risk="${a.riskId}"><code class="mono">${a.riskId}</code></a>: ${esc(a.fromStatus||'—')} → <b>${esc(a.toStatus)}</b>${a.comment?' — '+esc(a.comment):''}</span></div>`).join('')}</div>` : '<p class="muted" style="margin:0;">Пока не было ни одного перехода статуса в этой демо-сессии.</p>'}
     </div>
     <div style="text-align:right;"><button class="btn btn-text btn-sm" id="btnResetDemo">Сбросить демо-данные к исходным 15/10</button></div>`;
   el.querySelectorAll('[data-open-risk]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); openPassport(a.dataset.openRisk); }));
-  const kpiHigh = document.getElementById('kpiHigh');
-  if (kpiHigh) kpiHigh.addEventListener('click', () => gotoPage('register'));
+  el.querySelectorAll('[data-goto-register]').forEach(a => a.addEventListener('click', e => {
+    e.preventDefault();
+    const key = a.dataset.gotoRegister;
+    goToRegisterWithFilter(key === '_all' ? null : key);
+  }));
+  el.querySelectorAll('[data-goto-cat]').forEach(a => a.addEventListener('click', e => {
+    e.preventDefault();
+    registerQuickFilter = null;
+    gotoPage('register');
+    document.getElementById('regFiltCat').value = a.dataset.gotoCat;
+    renderRegister();
+  }));
+  el.querySelectorAll('[data-goto-status]').forEach(a => a.addEventListener('click', e => {
+    e.preventDefault();
+    registerQuickFilter = null;
+    gotoPage('register');
+    document.getElementById('regFiltStatus').value = a.dataset.gotoStatus;
+    renderRegister();
+  }));
   document.getElementById('btnResetDemo').addEventListener('click', () => { if (confirm('Сбросить все изменения и вернуться к исходным seed-данным?')) resetDemoData(); });
 }
 
 function renderMyTasks(){
+  // «Обзор» — личный дашборд владельца риска (process_full_v4.md, 3.1): не то
+  // же самое, что портфельный Дэшборд менеджера. KPI считаются только по своим
+  // рискам, плюс приоритизированные «Что от меня требуется» и «На эскалации».
   const mine = state.risks.filter(r => isMyRisk(r) && r.status !== 'Архивирован');
   const needsAction = mine.flatMap(r => r.actions.filter(a => a.status !== 'done' && a.status !== 'rejected').map(a => ({risk:r, action:a})));
+  const inProgress = mine.flatMap(r=>r.actions).filter(a=>a.status==='in_progress').length;
+  const overdueRisks = mine.filter(r => trafficLight(r.actions).label.startsWith('Просрочено'));
+  const highMine = mine.filter(r => zoneOf(rraOf(r.p, r.iLevel)) === 'high');
+  const escalatedMine = mine.filter(r => r.committeeFlag);
   const el = document.getElementById('myTasksMount');
+
+  if (!mine.length){
+    el.innerHTML = `<div class="empty-state">Риски, где вы указаны владельцем, не найдены. Сопоставление идёт по фамилии — войдите с фамилией одного из реальных владельцев паспортов ЦГП-2 (например, «Мордовкин», «Якубов» или «Азимов»), чтобы увидеть персональный вид.</div>`;
+    return;
+  }
+
   el.innerHTML = `
-    <div class="panel"><h3>Мои риски (${mine.length})</h3>
-      ${mine.length ? mine.map(r => riskCardHtml(r)).join('') : `<div class="empty-state">Риски, где вы указаны владельцем, не найдены. Сопоставление идёт по фамилии — войдите с фамилией одного из реальных владельцев паспортов ЦГП-2 (например, «Мордовкин», «Якубов» или «Азимов»), чтобы увидеть персональный вид.</div>`}
+    <div class="kpi-grid">
+      <div class="kpi-card"><span class="kpi-label">Мои активные риски</span><span class="kpi-value">${mine.length}</span><span class="kpi-sub">из них высокой критичности: ${highMine.length}</span></div>
+      <div class="kpi-card"><span class="kpi-label">Мероприятий в работе</span><span class="kpi-value" style="color:var(--accent-600)">${inProgress}</span><span class="kpi-sub">из ${mine.flatMap(r=>r.actions).length} всего по моим рискам</span></div>
+      <div class="kpi-card clickable" id="kpiMineOverdue"><span class="kpi-label">Риски с просрочкой</span><span class="kpi-value" style="color:var(--red-700)">${overdueRisks.length}</span><span class="kpi-sub">светофор красный</span></div>
+      <div class="kpi-card"><span class="kpi-label">На эскалации (I=3)</span><span class="kpi-value" style="color:var(--red-700)">${escalatedMine.length}</span><span class="kpi-sub">решение за риск-менеджером/комитетом</span></div>
     </div>
-    <div class="panel"><h3>Что от меня требуется (${needsAction.length})</h3>
-      ${needsAction.length ? `<div class="actions-table-wrap"><table class="data-table"><thead><tr><th>Риск</th><th>Мероприятие</th><th>Срок</th><th>Статус</th><th></th></tr></thead><tbody>
-        ${needsAction.slice(0,20).map(x => `<tr><td class="mono" style="cursor:pointer;" data-open-risk="${x.risk.id}">${x.risk.id}</td><td>${esc(x.action.title)}</td><td class="mono">${esc(x.action.plannedDate||'—')}</td>
-          <td><span class="status-dot-row"><i class="status-dot" style="background:${ACTION_STATUS_COLOR[x.action.status]}"></i>${ACTION_STATUS_LABEL[x.action.status]}</span></td>
-          <td><button class="btn-sm" data-quick-done="${x.risk.id}|${x.action.id}">Выполнить</button> <button class="btn-sm" data-quick-reject="${x.risk.id}|${x.action.id}">Отклонить</button></td></tr>`).join('')}
-      </tbody></table></div>` : '<div class="empty-state">Все мероприятия по вашим рискам выполнены или отклонены.</div>'}
+
+    <div class="panel-2col">
+      <div class="panel"><h3>Что от меня требуется (${needsAction.length})</h3>
+        ${needsAction.length ? `<div class="actions-table-wrap"><table class="data-table"><thead><tr><th>Риск</th><th>Мероприятие</th><th>Срок</th><th>Статус</th><th></th></tr></thead><tbody>
+          ${needsAction.slice(0,20).map(x => `<tr><td class="mono" style="cursor:pointer;" data-open-risk="${x.risk.id}">${x.risk.id}</td><td>${esc(x.action.title)}</td><td class="mono">${esc(x.action.plannedDate||'—')}</td>
+            <td><span class="status-dot-row"><i class="status-dot" style="background:${ACTION_STATUS_COLOR[x.action.status]}"></i>${ACTION_STATUS_LABEL[x.action.status]}</span></td>
+            <td><button class="btn-sm" data-quick-done="${x.risk.id}|${x.action.id}">Выполнить</button> <button class="btn-sm" data-quick-reject="${x.risk.id}|${x.action.id}">Отклонить</button></td></tr>`).join('')}
+        </tbody></table></div>` : '<div class="empty-state">Все мероприятия по вашим рискам выполнены или отклонены.</div>'}
+      </div>
+      <div class="panel"><h3>На эскалации — ${escalatedMine.length}</h3>
+        ${escalatedMine.length ? `<ul>${escalatedMine.map(r=>`<li><a href="#" data-open-risk="${r.id}">${esc(r.title.slice(0,58))}${r.title.length>58?'…':''}</a></li>`).join('')}</ul>` : '<p class="muted" style="margin:0;">Среди ваших рисков нет требующих решения комитета.</p>'}
+      </div>
+    </div>
+
+    <div class="panel">
+      <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:12px;">
+        <h3 style="margin:0;">Мои риски</h3>
+        <button class="link-btn" id="goToMyRegister">Открыть полный список →</button>
+      </div>
+      ${mine.slice(0,3).map(r => riskCardHtml(r)).join('')}
+      ${mine.length > 3 ? `<p class="muted" style="font-size:12.5px;margin:4px 0 0;">и ещё ${mine.length-3} — на вкладке «Мои риски».</p>` : ''}
     </div>`;
   el.querySelectorAll('.risk-card').forEach(c => c.addEventListener('click', () => openPassport(c.dataset.riskId)));
-  el.querySelectorAll('[data-open-risk]').forEach(c => c.addEventListener('click', () => openPassport(c.dataset.openRisk)));
+  el.querySelectorAll('[data-open-risk]').forEach(c => c.addEventListener('click', (e) => { e.preventDefault(); openPassport(c.dataset.openRisk); }));
   el.querySelectorAll('[data-quick-done]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); quickActionStatus(b.dataset.quickDone, 'done'); }));
   el.querySelectorAll('[data-quick-reject]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); const c = prompt('Комментарий к отклонению (необязательно):')||''; quickActionStatus(b.dataset.quickReject, 'rejected', c); }));
+  const goBtn = document.getElementById('goToMyRegister');
+  if (goBtn) goBtn.addEventListener('click', () => gotoPage('register'));
+  const kpiOverdue = document.getElementById('kpiMineOverdue');
+  if (kpiOverdue) kpiOverdue.addEventListener('click', () => gotoPage('register'));
 }
 function quickActionStatus(key, status){
   const [riskId, actionId] = key.split('|');
@@ -1362,6 +1496,27 @@ function riskCardHtml(r){
     <div class="risk-card-foot"><span>${r.actions.length} мероприятий</span>${r.sourceLessonId?`<span>· из урока <code class="mono">${r.sourceLessonId}</code></span>`:''}<button class="link-btn" data-open-risk="${r.id}">Открыть паспорт →</button></div>
   </div>`;
 }
+// Быстрый фильтр из виджетов Дэшборда/Матрицы (например, клик по KPI
+// «Просрочено мероприятий») — накладывается поверх обычных фильтров реестра
+// и показывается снимаемым чипом, а не отдельной страницей.
+let registerQuickFilter = null;
+const QUICK_FILTERS = {
+  high:      {label:'Высокая критичность (RRA=H)', test:r => zoneOf(rraOf(r.p, r.iLevel)) === 'high'},
+  medium:    {label:'Средняя критичность (RRA=M)', test:r => zoneOf(rraOf(r.p, r.iLevel)) === 'medium'},
+  low:       {label:'Низкая критичность (RRA=L)', test:r => zoneOf(rraOf(r.p, r.iLevel)) === 'low'},
+  unassessed:{label:'Без оценки P/I', test:r => !r.p || !r.iLevel},
+  escalated: {label:'Требуют решения комитета (I=3)', test:r => r.committeeFlag},
+  overdue:   {label:'Просроченные (светофор красный)', test:r => trafficLight(r.actions).label.startsWith('Просрочено')},
+  doneAll:   {label:'Все мероприятия выполнены', test:r => r.actions.length && r.actions.every(a=>a.status==='done')},
+  hasDone:   {label:'Есть выполненные мероприятия', test:r => r.actions.some(a=>a.status==='done')},
+  hasPlanned:{label:'Есть мероприятия «Планируется»', test:r => r.actions.some(a=>a.status==='planned')},
+  hasInProgress:{label:'Есть мероприятия «В работе»', test:r => r.actions.some(a=>a.status==='in_progress')},
+  hasRejected:{label:'Есть отклонённые мероприятия', test:r => r.actions.some(a=>a.status==='rejected')},
+};
+function goToRegisterWithFilter(key){
+  registerQuickFilter = key;
+  gotoPage('register');
+}
 function renderRegister(){
   const search = (document.getElementById('regSearch').value||'').toLowerCase();
   const catF = document.getElementById('regFiltCat').value;
@@ -1373,6 +1528,13 @@ function renderRegister(){
   if (catF) list = list.filter(r => r.category === catF);
   if (statusF) list = list.filter(r => r.status === statusF);
   if (search) list = list.filter(r => (r.title+r.event+r.consequence+r.ownerNames.join(' ')+r.id).toLowerCase().includes(search));
+  if (registerQuickFilter && QUICK_FILTERS[registerQuickFilter]) list = list.filter(QUICK_FILTERS[registerQuickFilter].test);
+
+  const chipEl = document.getElementById('regQuickChip');
+  chipEl.innerHTML = registerQuickFilter && QUICK_FILTERS[registerQuickFilter]
+    ? `<span class="quick-chip">Быстрый фильтр: ${QUICK_FILTERS[registerQuickFilter].label}<button type="button" id="regQuickChipClear" aria-label="Снять фильтр">×</button></span>` : '';
+  const clearBtn = document.getElementById('regQuickChipClear');
+  if (clearBtn) clearBtn.addEventListener('click', () => { registerQuickFilter = null; renderRegister(); });
 
   document.getElementById('regCount').textContent = `${list.length} из ${state.risks.filter(r=>r.status!=='Архивирован').length}`;
   document.getElementById('registerList').innerHTML = list.length ? list.map(riskCardHtml).join('') : `<div class="empty-state">Ничего не найдено по заданным фильтрам.</div>`;
@@ -1553,7 +1715,7 @@ function renderPassport(){
       ${editable && (r.status==='Идентификация'||r.status==='Анализ и оценка') ? `<button class="btn btn-secondary btn-sm" id="pAssessBtn">Провести оценку (P/I)</button>` : ''}
       ${editable && r.p && r.iLevel ? `<button class="btn btn-secondary btn-sm" id="pAddActionBtn">+ Мероприятие</button>` : ''}
       ${editable ? advanceButtonHtml(r) : ''}
-      ${state.session.role==='riskmanager' && r.status!=='Архивирован' ? `<button class="btn btn-text btn-sm" id="pMergeBtn">Объединить как дубль…</button>` : ''}
+      ${editable && r.status!=='Архивирован' ? `<button class="btn btn-text btn-sm" id="pMergeBtn">Объединить как дубль…</button>` : ''}
     </div>
 
     <h3 style="font-family:var(--font-display);font-size:13.5px;margin:0 0 8px;">РЕАГИРОВАНИЕ — мероприятия (${r.actions.length})</h3>
@@ -1770,7 +1932,7 @@ document.getElementById('actionFormSubmit').addEventListener('click', () => {
 // ===================================================================
 let matrixSelected = null;
 function renderMatrix(){
-  const risks = state.risks.filter(r => r.status !== 'Архивирован' && r.p && r.iLevel);
+  const risks = scopedRisks().filter(r => r.p && r.iLevel);
   const cells = {};
   for (let p=1;p<=3;p++) for (let i=1;i<=3;i++) cells[p+'_'+i] = risks.filter(r=>r.p===p && r.iLevel===i);
   let grid = `<div class="axis-y" style="grid-row:1/span 3;">Влияние (I)</div>`;
@@ -1791,7 +1953,10 @@ function renderMatrix(){
       <div id="matrixPicked" class="matrix-picked" style="display:none;"></div>
     </div>`;
   document.getElementById('matrixMount').innerHTML = `<div class="matrix-shell"><div class="matrix3">${grid}</div>${legend}</div>
-    <p class="muted" style="font-size:12px;margin-top:10px;">${state.risks.filter(r=>r.status!=='Архивирован'&&(!r.p||!r.iLevel)).length} риск(ов) без оценки P/I не показаны на матрице.</p>`;
+    <p class="muted" style="font-size:12px;margin-top:10px;">${(() => { const n = scopedRisks().filter(r=>!r.p||!r.iLevel).length;
+      return n ? `<a href="#" id="matrixUnassessedLink">${n} риск(ов) без оценки P/I</a> не показаны на матрице.` : '0 рисков без оценки P/I.'; })()}</p>`;
+  const unassessedLink = document.getElementById('matrixUnassessedLink');
+  if (unassessedLink) unassessedLink.addEventListener('click', e => { e.preventDefault(); goToRegisterWithFilter('unassessed'); });
   document.querySelectorAll('.m-cell').forEach(c => c.addEventListener('click', () => {
     matrixSelected = c.dataset.cell;
     const list = cells[matrixSelected];
@@ -1922,7 +2087,7 @@ function lessonFormHtml(){
 let calDate = new Date(2026, 8, 1);
 function collectCalEvents(){
   const map = {};
-  state.risks.forEach(r => r.actions.forEach(a => {
+  scopedRisks().forEach(r => r.actions.forEach(a => {
     const d = parseRuShortDate(a.plannedDate);
     if (!d) return;
     const overdue = (a.status!=='done' && a.status!=='rejected' && d < TODAY);
@@ -1959,7 +2124,7 @@ function renderCalendar(){
 // ===================================================================
 let mapMode = 'cursor', mapSelected = [];
 function mapNodesFor(){
-  const risks = state.risks.filter(r => r.status !== 'Архивирован');
+  const risks = scopedRisks();
   const R = 170;
   return [{id:'__project', type:'project', x:50, y:50, label:state.session.spp}].concat(
     risks.map((r,idx) => {
@@ -2022,18 +2187,19 @@ function openLinkTypeModal(fromId, toId){
   saveState(); toast('Связь добавлена'); renderMap();
 }
 function renderDepTable(){
-  const risks = state.risks;
-  const rows = state.deps.map(d => {
+  const scopedIds = new Set(scopedRisks().map(r=>r.id));
+  const rows = state.deps.filter(d => scopedIds.has(d.fromId) || scopedIds.has(d.toId)).map(d => {
     const a = findRisk(d.fromId), b = findRisk(d.toId);
     if (!a || !b) return '';
-    return `<tr><td class="mono">${a.id}</td><td>${d.type}</td><td class="mono">${b.id}</td><td>${d.source==='manual'?'ручная':'AI'}</td><td>${esc(d.author)}</td>
+    return `<tr><td class="mono" data-open-risk="${a.id}" style="cursor:pointer;">${a.id}</td><td>${d.type}</td><td class="mono" data-open-risk="${b.id}" style="cursor:pointer;">${b.id}</td><td>${d.source==='manual'?'ручная':'AI'}</td><td>${esc(d.author)}</td>
       <td><button class="btn-sm" data-del-dep="${d.id}">Удалить</button></td></tr>`;
   }).join('');
-  document.getElementById('depTable').innerHTML = state.deps.length ? `<table class="data-table"><thead><tr><th>Источник</th><th>Тип</th><th>Цель</th><th>Source</th><th>Автор</th><th></th></tr></thead><tbody>${rows}</tbody></table>` : '<div class="empty-state">Связей пока нет.</div>';
-  document.querySelectorAll('[data-del-dep]').forEach(b => b.addEventListener('click', () => { state.deps = state.deps.filter(d=>d.id!==b.dataset.delDep); saveState(); renderDepTable(); drawMap(); }));
+  document.getElementById('depTable').innerHTML = rows ? `<table class="data-table"><thead><tr><th>Источник</th><th>Тип</th><th>Цель</th><th>Source</th><th>Автор</th><th></th></tr></thead><tbody>${rows}</tbody></table>` : '<div class="empty-state">Связей пока нет.</div>';
+  document.querySelectorAll('[data-del-dep]').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); state.deps = state.deps.filter(d=>d.id!==b.dataset.delDep); saveState(); renderDepTable(); drawMap(); }));
+  document.querySelectorAll('#depTable [data-open-risk]').forEach(td => td.addEventListener('click', () => openPassport(td.dataset.openRisk)));
 }
 function openMergePicker(r){
-  const otherId = prompt('ID второго риска (дубля) для объединения с ' + r.id + ':\n\n' + state.risks.filter(x=>x.id!==r.id && x.status!=='Архивирован').map(x=>x.id+' — '+x.title.slice(0,40)).join('\n'));
+  const otherId = prompt('ID второго риска (дубля) для объединения с ' + r.id + ':\n\n' + scopedRisks().filter(x=>x.id!==r.id).map(x=>x.id+' — '+x.title.slice(0,40)).join('\n'));
   if (!otherId) return;
   if (!findRisk(otherId.trim())){ toast('Риск с таким ID не найден'); return; }
   openMergeModal(r.id, otherId.trim());
@@ -2102,15 +2268,15 @@ function renderReports(){
       <div class="es-metrics">
         <div class="es-metric"><div class="k">Общий уровень риска</div><div class="v">${highs.length > risks.length/2 ? 'Высокий' : 'Средний'}</div></div>
         <div class="es-metric"><div class="k">Выявлено рисков</div><div class="v">${risks.length}</div></div>
-        <div class="es-metric"><div class="k">Из них Высокий (H)</div><div class="v">${highs.length}</div></div>
-        <div class="es-metric"><div class="k">Требуют решения комитета (I=3)</div><div class="v">${escalations.length}</div></div>
+        <div class="es-metric clickable" data-goto-register="high"><div class="k">Из них Высокий (H)</div><div class="v">${highs.length}</div></div>
+        <div class="es-metric clickable" data-goto-register="escalated"><div class="k">Требуют решения комитета (I=3)</div><div class="v">${escalations.length}</div></div>
         <div class="es-metric"><div class="k">Совокупный EL</div><div class="v">${el ? el.toFixed(0)+' млн ₽' : '—'}</div></div>
       </div>
       <div class="panel-2col">
         <div><h4 style="font-size:12px;text-transform:uppercase;color:var(--ink-600);">Ключевые достижения</h4>
-          <ul>${doneRisks.length ? doneRisks.slice(0,4).map(r=>`<li>Риск ${r.id} — все мероприятия выполнены</li>`).join('') : '<li class="muted">Пока ни один риск не закрыл все мероприятия.</li>'}</ul></div>
+          <ul>${doneRisks.length ? doneRisks.slice(0,4).map(r=>`<li><a href="#" data-open-risk="${r.id}">Риск ${r.id}</a> — все мероприятия выполнены</li>`).join('') : '<li class="muted">Пока ни один риск не закрыл все мероприятия.</li>'}</ul></div>
         <div><h4 style="font-size:12px;text-transform:uppercase;color:var(--ink-600);">Приоритетные действия</h4>
-          <ul>${overdueRisks.concat(rejectedRisks).slice(0,4).map(r=>`<li>Риск ${r.id} — ${trafficLight(r.actions).label.toLowerCase()}</li>`).join('') || '<li class="muted">Явных приоритетов не выявлено.</li>'}</ul></div>
+          <ul>${overdueRisks.concat(rejectedRisks).slice(0,4).map(r=>`<li><a href="#" data-open-risk="${r.id}">Риск ${r.id}</a> — ${trafficLight(r.actions).label.toLowerCase()}</li>`).join('') || '<li class="muted">Явных приоритетов не выявлено.</li>'}</ul></div>
       </div>
     </div>
     <div class="panel">
@@ -2121,6 +2287,8 @@ function renderReports(){
     </div>`;
   document.querySelectorAll('[data-view-r]').forEach(b=>b.addEventListener('click', ()=>openPassport(b.dataset.viewR)));
   document.querySelectorAll('[data-view-l]').forEach(b=>b.addEventListener('click', ()=>openLessonModal(b.dataset.viewL)));
+  document.querySelectorAll('#reportsMount [data-open-risk]').forEach(a=>a.addEventListener('click', e=>{ e.preventDefault(); openPassport(a.dataset.openRisk); }));
+  document.querySelectorAll('#reportsMount [data-goto-register]').forEach(a=>a.addEventListener('click', ()=> goToRegisterWithFilter(a.dataset.gotoRegister)));
 }
 
 // ===================================================================
