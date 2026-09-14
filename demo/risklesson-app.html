@@ -71,11 +71,15 @@
   /* ===== ВХОД ===== */
   #loginScreen{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;}
   /* Шаг 1 (выбор роли) — без белой карточки-контейнера: бренд и роли лежат
-     прямо на фоне страницы, крупнее и пропорциональнее экрану. */
-  .role-select-shell{width:100%; max-width:900px; display:flex; flex-direction:column; align-items:center; gap:56px;}
-  .brand--lg{display:flex; align-items:center; gap:16px;}
-  .brand--lg .brand-mark{width:60px; height:33px;}
+     прямо на фоне страницы. Заголовочный блок оформлен по образцу референса
+     (крупный заголовок / акцентный подзаголовок / серая подсказка). */
+  .role-select-shell{width:100%; max-width:760px; display:flex; flex-direction:column; align-items:center; gap:40px;}
+  .role-select-header{display:flex; flex-direction:column; align-items:center; gap:8px;}
+  .brand.brand--lg{display:flex; align-items:center; gap:14px; border-bottom:none; padding:0; margin:0;}
+  .brand--lg .brand-mark{width:50px; height:28px;}
   .brand--lg .name{font-size:32px;}
+  .role-select-subtitle{font-family:var(--font-display); font-size:16px; font-weight:600; color:var(--accent-600); margin:6px 0 0; text-align:center;}
+  .role-select-hint{font-size:13.5px; color:var(--ink-600); margin:0; text-align:center;}
   .login-card{width:100%; max-width:360px; background:var(--paper-0); border-radius:var(--radius-card);
     box-shadow:var(--shadow-pop); padding:28px 26px;}
   .brand{display:flex; align-items:center; justify-content:center; gap:10px; padding:0 8px 16px;
@@ -85,6 +89,8 @@
   .brand .name{font-family:var(--font-display); font-weight:800; font-size:19px; color:var(--logo-blue);}
   form{display:flex; flex-direction:column; gap:14px;}
   .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;}
+  @media (max-width:520px){ .row3{grid-template-columns:1fr;} }
   .field{display:flex; flex-direction:column; gap:6px;}
   .field > label{font-size:11px; font-weight:600; color:var(--ink-600); text-transform:uppercase; letter-spacing:.2px;}
   .field input, .field select, .field textarea{border:1px solid var(--line); border-radius:var(--radius-field);
@@ -173,8 +179,9 @@
     transition:transform .2s cubic-bezier(.16,1,.3,1); max-height:88vh; overflow-y:auto;}
   .modal-overlay.show .modal-card{transform:scale(1) translateY(0);}
   .modal-card--wide{max-width:620px;}
-  /* шаг 2 входа — крупнее дефолтной модалки (320px), пропорциональнее экрану */
-  .modal-card--entry{max-width:460px; padding:34px 32px;}
+  /* шаг 2 входа — крупнее дефолтной модалки (320px), пропорциональнее экрану;
+     540px — под симметричный ряд из 3 полей (Имя/Фамилия/СПП) в одну строку */
+  .modal-card--entry{max-width:540px; padding:34px 32px;}
   .modal-card--entry .modal-head span{font-size:19px;}
   .modal-card--entry form{gap:18px;}
   .modal-card--entry .row2{gap:14px;}
@@ -459,9 +466,13 @@
 <!-- ============ ВХОД — шаг 1: роль (без белой карточки — крупно, прямо на фоне) ============ -->
 <div id="loginScreen">
   <div class="role-select-shell">
-    <div class="brand brand--lg">
-      <div class="brand-mark"><svg viewBox="0 0 105 57" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M20.7303 19.0532H15.5128V36.6192H20.7303V29.6627H26.2956V36.6192H31.5164V19.0532H26.2956V25.4881H20.7303V19.0532ZM50.1263 36.6192V19.0532H36.7291V28.2701C36.7291 31.7491 36.0337 32.794 33.2518 32.2708V36.6112C36.2075 37.1328 38.8155 36.6112 40.208 34.8725C41.5989 33.3076 41.7728 30.524 41.7728 28.2621V23.2198H45.0746V36.6192H50.1263ZM59.6905 19.0532H54.4745L52.0324 36.6208H56.9022L58.1193 27.23L60.898 36.6192H64.3752L67.1619 27.23L68.3789 36.6192H73.2551L70.821 19.0532H65.6035L62.6478 29.4888L59.6905 19.0532ZM80.3852 19.0532H75.1676L75.1613 36.6192H80.3788V29.4888L85.0748 36.6192H91.3323L84.5532 27.75L91.1728 19.0532H85.4305L80.3852 26.1836V19.0532ZM0.731079 28.2701C0.731079 11.575 21.4258 0.271667 52.7311 0.271667C84.2054 0.271667 104.731 11.575 104.731 28.2701C104.731 44.7865 84.2086 56.2717 52.7311 56.2717C21.4258 56.2717 0.731079 44.7928 0.731079 28.2701ZM3.68997 28.2701C3.68997 43.4018 23.3415 53.662 52.7311 53.662C82.2945 53.662 101.772 43.4018 101.772 28.2701C101.772 12.966 82.2945 2.87977 52.7311 2.87977C23.3383 2.87977 3.68678 12.966 3.68997 28.2701ZM7.64417 28.2707C7.64417 21.9298 11.8809 16.4671 19.7642 12.536C27.6444 8.60642 38.9979 6.31464 52.7312 6.31464C66.462 6.31464 77.8143 8.60563 85.6939 12.5348C93.5766 16.4655 97.8134 21.9281 97.8134 28.2707C97.8134 34.6134 93.5776 40.0764 85.6956 44.0075C77.8167 47.937 66.4644 50.2284 52.7312 50.2284C38.9979 50.2284 27.6444 47.9362 19.7643 44.0063C11.8809 40.0747 7.64417 34.6117 7.64417 28.2707ZM6.64417 28.2707C6.64417 14.5331 25.0786 5.31464 52.7312 5.31464C80.3789 5.31464 98.8134 14.5299 98.8134 28.2707C98.8134 42.0115 80.3837 51.2284 52.7312 51.2284C25.0786 51.2284 6.64417 42.0083 6.64417 28.2707Z" fill="var(--logo-blue)"/></svg></div>
-      <div class="name">RiskLesson</div>
+    <div class="role-select-header">
+      <div class="brand brand--lg">
+        <div class="brand-mark"><svg viewBox="0 0 105 57" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M20.7303 19.0532H15.5128V36.6192H20.7303V29.6627H26.2956V36.6192H31.5164V19.0532H26.2956V25.4881H20.7303V19.0532ZM50.1263 36.6192V19.0532H36.7291V28.2701C36.7291 31.7491 36.0337 32.794 33.2518 32.2708V36.6112C36.2075 37.1328 38.8155 36.6112 40.208 34.8725C41.5989 33.3076 41.7728 30.524 41.7728 28.2621V23.2198H45.0746V36.6192H50.1263ZM59.6905 19.0532H54.4745L52.0324 36.6208H56.9022L58.1193 27.23L60.898 36.6192H64.3752L67.1619 27.23L68.3789 36.6192H73.2551L70.821 19.0532H65.6035L62.6478 29.4888L59.6905 19.0532ZM80.3852 19.0532H75.1676L75.1613 36.6192H80.3788V29.4888L85.0748 36.6192H91.3323L84.5532 27.75L91.1728 19.0532H85.4305L80.3852 26.1836V19.0532ZM0.731079 28.2701C0.731079 11.575 21.4258 0.271667 52.7311 0.271667C84.2054 0.271667 104.731 11.575 104.731 28.2701C104.731 44.7865 84.2086 56.2717 52.7311 56.2717C21.4258 56.2717 0.731079 44.7928 0.731079 28.2701ZM3.68997 28.2701C3.68997 43.4018 23.3415 53.662 52.7311 53.662C82.2945 53.662 101.772 43.4018 101.772 28.2701C101.772 12.966 82.2945 2.87977 52.7311 2.87977C23.3383 2.87977 3.68678 12.966 3.68997 28.2701ZM7.64417 28.2707C7.64417 21.9298 11.8809 16.4671 19.7642 12.536C27.6444 8.60642 38.9979 6.31464 52.7312 6.31464C66.462 6.31464 77.8143 8.60563 85.6939 12.5348C93.5766 16.4655 97.8134 21.9281 97.8134 28.2707C97.8134 34.6134 93.5776 40.0764 85.6956 44.0075C77.8167 47.937 66.4644 50.2284 52.7312 50.2284C38.9979 50.2284 27.6444 47.9362 19.7643 44.0063C11.8809 40.0747 7.64417 34.6117 7.64417 28.2707ZM6.64417 28.2707C6.64417 14.5331 25.0786 5.31464 52.7312 5.31464C80.3789 5.31464 98.8134 14.5299 98.8134 28.2707C98.8134 42.0115 80.3837 51.2284 52.7312 51.2284C25.0786 51.2284 6.64417 42.0083 6.64417 28.2707Z" fill="var(--logo-blue)"/></svg></div>
+        <div class="name">RiskLesson</div>
+      </div>
+      <p class="role-select-subtitle">Управление рисками и уроками проекта</p>
+      <p class="role-select-hint">Выберите роль, чтобы продолжить</p>
     </div>
     <div class="role-cards" id="roleCards">
       <div class="role-card" data-value="riskmanager">
@@ -490,7 +501,7 @@
       <button type="button" class="modal-close" id="sppClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
     <form id="entryForm" onsubmit="return false;">
-      <div class="row2">
+      <div class="row3">
         <div class="field" data-field="firstName">
           <div class="input-float has-icon">
             <input type="text" id="firstName" placeholder="Иван" autocomplete="given-name">
@@ -505,14 +516,14 @@
             <span class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg></span>
           </div>
         </div>
-      </div>
-      <div class="field" data-field="spp">
-        <div class="input-float has-icon">
-          <input type="text" id="sppInput" placeholder="12-1111" inputmode="numeric" maxlength="7" autocomplete="off">
-          <label for="sppInput">СПП</label>
-          <span class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/><path d="M7 14h4"/></svg></span>
+        <div class="field" data-field="spp">
+          <div class="input-float has-icon">
+            <input type="text" id="sppInput" placeholder="12-1111" inputmode="numeric" maxlength="7" autocomplete="off">
+            <label for="sppInput">СПП</label>
+            <span class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/><path d="M7 14h4"/></svg></span>
           </div>
-        <div class="err-msg">СПП должен состоять ровно из 6 цифр</div>
+          <div class="err-msg">СПП должен состоять ровно из 6 цифр</div>
+        </div>
       </div>
     </form>
     <div class="btn-row">
@@ -559,7 +570,6 @@
     <p class="ws-desc" id="wsDesc"></p>
 
     <div class="ws-page" data-page="dashboard"><div id="dashMount"></div></div>
-    <div class="ws-page" data-page="mytasks" hidden><div id="myTasksMount"></div></div>
 
     <div class="ws-page" data-page="register" hidden>
       <div class="toolbar-row">
@@ -1251,7 +1261,6 @@ function signOut(){
 // вкладок для риск-менеджера и владельца риска одним и тем же шаблоном.
 const NAV_ICONS = {
   dashboard:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>',
-  mytasks:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
   register:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6z"/><path d="M15 3v3h3"/><path d="M9 12h6M9 16h6"/></svg>',
   matrix:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>',
   lessons:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H12v16H5.5C4.7 20 4 19.3 4 18.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H12v16h6.5c.8 0 1.5-.7 1.5-1.5z"/></svg>',
@@ -1260,17 +1269,16 @@ const NAV_ICONS = {
   reports:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.8 5.6L19 9l-5.2 1.4L12 16l-1.8-5.6L5 9l5.2-1.4L12 2z"/></svg>',
 };
 // Риск-менеджер — портфель проекта целиком, 7 вкладок.
-// Владелец риска — ОТДЕЛЬНОЕ рабочее пространство (process_full_v4.md, 3.1):
-// свой «Обзор» вместо общего Дэшборда, без Reports & Analytics (это уровень
-// комитета/менеджера), остальные разделы показывают только его риски.
+// Владелец риска — ОТДЕЛЬНОЕ, намеренно узкое рабочее пространство: только
+// свои риски (с возможностью предложить новый — кнопка "+ Предложить риск"
+// в renderRegister) и календарь своих сроков, без остальных разделов.
 const NAV_BY_ROLE = {
   riskmanager:[
     ['dashboard','Дэшборд'], ['register','Реестр рисков'], ['matrix','Матрица рисков'],
     ['lessons','Реестр уроков'], ['calendar','Календарь'], ['map','Карта взаимосвязей'], ['reports','Reports & Analytics'],
   ],
   riskowner:[
-    ['mytasks','Обзор'], ['register','Мои риски'], ['matrix','Матрица (мои риски)'],
-    ['map','Карта связей (мои риски)'], ['lessons','Реестр уроков'], ['calendar','Календарь (мои сроки)'],
+    ['register','Мои риски'], ['calendar','Календарь'],
   ],
 };
 function buildNav(role){
@@ -1307,11 +1315,10 @@ function enterWorkspace(){
   });
   document.getElementById('wsSignOut').addEventListener('click', signOut);
 
-  gotoPage(isOwner ? 'mytasks' : 'dashboard');
+  gotoPage(isOwner ? 'register' : 'dashboard');
 }
 const PAGE_META = {
   dashboard:{title:'Дэшборд', desc:'Общая сводка по рискам программы: количество, критичность, статус мероприятий.'},
-  mytasks:{title:'Обзор', desc:'Ваши риски и то, что от вас требуется — согласовать, выполнить или отклонить с комментарием.'},
   register:{title:'Реестр рисков', desc:'Полный список зарегистрированных рисков проекта с владельцем, оценкой и статусом.'},
   matrix:{title:'Матрица рисков', desc:'Визуализация рисков по вероятности и влиянию (P×I), сетка 3×3.'},
   lessons:{title:'Реестр уроков', desc:'База знаний по прошлым проектам — риски, которые уже случались, и как их избежать.'},
@@ -1323,10 +1330,8 @@ const PAGE_META = {
 // (одни и те же контейнеры и функции рендера), но подписи и описания честно
 // отражают, что видно только подмножество, ограниченное его рисками.
 const PAGE_META_OWNER_OVERRIDE = {
-  register:{title:'Мои риски', desc:'Риски, где вы указаны владельцем. Фильтр по владельцу заблокирован — это не общий реестр проекта.'},
-  matrix:{title:'Матрица (мои риски)', desc:'P×I только по вашим рискам.'},
-  map:{title:'Карта связей (мои риски)', desc:'Связи и объединение дублей — только в рамках ваших рисков.'},
-  calendar:{title:'Календарь (мои сроки)', desc:'Только сроки мероприятий по вашим рискам.'},
+  register:{title:'Мои риски', desc:'Риски, где вы указаны владельцем — плюс возможность предложить новый. Фильтр по владельцу заблокирован, это не общий реестр проекта.'},
+  calendar:{title:'Календарь', desc:'Только сроки мероприятий по вашим рискам.'},
 };
 function gotoPage(key){
   document.querySelectorAll('.ws-nav-item').forEach(b => b.classList.toggle('active', b.dataset.page === key));
@@ -1335,7 +1340,7 @@ function gotoPage(key){
   document.getElementById('wsTitle').textContent = meta.title;
   document.getElementById('wsDesc').textContent = meta.desc;
   document.querySelectorAll('.ws-page').forEach(p => p.hidden = p.dataset.page !== key);
-  ({dashboard:renderDashboard, mytasks:renderMyTasks, register:renderRegister, matrix:renderMatrix,
+  ({dashboard:renderDashboard, register:renderRegister, matrix:renderMatrix,
     lessons:renderLessons, calendar:renderCalendar, map:renderMap, reports:renderReports})[key]();
 }
 function populateCategorySelect(sel, withEmpty){
@@ -1416,69 +1421,6 @@ function renderDashboard(){
   document.getElementById('btnResetDemo').addEventListener('click', () => { if (confirm('Сбросить все изменения и вернуться к исходным seed-данным?')) resetDemoData(); });
 }
 
-function renderMyTasks(){
-  // «Обзор» — личный дашборд владельца риска (process_full_v4.md, 3.1): не то
-  // же самое, что портфельный Дэшборд менеджера. KPI считаются только по своим
-  // рискам, плюс приоритизированные «Что от меня требуется» и «На эскалации».
-  const mine = state.risks.filter(r => isMyRisk(r) && r.status !== 'Архивирован');
-  const needsAction = mine.flatMap(r => r.actions.filter(a => a.status !== 'done' && a.status !== 'rejected').map(a => ({risk:r, action:a})));
-  const inProgress = mine.flatMap(r=>r.actions).filter(a=>a.status==='in_progress').length;
-  const overdueRisks = mine.filter(r => trafficLight(r.actions).label.startsWith('Просрочено'));
-  const highMine = mine.filter(r => zoneOf(rraOf(r.p, r.iLevel)) === 'high');
-  const escalatedMine = mine.filter(r => r.committeeFlag);
-  const el = document.getElementById('myTasksMount');
-
-  if (!mine.length){
-    el.innerHTML = `<div class="empty-state">Риски, где вы указаны владельцем, не найдены. Сопоставление идёт по фамилии — войдите с фамилией одного из реальных владельцев паспортов ЦГП-2 (например, «Мордовкин», «Якубов» или «Азимов»), чтобы увидеть персональный вид.</div>`;
-    return;
-  }
-
-  el.innerHTML = `
-    <div class="kpi-grid">
-      <div class="kpi-card"><span class="kpi-label">Мои активные риски</span><span class="kpi-value">${mine.length}</span><span class="kpi-sub">из них высокой критичности: ${highMine.length}</span></div>
-      <div class="kpi-card"><span class="kpi-label">Мероприятий в работе</span><span class="kpi-value" style="color:var(--accent-600)">${inProgress}</span><span class="kpi-sub">из ${mine.flatMap(r=>r.actions).length} всего по моим рискам</span></div>
-      <div class="kpi-card clickable" id="kpiMineOverdue"><span class="kpi-label">Риски с просрочкой</span><span class="kpi-value" style="color:var(--red-700)">${overdueRisks.length}</span><span class="kpi-sub">светофор красный</span></div>
-      <div class="kpi-card"><span class="kpi-label">На эскалации (I=3)</span><span class="kpi-value" style="color:var(--red-700)">${escalatedMine.length}</span><span class="kpi-sub">решение за риск-менеджером/комитетом</span></div>
-    </div>
-
-    <div class="panel-2col">
-      <div class="panel"><h3>Что от меня требуется (${needsAction.length})</h3>
-        ${needsAction.length ? `<div class="actions-table-wrap"><table class="data-table"><thead><tr><th>Риск</th><th>Мероприятие</th><th>Срок</th><th>Статус</th><th></th></tr></thead><tbody>
-          ${needsAction.slice(0,20).map(x => `<tr><td class="mono" style="cursor:pointer;" data-open-risk="${x.risk.id}">${x.risk.id}</td><td>${esc(x.action.title)}</td><td class="mono">${esc(x.action.plannedDate||'—')}</td>
-            <td><span class="status-dot-row"><i class="status-dot" style="background:${ACTION_STATUS_COLOR[x.action.status]}"></i>${ACTION_STATUS_LABEL[x.action.status]}</span></td>
-            <td><button class="btn-sm" data-quick-done="${x.risk.id}|${x.action.id}">Выполнить</button> <button class="btn-sm" data-quick-reject="${x.risk.id}|${x.action.id}">Отклонить</button></td></tr>`).join('')}
-        </tbody></table></div>` : '<div class="empty-state">Все мероприятия по вашим рискам выполнены или отклонены.</div>'}
-      </div>
-      <div class="panel"><h3>На эскалации — ${escalatedMine.length}</h3>
-        ${escalatedMine.length ? `<ul>${escalatedMine.map(r=>`<li><a href="#" data-open-risk="${r.id}">${esc(r.title.slice(0,58))}${r.title.length>58?'…':''}</a></li>`).join('')}</ul>` : '<p class="muted" style="margin:0;">Среди ваших рисков нет требующих решения комитета.</p>'}
-      </div>
-    </div>
-
-    <div class="panel">
-      <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:12px;">
-        <h3 style="margin:0;">Мои риски</h3>
-        <button class="link-btn" id="goToMyRegister">Открыть полный список →</button>
-      </div>
-      ${mine.slice(0,3).map(r => riskCardHtml(r)).join('')}
-      ${mine.length > 3 ? `<p class="muted" style="font-size:12.5px;margin:4px 0 0;">и ещё ${mine.length-3} — на вкладке «Мои риски».</p>` : ''}
-    </div>`;
-  el.querySelectorAll('.risk-card').forEach(c => c.addEventListener('click', () => openPassport(c.dataset.riskId)));
-  el.querySelectorAll('[data-open-risk]').forEach(c => c.addEventListener('click', (e) => { e.preventDefault(); openPassport(c.dataset.openRisk); }));
-  el.querySelectorAll('[data-quick-done]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); quickActionStatus(b.dataset.quickDone, 'done'); }));
-  el.querySelectorAll('[data-quick-reject]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); const c = prompt('Комментарий к отклонению (необязательно):')||''; quickActionStatus(b.dataset.quickReject, 'rejected', c); }));
-  const goBtn = document.getElementById('goToMyRegister');
-  if (goBtn) goBtn.addEventListener('click', () => gotoPage('register'));
-  const kpiOverdue = document.getElementById('kpiMineOverdue');
-  if (kpiOverdue) kpiOverdue.addEventListener('click', () => gotoPage('register'));
-}
-function quickActionStatus(key, status){
-  const [riskId, actionId] = key.split('|');
-  const r = findRisk(riskId); if (!r) return;
-  const a = r.actions.find(x => x.id === actionId); if (!a) return;
-  a.status = status;
-  maybeAdvanceOnActionChange(r);
-  saveState(); toast('Статус мероприятия обновлён'); renderAll();
-}
 function maybeAdvanceOnActionChange(r){
   // Этап 5: как только хотя бы одно мероприятие переведено в «В работе», статус
   // риска переходит Управление → Мониторинг и Контроль
@@ -1561,7 +1503,9 @@ function renderRegister(){
   // «+ Добавить риск» доступна и владельцу риска (process_full_v4.md, этап 1:
   // «риск-менеджер/владелец — тем же набором полей прямо в карточке риска») —
   // задизейблен только фильтр списка выше (владелец видит лишь свои риски),
-  // не сама возможность подать риск.
+  // не сама возможность подать риск. Для владельца формулировка — «предложить»,
+  // это тот же компактный флоу подачи, что и у Инициатора.
+  document.getElementById('btnAddRisk').textContent = ownerLocked ? '+ Предложить риск' : '+ Добавить риск';
 }
 ['regSearch'].forEach(id => document.getElementById(id).addEventListener('input', renderRegister));
 document.getElementById('regFiltCat').addEventListener('change', renderRegister);
