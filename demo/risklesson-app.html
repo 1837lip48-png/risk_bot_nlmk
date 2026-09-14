@@ -58,8 +58,12 @@
   button, input, select, textarea{font-family:inherit;}
   a{color:var(--accent-600);}
 
-  .theme-toggle{position:fixed; top:14px; right:14px; z-index:80; width:38px; height:38px; border-radius:50%;
-    border:1px solid var(--line); background:var(--paper-0); cursor:pointer; padding:0;
+  /* Колокольчик и переключатель темы живут в одном фиксированном контейнере,
+     а не порознь (один — position:fixed, другой — в потоке страницы), иначе
+     при любой раскладке они оказываются на разных уровнях по высоте. */
+  .topbar-fixed{position:fixed; top:14px; right:14px; z-index:80; display:flex; align-items:center; gap:10px;}
+  .theme-toggle{width:38px; height:38px; border-radius:50%;
+    border:1px solid var(--line); background:var(--paper-0); cursor:pointer; padding:0; position:relative;
     display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-pop);}
   .theme-toggle svg{position:absolute; width:18px; height:18px; color:var(--ink-700); transition:opacity .25s ease, transform .35s ease;}
   .theme-toggle .icon-sun{opacity:1;} .theme-toggle .icon-moon{opacity:0; transform:rotate(90deg) scale(.5);}
@@ -131,7 +135,7 @@
      рамки как плейсхолдер, при фокусе/вводе поднимается на границу контура
      и уменьшается; ровно механика референса RiskLesson · Вход.html. */
   .field .input-float{position:relative;}
-  .field .input-float input{padding:18px 14px 8px;}
+  .field .input-float input{padding:13px 14px 6px;}
   .field .input-float input::placeholder{opacity:0; font-style:italic; transition:opacity .18s ease;}
   .field .input-float input:focus::placeholder{opacity:1;}
   .field .input-float label{
@@ -496,11 +500,19 @@
   .cal-head{display:flex; align-items:center; gap:14px; margin-bottom:14px;}
   .cal-head button{background:none; border:1px solid var(--line); border-radius:8px; width:28px; height:28px; color:var(--ink-600); cursor:pointer;}
   .cal-head h3{font-family:var(--font-display); margin:0; font-size:15px; font-weight:700;}
-  .cal-legend{display:flex; gap:14px; margin-bottom:14px; font-size:11.5px; color:var(--ink-600); flex-wrap:wrap;}
+  .cal-legend-row{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
+  .cal-legend{display:flex; gap:14px; font-size:11.5px; color:var(--ink-600); flex-wrap:wrap;}
   .cal-legend span{display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; padding:2px 4px; border-radius:6px;}
   .cal-legend span:hover{background:var(--canvas);}
   .cal-legend span.off{opacity:.4;}
   .cal-legend i{width:8px; height:8px; border-radius:2px; display:inline-block;}
+
+  /* Единая иконка "сбросить все фильтры" — используется в реестре рисков,
+     реестре уроков и календаре. */
+  .filter-reset-btn{width:34px; height:34px; border-radius:50%; border:1px solid var(--line); background:var(--paper-0);
+    color:var(--ink-600); cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; padding:0;}
+  .filter-reset-btn:hover{background:var(--canvas); color:var(--accent-600); border-color:var(--accent-600);}
+  .filter-reset-btn svg{width:15px; height:15px;}
   .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
   .cal-dow{text-align:center; font-size:10.5px; color:var(--ink-400); font-weight:700; padding-bottom:4px;}
   .cal-cell{min-height:88px; background:var(--paper-0); border:1px solid var(--line); border-radius:8px; padding:6px; overflow:hidden; cursor:pointer; transition:border-color .15s ease;}
@@ -613,17 +625,26 @@
   .diff-opt.selected{border-color:var(--accent-600); background:var(--accent-50);}
 
   .toast{position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--navy-900); color:#fff;
-    padding:11px 18px; border-radius:var(--radius-pill); font-size:12.5px; font-weight:600; box-shadow:var(--shadow-modal);
-    z-index:100; opacity:0; pointer-events:none; transition:.25s ease;}
+    padding:11px 18px; border-radius:18px; font-size:12.5px; font-weight:600; box-shadow:var(--shadow-modal);
+    z-index:100; opacity:0; pointer-events:none; transition:.25s ease; max-width:min(480px, calc(100vw - 40px)); text-align:center; line-height:1.4;}
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
   .empty-state{border:1px dashed var(--line); border-radius:var(--radius-field); padding:34px 20px; text-align:center; color:var(--ink-400); font-size:13px;}
 </style>
 
-<button class="theme-toggle" id="themeBtn" type="button" aria-label="Тема">
-  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.5M12 19v2.5M4.5 12H2M22 12h-2.5M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8"/></svg>
-  <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.4 14.7A8.5 8.5 0 1 1 9.3 3.6a7 7 0 0 0 11.1 11.1z"/></svg>
-</button>
+<div class="topbar-fixed">
+  <div class="notif-wrap" id="notifWrap" hidden>
+    <button type="button" class="notif-bell" id="notifBell" aria-label="Уведомления">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="notif-dot" id="notifDot" hidden></span>
+    </button>
+    <div class="notif-panel" id="notifPanel" hidden></div>
+  </div>
+  <button class="theme-toggle" id="themeBtn" type="button" aria-label="Тема">
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.5M12 19v2.5M4.5 12H2M22 12h-2.5M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8"/></svg>
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.4 14.7A8.5 8.5 0 1 1 9.3 3.6a7 7 0 0 0 11.1 11.1z"/></svg>
+  </button>
+</div>
 
 <!-- ============ ВХОД — шаг 1: роль (без белой карточки — крупно, прямо на фоне) ============ -->
 <div id="loginScreen">
@@ -689,6 +710,14 @@
         </div>
         <div class="err-msg">СПП должен состоять ровно из 6 цифр</div>
       </div>
+      <div class="field" data-field="email" id="emailField" hidden>
+        <div class="input-float has-icon">
+          <input type="email" id="emailInput" placeholder="ivan.petrov@nlmk.com" autocomplete="email">
+          <label for="emailInput">Email</label>
+          <span class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>
+        </div>
+        <div class="err-msg">Введите корректный email</div>
+      </div>
     </form>
     <div class="btn-row">
       <button type="button" class="btn btn-secondary" id="sppCancel">Назад</button>
@@ -729,13 +758,6 @@
   <main class="ws-content">
     <div class="ws-header-row">
       <div><h1 id="wsTitle">Дэшборд</h1><p class="ws-desc" id="wsDesc"></p></div>
-      <div class="notif-wrap">
-        <button type="button" class="notif-bell" id="notifBell" aria-label="Уведомления">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          <span class="notif-dot" id="notifDot" hidden></span>
-        </button>
-        <div class="notif-panel" id="notifPanel" hidden></div>
-      </div>
     </div>
 
     <div class="ws-page" data-page="dashboard"><div id="dashMount"></div></div>
@@ -747,6 +769,9 @@
           <input type="text" id="regSearch" placeholder="Поиск по названию, событию, владельцу..."></div>
         <select id="regFiltCat"><option value="">Все категории</option></select>
         <select id="regFiltStatus"><option value="">Все статусы</option></select>
+        <button type="button" class="filter-reset-btn" id="regFilterReset" title="Сбросить все фильтры" aria-label="Сбросить все фильтры">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
+        </button>
         <span class="result-count" id="regCount"></span>
         <button type="button" class="btn btn-primary" id="btnAddRisk">+ Добавить риск</button>
       </div>
@@ -1338,6 +1363,20 @@ function isMyRisk(r){
   if (surname && r.ownerNames.some(o => o.toLowerCase().startsWith(surname))) return true;
   return r.authorName === sessionName();
 }
+// Если фамилия вошедшего владельца не совпадает ни с одним реальным владельцем
+// из seed-данных (обычная ситуация при демонстрации под произвольным именем),
+// «Мои риски» окажется пустым и будет выглядеть нерабочим. Вместо выдуманных
+// рисков назначаем владельца совладельцем нескольких реальных рисков ЦГП-2
+// (топ по критичности) — сам риск не меняется, только состав владельцев.
+function ensureOwnerHasSampleRisks(){
+  if (state.risks.some(isMyRisk)) return;
+  const label = `${(state.session.lastName||'').trim()} ${(state.session.firstName||'').trim().charAt(0)}.`;
+  if (!state.session.lastName || !state.session.firstName) return;
+  const sample = state.risks.filter(r => r.status !== 'Архивирован')
+    .slice().sort((a,b) => (rraOf(b.p,b.iLevel)||0) - (rraOf(a.p,a.iLevel)||0)).slice(0, 4);
+  sample.forEach(r => { if (!r.ownerNames.includes(label)) r.ownerNames.push(label); });
+  saveState();
+}
 // Активные риски в области видимости текущей роли — владелец риска видит
 // только свои (отдельное рабочее пространство, не общий портфель), риск-менеджер
 // видит всё. Используется Матрицей/Картой/Календарём, чтобы владелец риска не
@@ -1348,12 +1387,12 @@ function scopedRisks(){
   return state.session.role === 'riskowner' ? base.filter(isMyRisk) : base;
 }
 
-function toast(msg){
+function toast(msg, duration){
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(toast._tm);
-  toast._tm = setTimeout(() => t.classList.remove('show'), 2600);
+  toast._tm = setTimeout(() => t.classList.remove('show'), duration || 2600);
 }
 
 function openModal(id){
@@ -1386,6 +1425,9 @@ const lastNameInput = document.getElementById('lastName');
 document.querySelectorAll('.role-card').forEach(card => {
   card.addEventListener('click', () => {
     selectedRole = card.dataset.value;
+    // Email нужен только для роли Инициатор — по нему потом можно связаться
+    // с автором риска, у риск-менеджера/владельца эта связь и так есть в АД.
+    document.getElementById('emailField').hidden = selectedRole !== 'initiator';
     openModal('sppModalOverlay');
     setTimeout(() => firstNameInput.focus(), 150);
   });
@@ -1401,6 +1443,8 @@ sppInput.addEventListener('input', () => {
 [firstNameInput, lastNameInput].forEach(inp => inp.addEventListener('input', () => {
   document.querySelector(`.field[data-field="${inp.id}"]`).classList.remove('invalid');
 }));
+const emailInput = document.getElementById('emailInput');
+emailInput.addEventListener('input', () => { document.querySelector('.field[data-field="email"]').classList.remove('invalid'); emailInput.classList.remove('err'); });
 document.getElementById('sppSubmit').addEventListener('click', () => {
   const fn = firstNameInput.value.trim(), ln = lastNameInput.value.trim();
   document.querySelector('.field[data-field="firstName"]').classList.toggle('invalid', !fn);
@@ -1410,11 +1454,22 @@ document.getElementById('sppSubmit').addEventListener('click', () => {
   const sppOk = spp.replace(/\D/g,'').length === 6;
   sppField.classList.toggle('invalid', !sppOk);
   sppInput.classList.toggle('err', !sppOk);
+
+  const needsEmail = selectedRole === 'initiator';
+  const email = emailInput.value.trim();
+  const emailOk = !needsEmail || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  if (needsEmail){
+    const emailField = document.querySelector('.field[data-field="email"]');
+    emailField.classList.toggle('invalid', !emailOk);
+    emailInput.classList.toggle('err', !emailOk);
+  }
+
   if (!fn){ firstNameInput.focus(); return; }
   if (!ln){ lastNameInput.focus(); return; }
   if (!sppOk) return;
+  if (!emailOk){ emailInput.focus(); return; }
 
-  state.session = {firstName: fn, lastName: ln, role: selectedRole, spp};
+  state.session = {firstName: fn, lastName: ln, role: selectedRole, spp, email: needsEmail ? email : ''};
   saveState();
   closeModal('sppModalOverlay');
   enterApp();
@@ -1484,11 +1539,13 @@ function buildNav(role){
 
 function enterWorkspace(){
   document.getElementById('appShell').hidden = false;
+  document.getElementById('notifWrap').hidden = false;
   document.getElementById('wsAvatar').textContent = ((state.session.firstName[0]||'')+(state.session.lastName[0]||'')).toUpperCase();
   document.getElementById('wsUserName').textContent = sessionName();
   document.getElementById('wsUserRole').textContent = roleLabel(state.session.role);
 
   const isOwner = state.session.role === 'riskowner';
+  if (isOwner) ensureOwnerHasSampleRisks();
   buildNav(state.session.role);
   document.getElementById('wsSidebar').classList.toggle('ws-sidebar--owner', isOwner);
 
@@ -2027,6 +2084,13 @@ function renderRegister(){
 ['regSearch'].forEach(id => document.getElementById(id).addEventListener('input', renderRegister));
 document.getElementById('regFiltCat').addEventListener('change', renderRegister);
 document.getElementById('regFiltStatus').addEventListener('change', renderRegister);
+document.getElementById('regFilterReset').addEventListener('click', () => {
+  document.getElementById('regSearch').value = '';
+  document.getElementById('regFiltCat').value = ''; syncAc('regFiltCat');
+  document.getElementById('regFiltStatus').value = ''; syncAc('regFiltStatus');
+  registerQuickFilter = null;
+  renderRegister();
+});
 document.getElementById('btnAddRisk').addEventListener('click', () => openRiskCreateModal());
 
 // ===================================================================
@@ -2125,7 +2189,7 @@ function submitNewRisk(){
     document.getElementById('riskForm').reset();
     syncAc('rCategory');
     hideAiHint('dupHint'); hideAiHint('lessonHint');
-    toast('Риск отправлен в реестр со статусом «Идентификация»');
+    toast('Риск отправлен в реестр со статусом «Идентификация». Плановый срок рассмотрения риск-менеджером — до 5 рабочих дней.', 5000);
   } else {
     closeModal('riskModalOverlay');
     toast('Риск добавлен в реестр со статусом «Идентификация»');
@@ -2568,6 +2632,9 @@ function renderLessons(){
       <div class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2M20 14h2M9 13v2M15 13v2"/></svg>
         <input type="text" id="lesAiAsk" placeholder="Спросить AI: например «риски по срокам поставки»"></div>
       <button type="button" class="btn btn-secondary" id="btnTagPicker">Хештеги${lessonTagFilter.size?` (${lessonTagFilter.size})`:''}</button>
+      <button type="button" class="filter-reset-btn" id="lesFilterReset" title="Сбросить все фильтры" aria-label="Сбросить все фильтры">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
+      </button>
       <span class="result-count" id="lesCount"></span>
       <button type="button" class="btn btn-primary" id="btnAddLesson">+ Добавить урок</button>
     </div>
@@ -2577,6 +2644,14 @@ function renderLessons(){
   document.getElementById('lesAiAsk').addEventListener('keydown', e => { if (e.key === 'Enter') runLessonAiAsk(); });
   document.getElementById('btnAddLesson').addEventListener('click', () => openLessonModal(null, true));
   document.getElementById('btnTagPicker').addEventListener('click', openTagPickerModal);
+  document.getElementById('lesFilterReset').addEventListener('click', () => {
+    document.getElementById('lesSearch').value = '';
+    document.getElementById('lesAiAsk').value = '';
+    lessonAiQuery = '';
+    lessonTagFilter.clear();
+    document.getElementById('btnTagPicker').textContent = 'Хештеги';
+    renderLessonsTable();
+  });
   renderLessonsTable();
 }
 function openTagPickerModal(){
@@ -2771,7 +2846,12 @@ function renderCalendar(){
       </div>
       <div class="cal-head"><button id="calPrev">‹</button><h3 id="calHeadTitle"></h3><button id="calNext">›</button><button id="calToday" class="btn btn-secondary btn-sm">Сегодня</button></div>
     </div>
-    <div class="cal-legend" id="calLegend"></div>
+    <div class="cal-legend-row">
+      <div class="cal-legend" id="calLegend"></div>
+      <button type="button" class="filter-reset-btn" id="calFilterReset" title="Сбросить все фильтры" aria-label="Сбросить все фильтры" ${calHiddenFilters.size?'':'hidden'}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
+      </button>
+    </div>
     <div id="calBody"></div>`;
   document.getElementById('calViewToggle').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
@@ -2794,6 +2874,7 @@ function renderCalendar(){
     calHiddenFilters.has(k) ? calHiddenFilters.delete(k) : calHiddenFilters.add(k);
     renderCalendar();
   }));
+  document.getElementById('calFilterReset').addEventListener('click', () => { calHiddenFilters.clear(); renderCalendar(); });
   if (calViewMode === 'month') renderCalendarMonth(); else renderCalendarWeek();
 }
 function renderCalendarMonth(){
