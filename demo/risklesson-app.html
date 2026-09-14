@@ -1535,9 +1535,13 @@ function enterInitiatorScreen(){
   document.getElementById('initiatorScreen').hidden = false;
   // переносим общую форму создания риска (с AI-подсказками) из модалки в этот экран
   document.getElementById('initiatorFormMount').appendChild(document.getElementById('riskForm'));
+  document.getElementById('riskForm').reset();
+  document.querySelectorAll('#riskForm .field').forEach(f => f.classList.remove('invalid'));
+  hideAiHint('dupHint'); hideAiHint('lessonHint');
   document.getElementById('riskSourceQuote').innerHTML = '';
   populateCategorySelect(document.getElementById('rCategory'));
   enhanceSelectAsAutocomplete(document.getElementById('rCategory'), 'Выберите категорию');
+  syncAc('rCategory');
   // в компактной форме Инициатора не просим предполагаемого владельца
   document.querySelector('.field[data-field="rOwner"]').hidden = true;
 }
@@ -1548,6 +1552,16 @@ function signOut(){
   state.session = null;
   saveState();
   location.reload();
+}
+// После отправки риска Инициатором — сразу назад на самый первый экран
+// (выбор роли), без перезагрузки страницы (иначе тост об отправке не
+// успел бы показаться).
+function returnToRoleSelect(){
+  state.session = null;
+  saveState();
+  document.getElementById('initiatorScreen').hidden = true;
+  document.getElementById('loginScreen').hidden = false;
+  selectedRole = '';
 }
 
 // ===================================================================
@@ -2233,10 +2247,8 @@ function submitNewRisk(){
   saveState();
 
   if (state.session.role === 'initiator'){
-    document.getElementById('riskForm').reset();
-    syncAc('rCategory');
-    hideAiHint('dupHint'); hideAiHint('lessonHint');
     toast('Риск отправлен в реестр со статусом «Идентификация». Плановый срок рассмотрения риск-менеджером — до 5 рабочих дней.', 5000);
+    returnToRoleSelect();
   } else {
     closeModal('riskModalOverlay');
     toast('Риск добавлен в реестр со статусом «Идентификация»');
