@@ -369,13 +369,7 @@
   .ws-nav-item:hover{background:rgba(255,255,255,.07); color:#fff;}
   .ws-nav-item.active{background:rgba(255,255,255,.1); color:#fff;}
   .ws-nav-item.active svg{color:var(--accent-500);}
-  .ws-user{margin-top:auto; display:flex; align-items:center; gap:9px; padding:10px 8px; border-top:1px solid rgba(255,255,255,.12);}
-  .ws-user-avatar{flex-shrink:0; display:flex;}
-  .ws-user-info{min-width:0; overflow:hidden; opacity:0; max-width:0; transition:.3s ease;}
-  .ws-sidebar.expanded .ws-user-info{opacity:1; max-width:140px;}
-  .ws-user-name{font-size:13px; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .ws-user-role{font-size:11px; color:#8b96aa; white-space:nowrap;}
-  .ws-signout{margin-left:auto; background:none; border:none; color:#8b96aa; cursor:pointer; padding:5px; border-radius:4px;
+  .ws-signout{margin-left:-2px; background:none; border:none; color:#8b96aa; cursor:pointer; padding:5px; border-radius:4px;
     flex-shrink:0; opacity:0; width:0; transition:.3s ease;}
   .ws-sidebar.expanded .ws-signout{opacity:1; width:24px;}
   .ws-signout svg{width:14px; height:14px;}
@@ -852,10 +846,6 @@
       <button type="button" class="ws-signout" id="wsSignOut" title="Выйти"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></button>
     </div>
     <nav class="ws-nav" id="wsNav"></nav>
-    <div class="ws-user">
-      <div class="ws-user-avatar" id="wsAvatar"></div>
-      <div class="ws-user-info"><div class="ws-user-name" id="wsUserName"></div><div class="ws-user-role" id="wsUserRole"></div></div>
-    </div>
   </aside>
 
   <main class="ws-content">
@@ -1540,15 +1530,13 @@ function sessionName(){
 function roleLabel(role){
   return role === 'riskmanager' ? 'Риск-менеджер' : role === 'riskowner' ? 'Владелец риска' : 'Инициатор';
 }
+// Владелец риска видит только риски, которые он сам создал в этой демо-
+// сессии — ни один seed-риск ЦГП-2 не подставляется автоматически по
+// совпадению фамилии, даже если она реально встречается среди владельцев
+// в исходных данных. «Мои риски» начинается с пустого шаблона и наполняется
+// только тем, что владелец сам заполнил и отправил.
 function isMyRisk(r){
   if (!state.session) return false;
-  // Реальные владельцы в seed-данных записаны в формате «Фамилия И.О.»
-  // (например, «Мордовкин Д.С.»), а вход берёт только имя+фамилию без
-  // отчества/инициалов — точное совпадение полного ФИО никогда бы не
-  // сработало на реальных данных. Сопоставляем по фамилии (регистронезависимо,
-  // с начала строки владельца), это единственный надёжно совпадающий токен.
-  const surname = (state.session.lastName||'').trim().toLowerCase();
-  if (surname && r.ownerNames.some(o => o.toLowerCase().startsWith(surname))) return true;
   return r.authorName === sessionName();
 }
 // Активные риски в области видимости текущей роли — владелец риска видит
@@ -1758,9 +1746,6 @@ function buildNav(role){
 function enterWorkspace(){
   document.getElementById('appShell').hidden = false;
   document.getElementById('notifWrap').hidden = false;
-  document.getElementById('wsAvatar').innerHTML = avatarHtml({firstName:state.session.firstName, lastName:state.session.lastName, size:30});
-  document.getElementById('wsUserName').textContent = sessionName();
-  document.getElementById('wsUserRole').textContent = roleLabel(state.session.role);
 
   document.getElementById('topbarUser').hidden = false;
   document.getElementById('topbarUserName').textContent = sessionName();
