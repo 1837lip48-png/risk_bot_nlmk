@@ -463,20 +463,47 @@
     margin:0 4px 4px 0; background:var(--accent-50); color:var(--accent-600);}
 
   /* ===== Календарь ===== */
+  .cal-toolbar-row{display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:14px; flex-wrap:wrap;}
+  .cal-view-toggle{display:flex; gap:3px; background:var(--canvas); border-radius:var(--radius-pill); padding:3px;}
+  .cal-view-toggle button{border:none; background:none; padding:6px 14px; border-radius:var(--radius-pill); font-size:12px; font-weight:700; color:var(--ink-600); cursor:pointer;}
+  .cal-view-toggle button.active{background:var(--paper-0); color:var(--ink-900); box-shadow:var(--shadow-pop);}
   .cal-head{display:flex; align-items:center; gap:14px; margin-bottom:14px;}
   .cal-head button{background:none; border:1px solid var(--line); border-radius:8px; width:28px; height:28px; color:var(--ink-600); cursor:pointer;}
   .cal-head h3{font-family:var(--font-display); margin:0; font-size:15px; font-weight:700;}
   .cal-legend{display:flex; gap:14px; margin-bottom:14px; font-size:11.5px; color:var(--ink-600); flex-wrap:wrap;}
-  .cal-legend span{display:flex; align-items:center; gap:5px;}
+  .cal-legend span{display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; padding:2px 4px; border-radius:6px;}
+  .cal-legend span:hover{background:var(--canvas);}
+  .cal-legend span.off{opacity:.4;}
   .cal-legend i{width:8px; height:8px; border-radius:2px; display:inline-block;}
   .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
   .cal-dow{text-align:center; font-size:10.5px; color:var(--ink-400); font-weight:700; padding-bottom:4px;}
-  .cal-cell{min-height:78px; background:var(--paper-0); border:1px solid var(--line); border-radius:8px; padding:6px; overflow:hidden;}
-  .cal-cell.empty{background:transparent; border:none;}
+  .cal-cell{min-height:88px; background:var(--paper-0); border:1px solid var(--line); border-radius:8px; padding:6px; overflow:hidden; cursor:pointer; transition:border-color .15s ease;}
+  .cal-cell:hover{border-color:var(--accent-600);}
+  .cal-cell.empty{background:transparent; border:none; cursor:default;}
+  .cal-cell.empty:hover{border-color:transparent;}
   .cal-cell .dnum{font-size:11px; font-weight:700; color:var(--ink-600); margin-bottom:4px;}
   .cal-cell.today{border-color:var(--accent-600);}
   .cal-ev{font-size:9.5px; padding:2px 5px; border-radius:5px; margin-bottom:2px; font-weight:700; line-height:1.3; cursor:pointer;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .cal-note-pill{font-size:9.5px; padding:2px 5px; border-radius:5px; margin-bottom:2px; font-weight:600; line-height:1.3;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .cal-note-row{display:flex; align-items:flex-start; gap:8px; padding:8px 0; border-bottom:1px solid var(--line);}
+  .cal-note-row:last-child{border-bottom:none;}
+  .cal-note-type{font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.2px;}
+  .cal-note-del{border:none; background:none; color:var(--ink-400); cursor:pointer; padding:2px; flex-shrink:0;}
+  .cal-note-del:hover{color:var(--red-700);}
+  /* Недельный вид "Календарь встреч" */
+  .calw-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:8px; align-items:start;}
+  .calw-daycol{min-height:220px;}
+  .calw-dayhead{text-align:center; padding-bottom:8px; margin-bottom:8px; border-bottom:2px solid transparent;}
+  .calw-dayhead.today{border-bottom-color:var(--accent-600);}
+  .calw-dayhead .dow{font-size:10px; font-weight:700; color:var(--ink-400); text-transform:uppercase;}
+  .calw-dayhead .dnum{font-family:var(--font-display); font-size:18px; font-weight:800; margin-top:2px;}
+  .calw-dayhead.today .dnum{color:var(--accent-600);}
+  .calw-card{border-radius:8px; padding:8px 10px; margin-bottom:6px; font-size:11px; cursor:pointer; border:1px solid transparent;}
+  .calw-card .ct{font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.2px; margin-bottom:2px;}
+  .calw-card .cn{font-weight:700; margin-bottom:2px; line-height:1.3;}
+  .calw-card .cm{font-size:10px; opacity:.8;}
 
   /* ===== Карта связей ===== */
   .map-toolbar{display:flex; gap:6px; margin-bottom:14px; background:var(--paper-0); border:1px solid var(--line);
@@ -1236,6 +1263,7 @@ function freshState(){
     audit: [],
     session: null,
     baseline: computeKpiSnapshot(risks),
+    dayNotes: {},
   };
 }
 function loadState(){
@@ -1256,6 +1284,7 @@ function resetDemoData(){
 }
 state = loadState();
 if (!state.baseline) state.baseline = computeKpiSnapshot(state.risks); // апгрейд старого localStorage без baseline
+if (!state.dayNotes) state.dayNotes = {};
 
 function findRisk(id){ return state.risks.find(r => r.id === id); }
 function findLesson(id){ return state.lessons.find(l => l.id === id); }
@@ -2629,6 +2658,20 @@ function lessonFormHtml(){
 // КАЛЕНДАРЬ — события считаются из реальных плановых дат мероприятий
 // ===================================================================
 let calDate = new Date(2026, 8, 1);
+let calViewMode = 'month';
+const CAL_MONTH_NAMES = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const CAL_DOW_NAMES = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+// Три типа событий по process_full_v4.md: мероприятие (из плановых дат Action) +
+// пользовательские заметки дня (для «пересмотра»/«согласования»/личной работы —
+// у них нет отдельного поля даты в модели, поэтому это свободные заметки владельца).
+const NOTE_TYPES = [
+  {key:'individual', label:'Индивидуальная работа', color:'#64748b', bg:'#eef1f4'},
+  {key:'session',    label:'Риск-сессия',            color:'#7c3aed', bg:'#efe7fd'},
+  {key:'seminar',    label:'Семинар/обучение',       color:'#0d9488', bg:'#e2f6f4'},
+  {key:'approval',   label:'Согласование',           color:'#b45309', bg:'#fbeed9'},
+];
+function noteType(key){ return NOTE_TYPES.find(t=>t.key===key) || NOTE_TYPES[0]; }
+let calHiddenFilters = new Set();
 function collectCalEvents(){
   const map = {};
   scopedRisks().forEach(r => r.actions.forEach(a => {
@@ -2636,31 +2679,144 @@ function collectCalEvents(){
     if (!d) return;
     const overdue = (a.status!=='done' && a.status!=='rejected' && d < TODAY);
     const key = d.getFullYear()+'-'+d.getMonth();
-    (map[key] = map[key]||[]).push({day:d.getDate(), text:`${r.id.split('-')[2]||r.displayNumber}: ${a.title.slice(0,26)}${a.title.length>26?'…':''}`,
-      color: overdue?'var(--red-700)':'var(--accent-600)', bg: overdue?'var(--red-50)':'var(--accent-50)', riskId:r.id});
+    (map[key] = map[key]||[]).push({day:d.getDate(), date:d, text:`${r.id.split('-')[2]||r.displayNumber}: ${a.title.slice(0,26)}${a.title.length>26?'…':''}`,
+      fullText:a.title, color: overdue?'var(--red-700)':'var(--accent-600)', bg: overdue?'var(--red-50)':'var(--accent-50)', riskId:r.id, overdue});
   }));
   return map;
 }
+function dayKey(y,m,d){ return `${y}-${m}-${d}`; }
+function notesFor(y,m,d){ return state.dayNotes[dayKey(y,m,d)] || []; }
 function renderCalendar(){
-  const names = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  const mount = document.getElementById('calendarMount');
+  mount.innerHTML = `
+    <div class="cal-toolbar-row">
+      <div class="cal-view-toggle" id="calViewToggle">
+        <button type="button" data-view="month" class="${calViewMode==='month'?'active':''}">Месяц</button>
+        <button type="button" data-view="week" class="${calViewMode==='week'?'active':''}">Календарь встреч (неделя)</button>
+      </div>
+      <div class="cal-head"><button id="calPrev">‹</button><h3 id="calHeadTitle"></h3><button id="calNext">›</button><button id="calToday" class="btn btn-secondary btn-sm">Сегодня</button></div>
+    </div>
+    <div class="cal-legend" id="calLegend"></div>
+    <div id="calBody"></div>`;
+  document.getElementById('calViewToggle').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    calViewMode = b.dataset.view; renderCalendar();
+  });
+  document.getElementById('calPrev').addEventListener('click', () => {
+    if (calViewMode==='month') calDate.setMonth(calDate.getMonth()-1); else calDate.setDate(calDate.getDate()-7);
+    renderCalendar();
+  });
+  document.getElementById('calNext').addEventListener('click', () => {
+    if (calViewMode==='month') calDate.setMonth(calDate.getMonth()+1); else calDate.setDate(calDate.getDate()+7);
+    renderCalendar();
+  });
+  document.getElementById('calToday').addEventListener('click', () => { calDate = new Date(TODAY); renderCalendar(); });
+  document.getElementById('calLegend').innerHTML = [{key:'action', label:'Срок мероприятия', color:'var(--accent-600)'}, {key:'overdue', label:'Просрочено', color:'var(--red-700)'}]
+    .concat(NOTE_TYPES.map(t=>({key:t.key, label:t.label, color:t.color})))
+    .map(t => `<span data-filter="${t.key}" class="${calHiddenFilters.has(t.key)?'off':''}"><i style="background:${t.color}"></i>${t.label}</span>`).join('');
+  document.querySelectorAll('#calLegend [data-filter]').forEach(s => s.addEventListener('click', () => {
+    const k = s.dataset.filter;
+    calHiddenFilters.has(k) ? calHiddenFilters.delete(k) : calHiddenFilters.add(k);
+    renderCalendar();
+  }));
+  if (calViewMode === 'month') renderCalendarMonth(); else renderCalendarWeek();
+}
+function renderCalendarMonth(){
   const y = calDate.getFullYear(), m = calDate.getMonth();
-  const events = collectCalEvents()[y+'-'+m] || [];
+  document.getElementById('calHeadTitle').textContent = `${CAL_MONTH_NAMES[m]} ${y}`;
+  const events = (collectCalEvents()[y+'-'+m] || []).filter(e => !calHiddenFilters.has(e.overdue?'overdue':'action'));
   const first = new Date(y,m,1), startDow = (first.getDay()+6)%7, daysInMonth = new Date(y,m+1,0).getDate();
-  let grid = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  let grid = CAL_DOW_NAMES.map(d=>`<div class="cal-dow">${d}</div>`).join('');
   for (let i=0;i<startDow;i++) grid += '<div class="cal-cell empty"></div>';
   for (let d=1; d<=daysInMonth; d++){
     const isToday = y===TODAY.getFullYear() && m===TODAY.getMonth() && d===TODAY.getDate();
     const evs = events.filter(e=>e.day===d);
-    grid += `<div class="cal-cell${isToday?' today':''}"><div class="dnum">${d}</div>${evs.map(e=>`<div class="cal-ev" style="background:${e.bg};color:${e.color}" data-risk="${e.riskId}" title="${esc(e.text)}">${esc(e.text)}</div>`).join('')}</div>`;
+    const notes = notesFor(y,m,d).filter(n => !calHiddenFilters.has(n.type));
+    grid += `<div class="cal-cell${isToday?' today':''}" data-day="${d}">
+      <div class="dnum">${d}</div>
+      ${evs.map(e=>`<div class="cal-ev" style="background:${e.bg};color:${e.color}" data-risk="${e.riskId}" title="${esc(e.fullText)}">${esc(e.text)}</div>`).join('')}
+      ${notes.map(n=>{const t=noteType(n.type); return `<div class="cal-note-pill" style="background:${t.bg};color:${t.color}" title="${esc(n.text)}">${esc(t.label)}</div>`;}).join('')}
+    </div>`;
   }
-  document.getElementById('calendarMount').innerHTML = `
-    <div class="cal-head"><button id="calPrev">‹</button><h3>${names[m]} ${y}</h3><button id="calNext">›</button></div>
-    <div class="cal-legend"><span><i style="background:var(--accent-600)"></i>Срок мероприятия</span><span><i style="background:var(--red-700)"></i>Просрочено</span></div>
-    <div class="cal-grid">${grid}</div>
-    <p class="field-hint" style="margin-top:10px;">Условное «сегодня» для демо — 12.09.2026 (как и в исходном прототипе), поэтому часть 2026-х сроков уже просрочена.</p>`;
-  document.getElementById('calPrev').addEventListener('click', () => { calDate.setMonth(calDate.getMonth()-1); renderCalendar(); });
-  document.getElementById('calNext').addEventListener('click', () => { calDate.setMonth(calDate.getMonth()+1); renderCalendar(); });
-  document.querySelectorAll('.cal-ev').forEach(e => e.addEventListener('click', () => openPassport(e.dataset.risk)));
+  document.getElementById('calBody').innerHTML = `<div class="cal-grid">${grid}</div>
+    <p class="field-hint" style="margin-top:10px;">Условное «сегодня» для демо — 12.09.2026, поэтому часть 2026-х сроков уже просрочена. Кликните день, чтобы добавить заметку (индивидуальная работа, риск-сессия, семинар, согласование).</p>`;
+  document.querySelectorAll('.cal-ev').forEach(e => e.addEventListener('click', ev => { ev.stopPropagation(); openPassport(e.dataset.risk); }));
+  document.querySelectorAll('.cal-cell[data-day]').forEach(c => c.addEventListener('click', () => openDayNotesModal(y, m, parseInt(c.dataset.day,10))));
+}
+function renderCalendarWeek(){
+  // Понедельник недели, содержащей calDate
+  const dow = (calDate.getDay()+6)%7;
+  const monday = new Date(calDate); monday.setDate(calDate.getDate() - dow);
+  const days = Array.from({length:7}, (_,i) => { const d = new Date(monday); d.setDate(monday.getDate()+i); return d; });
+  document.getElementById('calHeadTitle').textContent = `${CAL_MONTH_NAMES[monday.getMonth()]} ${monday.getFullYear()} · неделя ${monday.getDate()}–${days[6].getDate()}`;
+
+  const weekEvents = [];
+  Object.values(collectCalEvents()).flat().forEach(e => { if (days.some(d => d.toDateString()===e.date.toDateString())) weekEvents.push(e); });
+  const weekNotes = [];
+  days.forEach(d => notesFor(d.getFullYear(), d.getMonth(), d.getDate()).forEach(n => weekNotes.push({...n, date:d})));
+
+  // KPI недели — только реальные данные (никаких выдуманных "sentiment %"/"tickets")
+  const allWeekActions = scopedRisks().flatMap(r=>r.actions).filter(a => { const d=parseRuShortDate(a.plannedDate); return d && days.some(wd=>wd.toDateString()===d.toDateString()); });
+  const doneCount = allWeekActions.filter(a=>a.status==='done').length;
+  const overdueCount = weekEvents.filter(e=>e.overdue).length;
+  const kpi = `<div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px;">
+    <div class="kpi-card"><span class="kpi-label">Мероприятий на неделе</span><span class="kpi-value">${weekEvents.length}</span><span class="kpi-sub">по плановым датам действий</span></div>
+    <div class="kpi-card"><span class="kpi-label">Выполнено на неделе</span><span class="kpi-value" style="color:var(--green-700)">${allWeekActions.length?Math.round(doneCount/allWeekActions.length*100):0}%</span><span class="kpi-sub">${doneCount} из ${allWeekActions.length}</span></div>
+    <div class="kpi-card"><span class="kpi-label">Заметок добавлено</span><span class="kpi-value">${weekNotes.length}</span><span class="kpi-sub">риск-сессии, семинары и др.</span></div>
+    <div class="kpi-card"><span class="kpi-label">Просрочено</span><span class="kpi-value" style="color:var(--red-700)">${overdueCount}</span><span class="kpi-sub">на конец недели</span></div>
+  </div>`;
+
+  const cols = days.map(d => {
+    const isToday = d.toDateString() === TODAY.toDateString();
+    const evs = weekEvents.filter(e => e.date.toDateString()===d.toDateString() && !calHiddenFilters.has(e.overdue?'overdue':'action'));
+    const notes = weekNotes.filter(n => n.date.toDateString()===d.toDateString() && !calHiddenFilters.has(n.type));
+    return `<div class="calw-daycol">
+      <div class="calw-dayhead${isToday?' today':''}"><div class="dow">${CAL_DOW_NAMES[(d.getDay()+6)%7]}</div><div class="dnum">${d.getDate()}</div></div>
+      ${evs.map(e => `<div class="calw-card" style="background:${e.bg};color:${e.color};border-color:${e.color}33;" data-risk="${e.riskId}">
+        <div class="ct">${e.overdue?'Просрочено':'Мероприятие'}</div><div class="cn">${esc(e.fullText.slice(0,50))}</div></div>`).join('')}
+      ${notes.map(n => { const t=noteType(n.type); return `<div class="calw-card" style="background:${t.bg};color:${t.color};border-color:${t.color}33;">
+        <div class="ct">${esc(t.label)}</div><div class="cn">${esc(n.text.slice(0,50))}</div><div class="cm">${esc(n.author||'')}</div></div>`; }).join('')}
+      <button type="button" class="btn btn-text btn-sm" data-add-note-day="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}" style="width:100%;">+ заметка</button>
+    </div>`;
+  }).join('');
+
+  document.getElementById('calBody').innerHTML = `${kpi}<div class="calw-grid">${cols}</div>`;
+  document.querySelectorAll('.calw-card[data-risk]').forEach(c => c.addEventListener('click', () => openPassport(c.dataset.risk)));
+  document.querySelectorAll('[data-add-note-day]').forEach(b => b.addEventListener('click', () => {
+    const [yy,mm,dd] = b.dataset.addNoteDay.split('-').map(Number);
+    openDayNotesModal(yy,mm,dd);
+  }));
+}
+function openDayNotesModal(y, m, d){
+  const title = `${d} ${CAL_MONTH_NAMES[m].toLowerCase()} ${y}`;
+  openChartModal('Заметки дня — ' + title, 'Индивидуальная работа, риск-сессии, семинары, согласования — свободные заметки, не связаны с конкретным риском', dayNotesBodyHtml(y,m,d));
+  wireDayNotesForm(y,m,d);
+}
+function dayNotesBodyHtml(y,m,d){
+  const notes = notesFor(y,m,d);
+  return `<div id="dayNotesList">${notes.length ? notes.map(n => { const t=noteType(n.type); return `
+    <div class="cal-note-row"><div style="flex:1;"><div class="cal-note-type" style="color:${t.color}">${esc(t.label)}</div><div style="font-size:13px;margin-top:2px;">${esc(n.text)}</div>${n.author?`<div class="muted" style="font-size:11px;margin-top:2px;">${esc(n.author)}</div>`:''}</div>
+      <button type="button" class="cal-note-del" data-del-note="${n.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`; }).join('') : '<p class="muted" style="font-size:12.5px;">Заметок пока нет.</p>'}</div>
+    <div class="btn-row" style="margin:14px 0 8px;gap:8px;">
+      <select id="dnType" style="flex:1;">${NOTE_TYPES.map(t=>`<option value="${t.key}">${t.label}</option>`).join('')}</select>
+    </div>
+    <textarea id="dnText" placeholder="Что запланировано на этот день..." style="width:100%;min-height:60px;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 12px;font-size:13.5px;font-family:inherit;"></textarea>
+    <div class="btn-row" style="margin-top:10px;"><button type="button" class="btn btn-primary" id="dnAdd" style="flex:1;">Добавить заметку</button></div>`;
+}
+function wireDayNotesForm(y,m,d){
+  document.querySelectorAll('[data-del-note]').forEach(b => b.addEventListener('click', () => {
+    const key = dayKey(y,m,d);
+    state.dayNotes[key] = (state.dayNotes[key]||[]).filter(n=>n.id!==b.dataset.delNote);
+    saveState(); document.getElementById('chartModalMount').innerHTML = dayNotesBodyHtml(y,m,d); wireDayNotesForm(y,m,d); renderCalendar();
+  }));
+  document.getElementById('dnAdd').addEventListener('click', () => {
+    const text = document.getElementById('dnText').value.trim();
+    if (!text){ toast('Введите текст заметки'); return; }
+    const key = dayKey(y,m,d);
+    (state.dayNotes[key] = state.dayNotes[key]||[]).push({id:uid('note'), type:document.getElementById('dnType').value, text, author:sessionName(), createdAt:nowStr()});
+    saveState(); toast('Заметка добавлена');
+    document.getElementById('chartModalMount').innerHTML = dayNotesBodyHtml(y,m,d); wireDayNotesForm(y,m,d); renderCalendar();
+  });
 }
 
 // ===================================================================
