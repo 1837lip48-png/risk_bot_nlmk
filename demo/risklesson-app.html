@@ -356,6 +356,58 @@
   .session-empty{font-size:12.5px; color:var(--ink-400);}
   .session-modal-foot{display:flex; align-items:center; justify-content:space-between; padding:14px 22px; border-top:1px solid var(--line); flex-shrink:0;}
 
+  /* Страница «Детали встречи» (Блок 3b) — отдельная ws-page, не модалка;
+     переиспользует .session-badge/.session-ai-box из попапа сводки. */
+  .sd-breadcrumb{display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-600); margin-bottom:14px;}
+  .sd-breadcrumb a{color:var(--accent-600); font-weight:600; text-decoration:none; cursor:pointer;}
+  .sd-breadcrumb a:hover{text-decoration:underline;}
+  .sd-topbar{display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:10px;}
+  .sd-badges{display:flex; align-items:center; gap:8px;}
+  .sd-actions-row{display:flex; gap:8px; flex-shrink:0;}
+  .sd-title{font-family:var(--font-display); font-size:22px; font-weight:800; color:var(--ink-900); margin:10px 0 6px;}
+  .sd-meta-row{display:flex; align-items:center; gap:18px; flex-wrap:wrap; font-size:13px; color:var(--ink-600); margin-bottom:16px;}
+  .sd-meta-row span{display:flex; align-items:center; gap:6px;}
+  .sd-meta-row svg{width:14px; height:14px; color:var(--ink-400);}
+  .sd-attendee-row{display:flex; align-items:center; gap:10px; padding:14px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); margin-bottom:20px; flex-wrap:wrap;}
+  .sd-avatars{display:flex;}
+  .sd-avatars > *{margin-left:-8px; border:2px solid var(--paper-0); border-radius:50%;}
+  .sd-avatars > *:first-child{margin-left:0;}
+  .sd-attendee-names{font-size:12.5px; color:var(--ink-600);}
+  .sd-layout{display:grid; grid-template-columns:1fr 280px; gap:18px; align-items:start;}
+  @media (max-width:860px){ .sd-layout{grid-template-columns:1fr;} }
+  .sd-layout-single{max-width:720px;}
+  .sd-tabs{display:flex; gap:2px; background:var(--canvas); border-radius:var(--radius-field); padding:3px; margin-bottom:18px; width:fit-content;}
+  .sd-tab{display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:6px; font-size:12.5px; font-weight:600; color:var(--ink-600); cursor:pointer; border:none; background:none;}
+  .sd-tab svg{width:14px; height:14px;}
+  .sd-tab.active{background:var(--paper-0); color:var(--ink-900); box-shadow:var(--shadow-pop);}
+  .sd-card{background:var(--paper-0); border:1px solid var(--line); border-radius:var(--radius-card); padding:16px 18px; margin-bottom:16px;}
+  .sd-card-title{display:flex; align-items:center; gap:7px; font-size:13px; font-weight:700; color:var(--ink-900); margin-bottom:12px;}
+  .sd-card-title svg{width:15px; height:15px;}
+  .sd-decision-pill{display:flex; align-items:center; gap:10px; background:var(--green-50); border-radius:var(--radius-field); padding:9px 12px; font-size:13px; color:var(--ink-800); margin-bottom:8px;}
+  .sd-decision-num{width:18px; height:18px; border-radius:50%; background:var(--green-700); color:#fff; font-size:10.5px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .sd-impediment-row{display:flex; gap:9px; background:var(--gold-50); border-radius:var(--radius-field); padding:9px 12px; font-size:12.5px; color:var(--ink-800); margin-bottom:8px;}
+  .sd-impediment-row svg{width:14px; height:14px; color:var(--gold-700); flex-shrink:0; margin-top:1px;}
+  .sd-stat-list{display:flex; flex-direction:column; gap:10px;}
+  .sd-stat-item{display:flex; align-items:center; justify-content:space-between; font-size:12.5px;}
+  .sd-stat-item .lbl{color:var(--ink-600);}
+  .sd-stat-item .val{font-weight:700; color:var(--ink-900);}
+  .sd-qa-list{display:flex; flex-direction:column; gap:2px;}
+  .sd-qa-item{display:flex; align-items:center; gap:9px; padding:9px 8px; border-radius:var(--radius-field); background:none; border:none; text-align:left; font-size:12.5px; color:var(--accent-600); font-weight:600; cursor:pointer; width:100%;}
+  .sd-qa-item:hover{background:var(--canvas);}
+  .sd-qa-item svg{width:15px; height:15px; flex-shrink:0;}
+  .sd-action-item{display:flex; align-items:flex-start; gap:11px; background:var(--paper-0); border:1px solid var(--line); border-radius:var(--radius-field); padding:12px 14px; margin-bottom:10px;}
+  .sd-action-item.done{opacity:.7;}
+  .sd-action-check{width:16px; height:16px; border-radius:4px; border:1.5px solid var(--line); flex-shrink:0; margin-top:2px; display:flex; align-items:center; justify-content:center;}
+  .sd-action-item.done .sd-action-check{background:var(--accent-600); border-color:var(--accent-600); color:#fff;}
+  .sd-action-item.done .sd-action-check svg{width:10px; height:10px;}
+  .sd-action-item.done .sd-action-title{text-decoration:line-through; color:var(--ink-400);}
+  .sd-action-title{font-size:13px; font-weight:600; color:var(--ink-900); margin-bottom:5px;}
+  .sd-action-meta{display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:11.5px; color:var(--ink-600);}
+  .sd-action-meta span{display:inline-flex; align-items:center; gap:4px;}
+  .sd-action-meta svg{width:12px; height:12px; flex-shrink:0;}
+  .sd-pill{display:inline-flex; align-items:center; padding:2px 8px; border-radius:999px; font-size:10.5px; font-weight:700;}
+  .sd-empty-tab{border:1px dashed var(--line); border-radius:var(--radius-card); padding:34px 20px; text-align:center; color:var(--ink-400); font-size:13px;}
+
   .fieldset{border:1px solid var(--line); border-radius:var(--radius-field); padding:12px 14px; display:flex; flex-direction:column; gap:10px;}
   .fieldset > .fs-title{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.2px; color:var(--ink-600);}
   .yn-row{display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:13px;}
@@ -435,7 +487,7 @@
     background:none; color:rgba(255,255,255,.75); font-size:13.5px; font-weight:600; cursor:pointer; text-align:left; width:100%;}
   .ws-nav-item span{white-space:nowrap; overflow:hidden; opacity:0; max-width:0; transition:.3s ease;}
   .ws-sidebar.expanded .ws-nav-item span{opacity:1; max-width:160px;}
-  .ws-nav-item svg{width:18px; height:18px; flex-shrink:0;}
+  .ws-nav-item svg{width:21px; height:21px; flex-shrink:0; stroke-width:2.3;}
   .ws-nav-item:hover{background:rgba(255,255,255,.14); color:#fff;}
   .ws-nav-item.active{background:rgba(255,255,255,.22); color:#fff;}
   .ws-nav-item.active svg{color:#fff;}
@@ -1001,6 +1053,7 @@
     <div class="ws-page" data-page="map" hidden><div id="mapMount"></div></div>
     <div class="ws-page" data-page="reports" hidden><div id="reportsMount"></div></div>
     <div class="ws-page" data-page="premortem" hidden><div id="premortemMount"></div></div>
+    <div class="ws-page" data-page="sessionDetail" hidden><div id="sessionDetailMount"></div></div>
   </main>
 </div>
 
@@ -2925,15 +2978,25 @@ function isoDatePlus(days){
 function openAddToAgendaModal(r){
   const body = `
     <div class="field"><label>Дата риск-сессии</label><input type="date" id="agendaDateInput" value="${isoDatePlus(7)}"></div>
+    <div class="field" style="margin-top:10px;"><label>Длительность</label>
+      <select id="agendaDurationInput">
+        <option value="30">30 минут</option>
+        <option value="60" selected>60 минут</option>
+        <option value="90">90 минут</option>
+        <option value="120">120 минут</option>
+      </select>
+    </div>
     <div class="btn-row" style="margin-top:10px;"><button type="button" class="btn btn-primary" id="agendaSubmitBtn" style="flex:1;">Добавить в повестку</button></div>`;
   openChartModal('Добавить в повестку риск-сессии', `Риск: «${r.title}»`, body);
+  enhanceSelectAsAutocomplete(document.getElementById('agendaDurationInput'));
   document.getElementById('agendaSubmitBtn').addEventListener('click', () => {
     const val = document.getElementById('agendaDateInput').value;
     if (!val){ toast('Выберите дату'); return; }
     const [y,m,d] = val.split('-').map(Number);
     const key = dayKey(y, m-1, d);
+    const durationMin = parseInt(document.getElementById('agendaDurationInput').value, 10) || 60;
     (state.dayNotes[key] = state.dayNotes[key]||[]).push({id:uid('note'), type:'session',
-      text:'Обсуждение риска: ' + r.title, author:sessionName(), createdAt:nowStr(), riskId:r.id});
+      text:'Обсуждение риска: ' + r.title, author:sessionName(), createdAt:nowStr(), riskId:r.id, durationMin});
     saveState(); closeModal('chartModalOverlay');
     toast('Риск добавлен в повестку риск-сессии', {body: new Date(y,m-1,d).toLocaleDateString('ru-RU'), duration:4000});
   });
@@ -4031,19 +4094,29 @@ function sessionAiSummaryText(risks, actions, doneActions, highCount){
   const actionsWords = actions.length ? ` Из ${actions.length} ${pluralRu(actions.length,['мероприятия','мероприятий','мероприятий'])} выполнено ${doneActions}.` : ' Мероприятия по обсуждённым рискам пока не заведены.';
   return `На сессии рассмотрено ${risks.length} ${pluralRu(risks.length,['риск','риска','рисков'])}${zoneWords}.${actionsWords}`;
 }
-function openSessionSummaryModal(y, m, d){
+// Общие вычисления для попапа сводки и полной страницы деталей (Блок 3b) —
+// один источник данных, чтобы обе точки показа не расходились.
+function computeSessionData(y, m, d){
   const notes = notesFor(y, m, d).filter(n => n.type === 'session');
   const risks = notes.map(n => n.riskId ? findRisk(n.riskId) : null).filter(Boolean);
-  if (!risks.length) return;
+  if (!risks.length) return null;
 
   const dateObj = new Date(y, m, d);
   const isPast = dateObj < TODAY;
   const attendeeNames = [...new Set(risks.flatMap(r => r.ownerNames))];
-  const actions = risks.flatMap(r => r.actions.map(a => ({...a, riskId:r.id})));
+  const actions = risks.flatMap(r => r.actions.map(a => ({...a, riskId:r.id, riskZone:zoneOf(rraOf(r.p, r.iLevel))})));
   const doneActions = actions.filter(a => a.status === 'done').length;
   const actionsPct = actions.length ? Math.round(doneActions / actions.length * 100) : 0;
   const highCount = risks.filter(r => zoneOf(rraOf(r.p, r.iLevel)) === 'high').length;
   const highPct = risks.length ? Math.round(highCount / risks.length * 100) : 0;
+  const overdueActions = actions.filter(a => { const dd = parseRuShortDate(a.plannedDate); return a.status!=='done' && a.status!=='rejected' && dd && dd < TODAY; });
+  const durationMin = Math.max(60, ...notes.map(n => n.durationMin || 60));
+  return {y, m, d, notes, risks, dateObj, isPast, attendeeNames, actions, doneActions, actionsPct, highCount, highPct, overdueActions, durationMin};
+}
+function openSessionSummaryModal(y, m, d){
+  const sd = computeSessionData(y, m, d);
+  if (!sd) return;
+  const {risks, dateObj, isPast, attendeeNames, actions, doneActions, actionsPct, highCount, highPct} = sd;
 
   document.getElementById('sessionModalHead').innerHTML = `
     <div class="session-modal-badges">
@@ -4094,7 +4167,10 @@ function openSessionSummaryModal(y, m, d){
 
   document.getElementById('sessionModalFoot').innerHTML = `
     <button type="button" class="btn btn-text" id="sessionModalCloseBtn">Закрыть</button>
-    ${risks.length === 1 ? `<button type="button" class="btn btn-primary" id="sessionOpenRiskBtn">Открыть риск →</button>` : ''}`;
+    <span style="display:flex; gap:8px;">
+      ${risks.length === 1 ? `<button type="button" class="btn btn-secondary" id="sessionOpenRiskBtn">Открыть риск</button>` : ''}
+      <button type="button" class="btn btn-primary" id="sessionFullDetailsBtn">Full Details →</button>
+    </span>`;
 
   document.getElementById('sessionModalCloseX').addEventListener('click', () => closeModal('sessionModalOverlay'));
   document.getElementById('sessionModalCloseBtn').addEventListener('click', () => closeModal('sessionModalOverlay'));
@@ -4104,7 +4180,178 @@ function openSessionSummaryModal(y, m, d){
       openPassport(risks[0].id);
     });
   }
+  document.getElementById('sessionFullDetailsBtn').addEventListener('click', () => {
+    closeModal('sessionModalOverlay');
+    openSessionDetailPage(y, m, d);
+  });
   openModal('sessionModalOverlay');
+}
+
+// ===================================================================
+// СТРАНИЦА «ДЕТАЛИ ВСТРЕЧИ» (Блок 3b) — «Full Details» из попапа сводки
+// открывает не модалку, а отдельную ws-page с вкладками Summary/Actions/
+// Tickets/Transcript. Tickets/Transcript — честные пустые состояния (в
+// RiskLesson нет тикет-системы и записи транскриптов), Duration — реальное
+// поле, которое теперь запрашивается при добавлении риска в повестку
+// (openAddToAgendaModal), а не выдуманное число.
+const ICON_SD_MAIL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>';
+const ICON_SD_DOWNLOAD = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>';
+const ICON_SD_VIDEO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="13" height="12" rx="2"/><path d="M15.5 10l6-3.5v11l-6-3.5z"/></svg>';
+const ICON_SD_MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg>';
+const ICON_SD_AI = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg>';
+const ICON_SD_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l2.5 2.5L16 9"/></svg>';
+const ICON_SD_WARN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.6 18a1.5 1.5 0 0 0 1.3 2.2h16.2a1.5 1.5 0 0 0 1.3-2.2L13.7 3.9a1.5 1.5 0 0 0-2.6 0z"/></svg>';
+const ICON_SD_CAL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>';
+const ICON_SD_CLOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>';
+const ICON_SD_PEOPLE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><circle cx="18" cy="8.5" r="2.6"/><path d="M15.5 13.6c2.9.4 5 2.8 5 6.4h-3"/></svg>';
+const ICON_SD_DOC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6z"/><path d="M15 3v3h3"/><path d="M9 12h6M9 16h6"/></svg>';
+const ICON_SD_PERSON_SM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>';
+const ICON_SD_CHECK_SM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>';
+const ICON_SD_TICKET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/></svg>';
+const ICON_SD_CHAT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4z"/></svg>';
+
+let sessionDetailState = null;
+let sessionDetailTab = 'summary';
+// Второй, содержательно иной от попапа, реальный AI-инсайт: эскалация
+// комитету (I=3) и средний RRA по обсуждённым рискам — не дублирует текст
+// AI-сводки на той же странице.
+function sessionAiInsightText(sd){
+  const scored = sd.risks.filter(r => r.p && r.iLevel);
+  const avgRra = scored.length ? (scored.reduce((s,r)=>s+rraOf(r.p,r.iLevel),0) / scored.length).toFixed(1) : null;
+  const escCount = sd.risks.filter(r => r.committeeFlag).length;
+  const escWords = escCount ? `${escCount} ${pluralRu(escCount,['риск требует','риска требуют','рисков требуют'])} решения комитета (I=3).` : 'Эскалация комитету по обсуждённым рискам не требуется.';
+  const rraWords = avgRra ? `Средний RRA обсуждённых рисков — ${avgRra} из 9. ` : '';
+  return rraWords + escWords;
+}
+function openSessionDetailPage(y, m, d){
+  sessionDetailState = {y, m, d};
+  sessionDetailTab = 'summary';
+  document.querySelectorAll('.ws-nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('wsTitle').textContent = 'Детали встречи';
+  document.getElementById('wsDesc').textContent = 'Полная информация о риск-сессии — вкладки, метрики, быстрые действия.';
+  document.querySelectorAll('.ws-page').forEach(p => p.hidden = p.dataset.page !== 'sessionDetail');
+  renderSessionDetailPage();
+}
+function renderSessionDetailPage(){
+  const {y, m, d} = sessionDetailState;
+  const sd = computeSessionData(y, m, d);
+  const mount = document.getElementById('sessionDetailMount');
+  if (!sd){ mount.innerHTML = '<p class="muted" style="font-size:13px;">Риск-сессия на эту дату не найдена.</p>'; return; }
+  const {risks, dateObj, isPast, attendeeNames, actions, durationMin} = sd;
+
+  const tabs = [
+    ['summary', 'Summary', ICON_SD_DOC],
+    ['actions', `Actions (${actions.length})`, ICON_SD_CHECK],
+    ['tickets', 'Tickets (0)', ICON_SD_TICKET],
+    ['transcript', 'Transcript', ICON_SD_CHAT],
+  ];
+
+  mount.innerHTML = `
+    <div class="sd-breadcrumb"><a id="sdBackLink">Календарь</a><span>›</span><span>Риск-сессия — ${risks.length} ${pluralRu(risks.length,['риск','риска','рисков'])}</span></div>
+    <div class="sd-topbar">
+      <div>
+        <div class="sd-badges">
+          <span class="session-badge type">Риск-сессия</span>
+          <span class="session-badge ${isPast?'status-done':'status-planned'}">${isPast?'Проведена':'Запланирована'}</span>
+        </div>
+        <div class="sd-title">Риск-сессия — ${risks.length} ${pluralRu(risks.length,['риск','риска','рисков'])}</div>
+      </div>
+      <div class="sd-actions-row">
+        <button type="button" class="btn btn-secondary btn-sm" id="sdShareBtn">Поделиться</button>
+        <button type="button" class="btn btn-primary btn-sm" id="sdTicketsBtn">Создать тикеты</button>
+      </div>
+    </div>
+    <div class="sd-meta-row">
+      <span>${ICON_SD_CAL}${dateObj.toLocaleDateString('ru-RU',{weekday:'long', day:'numeric', month:'long'})}</span>
+      <span>${ICON_SD_CLOCK}${durationMin} мин</span>
+      <span>${ICON_SD_PEOPLE}${attendeeNames.length} ${pluralRu(attendeeNames.length,['участник','участника','участников'])}</span>
+    </div>
+    <div class="sd-attendee-row">
+      <div class="sd-avatars">${attendeeNames.map(n => { const p = n.split(' '); return avatarHtml({firstName:p[0]||'', lastName:p[1]||'', size:28}); }).join('')}</div>
+      <div class="sd-attendee-names">${esc(attendeeNames.join(', ')) || 'Владельцы не указаны'}</div>
+    </div>
+    <div class="sd-tabs" id="sdTabs">${tabs.map(([key,label,icon]) => `<button type="button" class="sd-tab${sessionDetailTab===key?' active':''}" data-tab="${key}">${icon}${label}</button>`).join('')}</div>
+    <div class="sd-layout" id="sdLayout"></div>`;
+
+  document.getElementById('sdBackLink').addEventListener('click', () => gotoPage('calendar'));
+  document.getElementById('sdShareBtn').addEventListener('click', () => toast('Поделиться', {body:'Демо-прототип: раздел недоступен в этой версии.', duration:4000}));
+  document.getElementById('sdTicketsBtn').addEventListener('click', () => toast('Создать тикеты', {body:'Демо-прототип: в RiskLesson нет отдельной тикет-системы.', duration:4000}));
+  document.querySelectorAll('#sdTabs .sd-tab').forEach(b => b.addEventListener('click', () => { sessionDetailTab = b.dataset.tab; renderSessionDetailPage(); }));
+
+  renderSessionDetailLayout(sd);
+}
+function renderSessionDetailLayout(sd){
+  const {risks, actions, doneActions, highCount, overdueActions, durationMin, attendeeNames} = sd;
+  const layout = document.getElementById('sdLayout');
+
+  if (sessionDetailTab === 'summary'){
+    layout.className = 'sd-layout';
+    layout.innerHTML = `
+      <div>
+        <div class="sd-card">
+          <div class="sd-card-title">${ICON_SD_AI}AI-Generated Summary</div>
+          <p style="font-size:13px;line-height:1.6;color:var(--ink-800);margin:0;">${esc(sessionAiSummaryText(risks, actions, doneActions, highCount))}</p>
+        </div>
+        <div class="sd-card">
+          <div class="sd-card-title">${ICON_SD_CHECK}Key Decisions</div>
+          ${risks.map((r,i) => {
+            const decision = r.committeeDecision ? `решение комитета: «${esc(r.committeeDecision)}»` : `статус переведён в «${esc(r.status)}»`;
+            return `<div class="sd-decision-pill"><span class="sd-decision-num">${i+1}</span><span><b>${esc(r.id)}</b> — ${esc(r.title)}: ${decision}</span></div>`;
+          }).join('')}
+        </div>
+        <div class="sd-card" style="margin-bottom:0;">
+          <div class="sd-card-title">${ICON_SD_WARN}Impediments &amp; Risks</div>
+          ${overdueActions.length ? overdueActions.map(a => `<div class="sd-impediment-row">${ICON_SD_WARN}<span><b>${esc(a.riskId)}</b>: «${esc(a.title)}» просрочено (план ${esc(a.plannedDate)})</span></div>`).join('') : '<p class="session-empty" style="margin:0;">Просроченных мероприятий по обсуждённым рискам нет.</p>'}
+        </div>
+      </div>
+      <div>
+        <div class="sd-card">
+          <div class="sd-card-title">Meeting Stats</div>
+          <div class="sd-stat-list">
+            <div class="sd-stat-item"><span class="lbl">Duration</span><span class="val">${durationMin} мин</span></div>
+            <div class="sd-stat-item"><span class="lbl">Attendees</span><span class="val">${attendeeNames.length}</span></div>
+            <div class="sd-stat-item"><span class="lbl">Decisions</span><span class="val">${risks.length}</span></div>
+            <div class="sd-stat-item"><span class="lbl">Action Items</span><span class="val">${actions.length}</span></div>
+            <div class="sd-stat-item"><span class="lbl">Tickets Created</span><span class="val">0</span></div>
+          </div>
+        </div>
+        <div class="sd-card">
+          <div class="sd-card-title">Quick Actions</div>
+          <div class="sd-qa-list">
+            <button type="button" class="sd-qa-item" data-qa="Email Summary">${ICON_SD_MAIL}Email Summary</button>
+            <button type="button" class="sd-qa-item" data-qa="Export PDF">${ICON_SD_DOWNLOAD}Export PDF</button>
+            <button type="button" class="sd-qa-item" data-qa="Watch Recording">${ICON_SD_VIDEO}Watch Recording</button>
+            <button type="button" class="sd-qa-item" data-qa="View Transcript">${ICON_SD_MIC}View Transcript</button>
+          </div>
+        </div>
+        <div class="sd-card" style="margin-bottom:0;">
+          <div class="sd-card-title">${ICON_SD_AI}AI Insight</div>
+          <p style="font-size:12.5px;line-height:1.5;color:var(--ink-700);margin:0;">${esc(sessionAiInsightText(sd))}</p>
+        </div>
+      </div>`;
+    layout.querySelectorAll('[data-qa]').forEach(b => b.addEventListener('click', () => toast(b.dataset.qa, {body:'Демо-прототип: действие недоступно в этой версии.', duration:4000})));
+  } else if (sessionDetailTab === 'actions'){
+    layout.className = 'sd-layout-single';
+    layout.innerHTML = actions.length ? actions.map(a => `
+      <div class="sd-action-item${a.status==='done'?' done':''}">
+        <span class="sd-action-check">${a.status==='done'?ICON_SD_CHECK_SM:''}</span>
+        <div style="flex:1;min-width:0;">
+          <div class="sd-action-title">${esc(a.title)}</div>
+          <div class="sd-action-meta">
+            <span>${ICON_SD_PERSON_SM}${esc(a.assignee||'—')}</span>
+            ${a.riskZone ? `<span class="badge-pill ${ZONE_BADGE[a.riskZone]}">${ZONE_LABEL[a.riskZone]}</span>` : ''}
+            <span class="badge-pill" style="background:var(--canvas);color:${ACTION_STATUS_COLOR[a.status]};">${ACTION_STATUS_LABEL[a.status]}</span>
+            <span>План: ${esc(a.plannedDate||'—')}</span>
+          </div>
+        </div>
+      </div>`).join('') : '<div class="sd-empty-tab">Мероприятий по обсуждённым рискам пока нет.</div>';
+  } else if (sessionDetailTab === 'tickets'){
+    layout.className = 'sd-layout-single';
+    layout.innerHTML = '<div class="sd-empty-tab">В RiskLesson нет отдельной тикет-системы — раздел недоступен в этой демо-версии.</div>';
+  } else if (sessionDetailTab === 'transcript'){
+    layout.className = 'sd-layout-single';
+    layout.innerHTML = '<div class="sd-empty-tab">Транскрипция встреч не записывается в этой демо-версии.</div>';
+  }
 }
 
 // ===================================================================
