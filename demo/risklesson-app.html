@@ -1,6 +1,12 @@
 <title>RiskLesson</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Некритичный внешний ресурс — грузим без блокировки рендера (media="print"
+     до onload), иначе на медленной/заблокированной сети до шрифта каждая
+     полная перезагрузка (в т.ч. выход из рабочего пространства) выглядит
+     зависшей на пустом экране, хотя приложение уже готово. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" media="print" onload="this.media='all'; if(typeof syncHeaderReserve==='function') syncHeaderReserve();">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap"></noscript>
 <style>
   :root{
     --navy-900:#112542; --accent-600:#167ffb; --accent-500:#008fff; --accent-100:#cbe1ff; --accent-50:#e8f5ff;
@@ -276,7 +282,7 @@
   }
 
   .btn{display:inline-flex; align-items:center; justify-content:center; gap:6px; white-space:nowrap;
-    border-radius:var(--radius-pill); padding:9px 16px; font-size:13px; font-weight:700; border:1px solid transparent;
+    border-radius:var(--radius-field); padding:9px 16px; font-size:13px; font-weight:700; border:1px solid transparent;
     background:transparent; color:var(--ink-600); cursor:pointer; transition:background-color .2s ease, border-color .2s ease, color .2s ease, transform .08s ease, filter .08s ease;}
   .btn:hover{background:var(--canvas); border-color:var(--line); color:var(--ink-900);}
   .btn:active{transform:scale(.96); filter:brightness(.94);}
@@ -522,6 +528,11 @@
   .ws-header-row{display:flex; align-items:flex-start; justify-content:space-between; gap:16px;
     position:sticky; top:0; z-index:6; background:var(--canvas);
     margin:0 -34px 22px; padding:26px 34px 16px; border-bottom:1px solid var(--line);}
+  /* Правая часть шапки страницы (раунд 3, п.7) — метаданные вроде «Данные
+     актуальны на» и связанные кнопки, поднятые из тела страницы на уровень
+     заголовка, чтобы быть на одной горизонтали с иконками .topbar-fixed. */
+  #wsHeaderExtra{display:flex; align-items:center; gap:10px; flex-shrink:0; margin-top:4px; margin-right:var(--topbar-reserve, 210px);}
+  #wsHeaderExtra:empty{display:none;}
 
   .notif-wrap{position:relative; flex-shrink:0;}
   .notif-bell{position:relative; width:38px; height:38px; border-radius:50%; border:1px solid var(--line);
@@ -566,7 +577,6 @@
   .profile-item.danger{color:var(--red-700);}
   .profile-item.danger svg{color:var(--red-700);}
 
-  .dash-toolbar{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; flex-wrap:wrap;}
   .dash-freshness{display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-600);}
   .dash-freshness svg{width:14px; height:14px; color:var(--ink-400);}
   .trend-crit-row{display:flex; gap:28px; align-items:flex-end; padding-top:10px; flex-wrap:wrap;}
@@ -797,8 +807,9 @@
   .cal-cell:hover{border-color:var(--accent-600);}
   .cal-cell.empty{background:transparent; border:none; cursor:default;}
   .cal-cell.empty:hover{border-color:transparent;}
-  .cal-cell .dnum{font-size:11px; font-weight:700; color:var(--ink-600); margin-bottom:4px;}
-  .cal-cell.today{border-color:var(--accent-600);}
+  .cal-cell .dnum{font-size:11px; font-weight:700; color:var(--ink-600); margin-bottom:4px; display:inline-flex; align-items:center; justify-content:center;}
+  .cal-cell.today{border-color:var(--accent-600); background:var(--accent-50);}
+  .cal-cell.today .dnum{background:var(--accent-600); color:#fff; width:19px; height:19px; border-radius:50%;}
   .cal-ev{font-size:9.5px; padding:2px 5px; border-radius:4px; margin-bottom:2px; font-weight:700; line-height:1.3; cursor:pointer;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .cal-note-pill{font-size:9.5px; padding:2px 5px; border-radius:4px; margin-bottom:2px; font-weight:600; line-height:1.3;
@@ -808,8 +819,10 @@
     display:flex; align-items:center; justify-content:center; border-radius:50%; font-size:10px; line-height:1;}
   .cal-note-del-x svg{width:8px; height:8px;}
   .cal-note-del-x:hover{opacity:1; background:rgba(0,0,0,.12);}
-  .calw-card .cal-note-del-x{position:absolute; top:6px; right:6px; opacity:.5;}
-  .calw-card:hover .cal-note-del-x{opacity:.85;}
+  .calw-card--del{padding-right:26px;}
+  .calw-card .cal-note-del-x{position:absolute; top:5px; right:5px; opacity:.85; width:17px; height:17px; background:rgba(0,0,0,.1);}
+  .calw-card .cal-note-del-x svg{width:10px; height:10px;}
+  .calw-card:hover .cal-note-del-x{opacity:1; background:rgba(0,0,0,.2);}
   .cal-note-row{display:flex; align-items:flex-start; gap:8px; padding:8px 0; border-bottom:1px solid var(--line);}
   .cal-note-row:last-child{border-bottom:none;}
   .cal-note-type{font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.2px;}
@@ -1087,6 +1100,7 @@
   <main class="ws-content">
     <div class="ws-header-row">
       <div><h1 id="wsTitle">Дэшборд</h1><p class="ws-desc" id="wsDesc"></p></div>
+      <div id="wsHeaderExtra"></div>
     </div>
 
     <div class="ws-page" data-page="dashboard"><div id="dashMount"></div></div>
@@ -1355,7 +1369,7 @@ const ACTION_KIND_LABEL = {cause:'Причина', consequence:'Следстви
 const ACTION_STATUS_LABEL = {planned:'Планируется', in_progress:'В работе', done:'Выполнено', rejected:'Отклонено'};
 const ACTION_STATUS_COLOR = {planned:'var(--gold-700)', in_progress:'var(--accent-600)', done:'var(--green-700)', rejected:'var(--ink-400)'};
 const DEP_TYPES = ['усиливает','ведёт_к','зависит_от','дублирует'];
-const TODAY = new Date(2026, 8, 12); // тот же условный "сегодня", что и в прототипе workspace.html
+const TODAY = new Date(2026, 8, 15); // условное «сегодня» для демо — держим синхронным с реальной текущей датой
 
 function uid(prefix){ return prefix + '-' + Math.random().toString(36).slice(2,8); }
 
@@ -1915,14 +1929,14 @@ function translitEmail(firstName, lastName){
   const tr = s => (s || '').toLowerCase().split('').map(ch => CYR_TO_LAT[ch] !== undefined ? CYR_TO_LAT[ch] : ch).join('');
   return `${tr(firstName)}.${tr(lastName)}@nlmk.com`;
 }
-// Владелец риска видит только риски, которые он сам создал в этой демо-
-// сессии — ни один seed-риск ЦГП-2 не подставляется автоматически по
-// совпадению фамилии, даже если она реально встречается среди владельцев
-// в исходных данных. «Мои риски» начинается с пустого шаблона и наполняется
-// только тем, что владелец сам заполнил и отправил.
+// Владелец риска видит только риски, где он сам указан владельцем
+// (ownerNames), а не все, что он когда-либо создавал — «Мои риски» это
+// портфель ответственности, а не журнал подач. Ни один seed-риск ЦГП-2 не
+// подставляется автоматически по совпадению фамилии — только явное
+// совпадение с ownerNames риска.
 function isMyRisk(r){
   if (!state.session) return false;
-  return r.authorName === sessionName();
+  return Array.isArray(r.ownerNames) && r.ownerNames.includes(sessionName());
 }
 // Активные риски в области видимости текущей роли — владелец риска видит
 // только свои (отдельное рабочее пространство, не общий портфель), риск-менеджер
@@ -2164,7 +2178,6 @@ function renderProfilePanel(roleColors){
     <hr>
     <button type="button" class="profile-item" id="profileDashboardBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>Мой дэшборд</button>
     <button type="button" class="profile-item" id="profileTeamBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><circle cx="18" cy="8.5" r="2.6"/><path d="M15.5 13.6c2.9.4 5 2.8 5 6.4h-3"/></svg>Моя команда</button>
-    <button type="button" class="profile-item" id="profileTicketsBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M13 6v12" stroke-dasharray="2 2"/></svg>Мои тикеты</button>
     <button type="button" class="profile-item" id="profileTasksBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6z"/><path d="M15 3v3h3"/><path d="M9 12h6M9 16h6"/></svg>Мои задачи</button>
     <hr>
     <button type="button" class="profile-item" id="profileSettingsBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Настройки</button>
@@ -2178,16 +2191,11 @@ function renderProfilePanel(roleColors){
     document.getElementById('profilePanel').hidden = true;
     gotoPage(state.session.role === 'riskowner' ? 'register' : 'dashboard');
   });
-  // «Моя команда» / «Мои тикеты» — в модели RiskLesson нет отдельного
-  // справочника команды или тикет-системы (см. process_full_v4.md) —
-  // демо-заглушки, как «Настройки»/«Помощь».
+  // «Моя команда» — в модели RiskLesson нет отдельного справочника команды
+  // (см. process_full_v4.md) — демо-заглушка, как «Настройки»/«Помощь».
   document.getElementById('profileTeamBtn').addEventListener('click', () => {
     document.getElementById('profilePanel').hidden = true;
     toast('Моя команда', {body:'Демо-прототип: раздел недоступен в этой версии.', duration:4000});
-  });
-  document.getElementById('profileTicketsBtn').addEventListener('click', () => {
-    document.getElementById('profilePanel').hidden = true;
-    toast('Мои тикеты', {body:'Демо-прототип: раздел недоступен в этой версии.', duration:4000});
   });
   // «Мои задачи» — реальные данные: та же логика просрочек/эскалации,
   // что и в колокольчике уведомлений (renderNotifBell), не выдуманный список.
@@ -2253,14 +2261,27 @@ function enterWorkspace(){
   });
   document.getElementById('wsSignOut').addEventListener('click', signOut);
 
+  syncHeaderReserve();
   gotoPage(isOwner ? 'register' : 'dashboard');
 }
+// Правая часть шапки страницы (#wsHeaderExtra) не должна заезжать под
+// плавающие иконки .topbar-fixed (тема/колокольчик/профиль) — их суммарная
+// ширина зависит от длины имени пользователя, поэтому резервируем место
+// динамическим измерением, а не константой. Пересчитываем и при ресайзе
+// окна, и после подгрузки веб-шрифта (ширина текста имени меняется).
+function syncHeaderReserve(){
+  const tb = document.querySelector('.topbar-fixed');
+  if (!tb) return;
+  const w = Math.ceil(tb.getBoundingClientRect().width);
+  if (w > 0) document.documentElement.style.setProperty('--topbar-reserve', (w + 20) + 'px');
+}
+window.addEventListener('resize', syncHeaderReserve);
 const PAGE_META = {
-  dashboard:{title:'Дэшборд', desc:'Общая сводка по рискам программы: количество, критичность, статус мероприятий.'},
-  register:{title:'Реестр рисков', desc:'Полный список зарегистрированных рисков проекта с владельцем, оценкой и статусом.'},
+  dashboard:{title:'Дэшборд', desc:'Общая сводка по рискам.'},
+  register:{title:'Реестр рисков', desc:'Полный список зарегистрированных рисков проекта.'},
   matrix:{title:'Матрица рисков', desc:'Визуализация рисков по вероятности и влиянию (P×I), сетка 3×3.'},
-  lessons:{title:'Реестр уроков', desc:'База знаний по прошлым проектам — риски, которые уже случались, и как их избежать.'},
-  calendar:{title:'Календарь', desc:'Сроки мероприятий и просрочки, рассчитанные из реальных плановых дат.'},
+  lessons:{title:'Реестр уроков', desc:'База знаний по прошлым проектам.'},
+  calendar:{title:'Календарь', desc:'Список мероприятий и плановые даты.'},
   map:{title:'Карта взаимосвязей', desc:'Ручное построение связей между рисками и объединение дублей.'},
   reports:{title:'Privacy Reports & Analytics', desc:'Executive Summary и AI-подсказки связей — считаются из текущих данных.'},
   premortem:{title:'PreMortem Analysis', desc:'Заблаговременный разбор «что могло пойти не так» — раздел в разработке.'},
@@ -2278,6 +2299,7 @@ function gotoPage(key){
   const meta = (isOwner && PAGE_META_OWNER_OVERRIDE[key]) || PAGE_META[key];
   document.getElementById('wsTitle').textContent = meta.title;
   document.getElementById('wsDesc').textContent = meta.desc;
+  document.getElementById('wsHeaderExtra').innerHTML = '';
   document.querySelectorAll('.ws-page').forEach(p => p.hidden = p.dataset.page !== key);
   ({dashboard:renderDashboard, register:renderRegister, matrix:renderMatrix,
     lessons:renderLessons, calendar:renderCalendar, map:renderMap, reports:renderReports, premortem:renderPremortem})[key]();
@@ -2568,12 +2590,11 @@ function renderDashboard(){
 
   renderNotifBell();
 
+  document.getElementById('wsHeaderExtra').innerHTML = `
+    <span class="dash-freshness"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Данные актуальны на: <b>${TODAY.toLocaleDateString('ru-RU')}</b></span>
+    <button type="button" class="btn btn-secondary btn-sm" id="btnExportPpt"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M3 17v2a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/></svg>Экспорт в PPT</button>`;
   const el = document.getElementById('dashMount');
   el.innerHTML = `
-    <div class="dash-toolbar">
-      <span class="dash-freshness"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Данные актуальны на: <b>${TODAY.toLocaleDateString('ru-RU')}</b></span>
-      <button type="button" class="btn btn-secondary btn-sm" id="btnExportPpt"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M3 17v2a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/></svg>Экспорт в PPT</button>
-    </div>
     <div class="kpi-grid">
       <div class="kpi-card clickable" data-goto-register="_all">
         <div class="kpi-top-row"><span class="kpi-icon" style="background:var(--accent-50);color:var(--accent-600);">${KPI_ICONS.active}</span>${trendBadge(risks.length, base.active, true)}</div>
@@ -2589,7 +2610,7 @@ function renderDashboard(){
       </div>
       <div class="kpi-card clickable" data-goto-register="overdue">
         <div class="kpi-top-row"><span class="kpi-icon" style="background:var(--red-50);color:var(--red-700);">${KPI_ICONS.overdue}</span>${trendBadge(overdueActions, base.overdue, false)}</div>
-        <span class="kpi-value" style="color:var(--red-700)">${overdueActions}</span><span class="kpi-label">Просрочено мероприятий</span><span class="kpi-sub">цель: 0 · сегодня 12.09.2026</span>
+        <span class="kpi-value" style="color:var(--red-700)">${overdueActions}</span><span class="kpi-label">Просрочено мероприятий</span><span class="kpi-sub">цель: 0 · сегодня ${TODAY.toLocaleDateString('ru-RU')}</span>
       </div>
     </div>
 
@@ -2695,7 +2716,7 @@ function renderDashboard(){
     const body = `${svgLineChartHtml(monthData)}<div style="margin-top:14px;">
       ${peak?aiInsightRow(`Пик нагрузки — ${esc(peak.label)}: ${peak.count} мероприятий с плановой датой в этом месяце.`):''}
       ${aiInsightRow(`Всего месяцев с запланированными мероприятиями: ${monthData.length}.`)}
-      ${aiInsightRow(`Просроченных мероприятий на сегодня (12.09.2026): ${overdueActions}.`)}
+      ${aiInsightRow(`Просроченных мероприятий на сегодня (${TODAY.toLocaleDateString('ru-RU')}): ${overdueActions}.`)}
     </div>`;
     openChartModal('Мероприятия по плановым месяцам', 'AI Insights рассчитаны детерминированно из реальных плановых дат мероприятий', body);
   });
@@ -2988,7 +3009,12 @@ function openRiskCreateModal(prefill){
   document.getElementById('rCause').value = prefill && prefill.cause ? prefill.cause : '';
   document.getElementById('rEvent').value = prefill && prefill.event ? prefill.event : '';
   document.getElementById('rConsequence').value = prefill && prefill.consequence ? prefill.consequence : '';
-  riskOwnerSelection = []; renderOwnerChips(); toggleOwnerMenu(false);
+  // Владелец риска предлагает риск от своего лица — предвыбираем его самого
+  // владельцем по умолчанию (можно убрать/дополнить), иначе поданный им же
+  // риск без явного выбора владельца не попадёт в его «Мои риски» (см. isMyRisk).
+  riskOwnerSelection = (prefill && prefill.ownerNames) ? prefill.ownerNames.slice()
+    : (state.session && state.session.role === 'riskowner') ? [sessionName()] : [];
+  renderOwnerChips(); toggleOwnerMenu(false);
   document.getElementById('rStrategyRationale').value = '';
   document.getElementById('rStrategyRationaleField').hidden = true;
   document.getElementById('riskSourceQuote').innerHTML = (prefill && prefill.sourceQuote)
@@ -4252,7 +4278,7 @@ function renderCalendarMonth(){
     </div>`;
   }
   document.getElementById('calBody').innerHTML = `<div class="cal-grid">${grid}</div>
-    <p class="field-hint" style="margin-top:10px;">Условное «сегодня» для демо — 12.09.2026, поэтому часть 2026-х сроков уже просрочена. Кликните день, чтобы добавить заметку (индивидуальная работа, риск-сессия, семинар, согласование).</p>`;
+    <p class="field-hint" style="margin-top:10px;">Условное «сегодня» для демо — ${TODAY.toLocaleDateString('ru-RU')}, поэтому часть 2026-х сроков уже просрочена. Кликните день, чтобы добавить заметку (индивидуальная работа, риск-сессия, семинар, согласование).</p>`;
   document.querySelectorAll('.cal-ev').forEach(e => e.addEventListener('click', ev => { ev.stopPropagation(); openPassport(e.dataset.risk); }));
   document.querySelectorAll('[data-open-session]').forEach(el => el.addEventListener('click', ev => {
     ev.stopPropagation();
@@ -4305,7 +4331,7 @@ function renderCalendarWeek(){
       ${evs.map(e => `<div class="calw-card" style="background:${e.bg};color:${e.color};border-color:${e.color}33;" data-risk="${e.riskId}">
         <div class="ct">${e.overdue?'Просрочено':'Мероприятие'}</div><div class="cn">${esc(e.fullText.slice(0,50))}</div></div>`).join('')}
       ${notes.map(n => { const t=noteType(n.type); const isSession = n.type==='session' && n.riskId;
-        return `<div class="calw-card" style="background:${t.bg};color:${t.color};border-color:${t.color}33;"${isSession?` data-open-session="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}"`:''}>
+        return `<div class="calw-card calw-card--del" style="background:${t.bg};color:${t.color};border-color:${t.color}33;"${isSession?` data-open-session="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}"`:''}>
         <button type="button" class="cal-note-del-x" data-del-cal-note="${n.id}" data-del-cal-date="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}" title="Удалить встречу" aria-label="Удалить встречу"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
         <div class="ct">${esc(t.label)}</div><div class="cn">${esc(n.text.slice(0,50))}</div><div class="cm">${esc(n.author||'')}</div></div>`; }).join('')}
       <button type="button" class="btn btn-text btn-sm" data-add-note-day="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}" style="width:100%;">+ заметка</button>
@@ -4522,6 +4548,7 @@ function openSessionDetailPage(y, m, d){
   document.querySelectorAll('.ws-nav-item').forEach(b => b.classList.remove('active'));
   document.getElementById('wsTitle').textContent = 'Детали встречи';
   document.getElementById('wsDesc').textContent = 'Полная информация о риск-сессии — вкладки, метрики, быстрые действия.';
+  document.getElementById('wsHeaderExtra').innerHTML = '';
   document.querySelectorAll('.ws-page').forEach(p => p.hidden = p.dataset.page !== 'sessionDetail');
   renderSessionDetailPage();
 }
@@ -5058,11 +5085,10 @@ function renderReports(){
   });
   suggestions.sort((a,b)=>b.score-a.score);
 
+  document.getElementById('wsHeaderExtra').innerHTML = `
+    <span class="dash-freshness"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Данные актуальны на: <b>${TODAY.toLocaleDateString('ru-RU')}</b></span>
+    <button type="button" class="btn btn-secondary btn-sm" id="btnExportReportPpt"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M3 17v2a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/></svg>Экспорт AI-отчёта в PPT</button>`;
   document.getElementById('reportsMount').innerHTML = `
-    <div class="dash-toolbar">
-      <span class="dash-freshness"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Данные актуальны на: <b>${TODAY.toLocaleDateString('ru-RU')}</b></span>
-      <button type="button" class="btn btn-secondary btn-sm" id="btnExportReportPpt"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M3 17v2a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/></svg>Экспорт AI-отчёта в PPT</button>
-    </div>
     <div class="panel">
       <h3>Executive Summary</h3>
       <div class="es-kpi-grid">
