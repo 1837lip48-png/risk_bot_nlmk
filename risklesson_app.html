@@ -765,7 +765,7 @@
   .cal-view-toggle button{border:none; background:none; padding:6px 14px; border-radius:var(--radius-pill); font-size:12px; font-weight:700; color:var(--ink-600); cursor:pointer;}
   .cal-view-toggle button.active{background:var(--paper-0); color:var(--ink-900); box-shadow:var(--shadow-pop);}
   .cal-head{display:flex; align-items:center; gap:14px; margin-bottom:14px;}
-  .cal-head button{background:none; border:1px solid var(--line); border-radius:4px; width:28px; height:28px; color:var(--ink-600); cursor:pointer;}
+  .cal-head .cal-nav-btn{background:none; border:1px solid var(--line); border-radius:4px; width:28px; height:28px; color:var(--ink-600); cursor:pointer;}
   .cal-head h3{font-family:var(--font-display); margin:0; font-size:15px; font-weight:700;}
   .cal-legend-row{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
   .cal-legend{display:flex; gap:14px; font-size:11.5px; color:var(--ink-600); flex-wrap:wrap;}
@@ -4250,7 +4250,7 @@ function renderCalendar(){
         <button type="button" data-view="month" class="${calViewMode==='month'?'active':''}">Месяц</button>
         <button type="button" data-view="week" class="${calViewMode==='week'?'active':''}">Календарь встреч (неделя)</button>
       </div>
-      <div class="cal-head"><button id="calPrev">‹</button><h3 id="calHeadTitle"></h3><button id="calNext">›</button><button id="calToday" class="btn btn-secondary btn-sm">Сегодня</button></div>
+      <div class="cal-head"><button id="calPrev" class="cal-nav-btn">‹</button><h3 id="calHeadTitle"></h3><button id="calNext" class="cal-nav-btn">›</button><button id="calToday" class="btn btn-secondary btn-sm">Сегодня</button></div>
     </div>
     <div class="cal-legend-row">
       <div class="cal-legend" id="calLegend"></div>
