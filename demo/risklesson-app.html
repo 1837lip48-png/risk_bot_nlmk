@@ -318,6 +318,44 @@
   .modal-close svg{width:15px; height:15px;}
   .modal-sub{font-size:12px; color:var(--ink-400); margin:-10px 0 14px;}
 
+  /* Сводка риск-сессии — по мотивам карточки встречи (шапка-бейджи/участники/
+     AI-сводка/решения/пункты действий), но со своими цветами и только реальными
+     данными, без выдуманных метрик вроде "team sentiment". */
+  .session-modal-card{max-width:460px;}
+  .session-modal-head{background:linear-gradient(135deg,#f1e9fd,#faf1fb); padding:20px 22px 16px; flex-shrink:0;}
+  .session-modal-badges{display:flex; align-items:center; gap:8px; margin-bottom:10px;}
+  .session-badge{font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; padding:3px 9px; border-radius:999px;}
+  .session-badge.type{background:#e7dafb; color:#6d28d9;}
+  .session-badge.status-done{background:var(--green-50); color:var(--green-700);}
+  .session-badge.status-planned{background:var(--gold-50); color:var(--gold-700);}
+  .session-modal-title{display:flex; align-items:flex-start; justify-content:space-between; gap:10px;}
+  .session-modal-title h3{font-family:var(--font-display); font-size:18px; font-weight:700; color:var(--ink-900); margin:0;}
+  .session-modal-date{display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-600); margin-top:6px;}
+  .session-modal-date svg{width:13px; height:13px;}
+  .session-modal-scroll{padding:18px 22px;}
+  .session-sec{margin-bottom:18px;}
+  .session-sec-title{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; color:var(--ink-600); margin-bottom:9px;}
+  .session-attendees{display:flex; flex-wrap:wrap; gap:8px;}
+  .session-attendee-chip{display:flex; align-items:center; gap:6px; background:var(--canvas); border-radius:999px; padding:4px 10px 4px 4px; font-size:12px; font-weight:600; color:var(--ink-800);}
+  .session-stat-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .session-stat-card{background:var(--canvas); border-radius:var(--radius-field); padding:10px 12px;}
+  .session-stat-label{font-size:11px; color:var(--ink-600); margin-bottom:6px;}
+  .session-stat-bar-row{display:flex; align-items:center; gap:8px;}
+  .session-stat-bar{flex:1; height:6px; border-radius:999px; background:var(--line); overflow:hidden;}
+  .session-stat-bar-fill{height:100%; border-radius:999px;}
+  .session-stat-pct{font-size:12.5px; font-weight:700; color:var(--ink-900); flex-shrink:0;}
+  .session-ai-box{background:#eef4ff; border-radius:var(--radius-field); padding:12px 14px; font-size:13px; line-height:1.5; color:var(--ink-800); display:flex; gap:9px;}
+  .session-ai-box svg{width:15px; height:15px; color:var(--accent-600); flex-shrink:0; margin-top:2px;}
+  .session-decision-row{display:flex; align-items:flex-start; gap:8px; font-size:13px; color:var(--ink-800); padding:5px 0;}
+  .session-decision-row svg{width:15px; height:15px; color:var(--green-700); flex-shrink:0; margin-top:1px;}
+  .session-action-row{display:flex; align-items:center; gap:9px; font-size:13px; color:var(--ink-800); padding:5px 0;}
+  .session-action-check{width:15px; height:15px; border-radius:4px; border:1.5px solid var(--line); flex-shrink:0; display:flex; align-items:center; justify-content:center;}
+  .session-action-row.done .session-action-check{background:var(--accent-600); border-color:var(--accent-600); color:#fff;}
+  .session-action-row.done .session-action-check svg{width:10px; height:10px;}
+  .session-action-row.done span{text-decoration:line-through; color:var(--ink-400);}
+  .session-empty{font-size:12.5px; color:var(--ink-400);}
+  .session-modal-foot{display:flex; align-items:center; justify-content:space-between; padding:14px 22px; border-top:1px solid var(--line); flex-shrink:0;}
+
   .fieldset{border:1px solid var(--line); border-radius:var(--radius-field); padding:12px 14px; display:flex; flex-direction:column; gap:10px;}
   .fieldset > .fs-title{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.2px; color:var(--ink-600);}
   .yn-row{display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:13px;}
@@ -426,10 +464,14 @@
   .notif-dot{position:absolute; top:-2px; right:-2px; min-width:16px; height:16px; padding:0 3px; border-radius:999px;
     background:var(--red-700); border:2px solid var(--paper-0); color:#fff; font-size:9.5px; font-weight:800; font-family:var(--font-body);
     display:flex; align-items:center; justify-content:center; line-height:1;}
-  .topbar-user{display:flex; align-items:center; gap:10px; padding-left:12px; margin-left:2px; border-left:1px solid var(--line);}
+  .topbar-user{position:relative; flex-shrink:0;}
+  .topbar-user-trigger{display:flex; align-items:center; gap:8px; padding:5px 8px 5px 12px; margin-left:2px; border-left:1px solid var(--line);
+    border-radius:8px; cursor:pointer;}
+  .topbar-user-trigger:hover{background:var(--canvas);}
   .topbar-user-text{display:flex; flex-direction:column; align-items:flex-end; line-height:1.3;}
   .topbar-user-name{font-size:13px; font-weight:700; color:var(--ink-900); white-space:nowrap;}
   .topbar-user-role{font-size:11px; color:var(--ink-600); white-space:nowrap;}
+  .topbar-user-chevron{width:14px; height:14px; color:var(--ink-400); flex-shrink:0;}
   .notif-panel{position:absolute; top:46px; right:0; width:340px; max-height:420px; overflow-y:auto; background:var(--paper-0);
     border:1px solid var(--line); border-radius:var(--radius-card); box-shadow:var(--shadow-pop); padding:8px; z-index:60;}
   .notif-item{display:block; padding:9px 10px; border-radius:var(--radius-field); cursor:pointer; text-decoration:none; color:inherit;}
@@ -437,6 +479,19 @@
   .notif-item .nt-t{font-size:12.5px; font-weight:700;}
   .notif-item .nt-d{font-size:11.5px; color:var(--ink-600); margin-top:2px;}
   .notif-empty{padding:16px; text-align:center; font-size:12.5px; color:var(--ink-400);}
+
+  .profile-panel{position:absolute; top:46px; right:0; width:264px; background:var(--paper-0);
+    border:1px solid var(--line); border-radius:var(--radius-card); box-shadow:var(--shadow-pop); padding:8px; z-index:60;}
+  .profile-panel-head{display:flex; align-items:center; gap:10px; padding:6px 8px 12px;}
+  .profile-panel-name{font-size:13.5px; font-weight:700; color:var(--ink-900); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .profile-panel-email{font-size:11.5px; color:var(--ink-600); margin-top:2px; word-break:break-all;}
+  .profile-panel hr{border:none; border-top:1px solid var(--line); margin:6px 2px;}
+  .profile-item{display:flex; align-items:center; gap:10px; width:100%; padding:9px 10px; border-radius:var(--radius-field);
+    cursor:pointer; background:none; border:none; text-align:left; font-size:12.5px; font-family:var(--font-body); color:var(--ink-700);}
+  .profile-item:hover{background:var(--canvas);}
+  .profile-item svg{width:15px; height:15px; color:var(--ink-400); flex-shrink:0;}
+  .profile-item.danger{color:var(--red-700);}
+  .profile-item.danger svg{color:var(--red-700);}
 
   .dash-toolbar{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; flex-wrap:wrap;}
   .dash-freshness{display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-600);}
@@ -792,11 +847,15 @@
     <div class="notif-panel" id="notifPanel" hidden></div>
   </div>
   <div class="topbar-user" id="topbarUser" hidden>
-    <div class="topbar-user-text">
-      <div class="topbar-user-name" id="topbarUserName"></div>
-      <div class="topbar-user-role" id="topbarUserRole"></div>
+    <div class="topbar-user-trigger" id="topbarUserTrigger">
+      <div class="topbar-user-text">
+        <div class="topbar-user-name" id="topbarUserName"></div>
+        <div class="topbar-user-role" id="topbarUserRole"></div>
+      </div>
+      <div id="topbarAvatar"></div>
+      <svg class="topbar-user-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
     </div>
-    <div id="topbarAvatar"></div>
+    <div class="profile-panel" id="profilePanel" hidden></div>
   </div>
 </div>
 
@@ -1139,6 +1198,16 @@
     <p class="modal-sub" id="chartModalSub"></p>
     <div id="chartModalMount"></div>
    </div>
+  </div>
+</div>
+
+<!-- Сводка риск-сессии дня — по образцу карточки встречи (шапка/вкладки/AI-сводка/
+     решения/пункты действий), но только на реальных данных связанных рисков. -->
+<div class="modal-overlay" id="sessionModalOverlay">
+  <div class="modal-card modal-card--wide session-modal-card" role="dialog" aria-modal="true">
+    <div class="session-modal-head" id="sessionModalHead"></div>
+    <div class="modal-card-scroll session-modal-scroll" id="sessionModalMount"></div>
+    <div class="session-modal-foot" id="sessionModalFoot"></div>
   </div>
 </div>
 
@@ -1656,6 +1725,14 @@ function sessionName(){
 function roleLabel(role){
   return role === 'riskmanager' ? 'Риск-менеджер' : role === 'riskowner' ? 'Владелец риска' : 'Инициатор';
 }
+// Риск-менеджер/владелец не вводят email при входе (в отличие от Инициатора) —
+// корпоративный адрес в реальности берётся из АД по имени; здесь для попапа
+// профиля собираем его транслитерацией по тому же паттерну name@nlmk.com.
+const CYR_TO_LAT = {а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'e',ж:'zh',з:'z',и:'i',й:'y',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'h',ц:'ts',ч:'ch',ш:'sh',щ:'sch',ъ:'',ы:'y',ь:'',э:'e',ю:'yu',я:'ya'};
+function translitEmail(firstName, lastName){
+  const tr = s => (s || '').toLowerCase().split('').map(ch => CYR_TO_LAT[ch] !== undefined ? CYR_TO_LAT[ch] : ch).join('');
+  return `${tr(firstName)}.${tr(lastName)}@nlmk.com`;
+}
 // Владелец риска видит только риски, которые он сам создал в этой демо-
 // сессии — ни один seed-риск ЦГП-2 не подставляется автоматически по
 // совпадению фамилии, даже если она реально встречается среди владельцев
@@ -1871,6 +1948,45 @@ function buildNav(role){
   ).join('');
 }
 
+// Попап профиля из топбара (клик по аватару/имени) — шапка с аватаром/email
+// и пункты меню; «Настройки»/«Помощь и поддержка» — статичные заглушки
+// демо-прототипа (как и экспорт в PPT на дэшборде), «Выйти» — рабочий signOut().
+function renderProfilePanel(roleColors){
+  const email = translitEmail(state.session.firstName, state.session.lastName);
+  const panel = document.getElementById('profilePanel');
+  panel.innerHTML = `
+    <div class="profile-panel-head">
+      ${avatarHtml({firstName:state.session.firstName, lastName:state.session.lastName, size:36, colorPair:roleColors})}
+      <div style="min-width:0;">
+        <div class="profile-panel-name">${esc(sessionName())}</div>
+        <div class="profile-panel-email">${esc(email)}</div>
+      </div>
+    </div>
+    <hr>
+    <button type="button" class="profile-item" id="profileSettingsBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Настройки</button>
+    <button type="button" class="profile-item" id="profileHelpBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.7-2.2 2-2.5 3.5"/><path d="M12 17h.01"/></svg>Помощь и поддержка</button>
+    <hr>
+    <button type="button" class="profile-item danger" id="profileSignOutBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>Выйти</button>
+  `;
+  document.getElementById('profileSettingsBtn').addEventListener('click', () => {
+    document.getElementById('profilePanel').hidden = true;
+    toast('Настройки', {body:'Демо-прототип: раздел настроек недоступен в этой версии.', duration:4000});
+  });
+  document.getElementById('profileHelpBtn').addEventListener('click', () => {
+    document.getElementById('profilePanel').hidden = true;
+    toast('Помощь и поддержка', {body:'Демо-прототип: раздел недоступен в этой версии.', duration:4000});
+  });
+  document.getElementById('profileSignOutBtn').addEventListener('click', signOut);
+}
+document.getElementById('topbarUserTrigger').addEventListener('click', () => {
+  const panel = document.getElementById('profilePanel');
+  panel.hidden = !panel.hidden;
+});
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('topbarUser');
+  if (!wrap.contains(e.target)) document.getElementById('profilePanel').hidden = true;
+});
+
 function enterWorkspace(){
   document.getElementById('appShell').hidden = false;
   document.getElementById('notifWrap').hidden = false;
@@ -1884,6 +2000,7 @@ function enterWorkspace(){
   document.getElementById('topbarUserName').textContent = sessionName();
   document.getElementById('topbarUserRole').textContent = roleLabel(state.session.role);
   document.getElementById('topbarAvatar').innerHTML = avatarHtml({firstName:state.session.firstName, lastName:state.session.lastName, size:38, colorPair:roleColors});
+  renderProfilePanel(roleColors);
 
   const isOwner = state.session.role === 'riskowner';
   buildNav(state.session.role);
@@ -3755,12 +3872,18 @@ function renderCalendarMonth(){
     grid += `<div class="cal-cell${isToday?' today':''}" data-day="${d}">
       <div class="dnum">${d}</div>
       ${evs.map(e=>`<div class="cal-ev" style="background:${e.bg};color:${e.color}" data-risk="${e.riskId}" title="${esc(e.fullText)}">${esc(e.text)}</div>`).join('')}
-      ${notes.map(n=>{const t=noteType(n.type); return `<div class="cal-note-pill" style="background:${t.bg};color:${t.color}" title="${esc(n.text)}">${esc(t.label)}</div>`;}).join('')}
+      ${notes.map(n=>{const t=noteType(n.type); const isSession = n.type==='session' && n.riskId;
+        return `<div class="cal-note-pill" style="background:${t.bg};color:${t.color}" title="${esc(n.text)}"${isSession?` data-open-session="${y}-${m}-${d}"`:''}>${esc(t.label)}</div>`;}).join('')}
     </div>`;
   }
   document.getElementById('calBody').innerHTML = `<div class="cal-grid">${grid}</div>
     <p class="field-hint" style="margin-top:10px;">Условное «сегодня» для демо — 12.09.2026, поэтому часть 2026-х сроков уже просрочена. Кликните день, чтобы добавить заметку (индивидуальная работа, риск-сессия, семинар, согласование).</p>`;
   document.querySelectorAll('.cal-ev').forEach(e => e.addEventListener('click', ev => { ev.stopPropagation(); openPassport(e.dataset.risk); }));
+  document.querySelectorAll('[data-open-session]').forEach(el => el.addEventListener('click', ev => {
+    ev.stopPropagation();
+    const [yy,mm,dd] = el.dataset.openSession.split('-').map(Number);
+    openSessionSummaryModal(yy,mm,dd);
+  }));
   document.querySelectorAll('.cal-cell[data-day]').forEach(c => c.addEventListener('click', () => openDayNotesModal(y, m, parseInt(c.dataset.day,10))));
 }
 function renderCalendarWeek(){
@@ -3794,7 +3917,8 @@ function renderCalendarWeek(){
       <div class="calw-dayhead${isToday?' today':''}"><div class="dow">${CAL_DOW_NAMES[(d.getDay()+6)%7]}</div><div class="dnum">${d.getDate()}</div></div>
       ${evs.map(e => `<div class="calw-card" style="background:${e.bg};color:${e.color};border-color:${e.color}33;" data-risk="${e.riskId}">
         <div class="ct">${e.overdue?'Просрочено':'Мероприятие'}</div><div class="cn">${esc(e.fullText.slice(0,50))}</div></div>`).join('')}
-      ${notes.map(n => { const t=noteType(n.type); return `<div class="calw-card" style="background:${t.bg};color:${t.color};border-color:${t.color}33;">
+      ${notes.map(n => { const t=noteType(n.type); const isSession = n.type==='session' && n.riskId;
+        return `<div class="calw-card" style="background:${t.bg};color:${t.color};border-color:${t.color}33;"${isSession?` data-open-session="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}"`:''}>
         <div class="ct">${esc(t.label)}</div><div class="cn">${esc(n.text.slice(0,50))}</div><div class="cm">${esc(n.author||'')}</div></div>`; }).join('')}
       <button type="button" class="btn btn-text btn-sm" data-add-note-day="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}" style="width:100%;">+ заметка</button>
     </div>`;
@@ -3802,6 +3926,10 @@ function renderCalendarWeek(){
 
   document.getElementById('calBody').innerHTML = `${kpi}<div class="calw-grid">${cols}</div>`;
   document.querySelectorAll('.calw-card[data-risk]').forEach(c => c.addEventListener('click', () => openPassport(c.dataset.risk)));
+  document.querySelectorAll('[data-open-session]').forEach(el => el.addEventListener('click', () => {
+    const [yy,mm,dd] = el.dataset.openSession.split('-').map(Number);
+    openSessionSummaryModal(yy,mm,dd);
+  }));
   document.querySelectorAll('[data-add-note-day]').forEach(b => b.addEventListener('click', () => {
     const [yy,mm,dd] = b.dataset.addNoteDay.split('-').map(Number);
     openDayNotesModal(yy,mm,dd);
@@ -3814,7 +3942,9 @@ function openDayNotesModal(y, m, d){
 }
 function dayNotesBodyHtml(y,m,d){
   const notes = notesFor(y,m,d);
-  return `<div id="dayNotesList">${notes.length ? notes.map(n => { const t=noteType(n.type); return `
+  const sessionRiskCount = notes.filter(n => n.type === 'session' && n.riskId).length;
+  return `${sessionRiskCount ? `<button type="button" class="btn btn-secondary btn-sm" id="dnOpenSessionSummary" style="width:100%;margin-bottom:12px;">Открыть сводку риск-сессии (${sessionRiskCount})</button>` : ''}
+    <div id="dayNotesList">${notes.length ? notes.map(n => { const t=noteType(n.type); return `
     <div class="cal-note-row"><div style="flex:1;"><div class="cal-note-type" style="color:${t.color}">${esc(t.label)}</div><div style="font-size:13px;margin-top:2px;">${esc(n.text)}</div>${n.author?`<div class="muted" style="font-size:11px;margin-top:2px;">${esc(n.author)}</div>`:''}${n.riskId?`<a href="#" data-open-risk-from-note="${n.riskId}" style="font-size:11px;font-weight:600;">Открыть риск →</a>`:''}</div>
       <button type="button" class="cal-note-del" data-del-note="${n.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`; }).join('') : '<p class="muted" style="font-size:12.5px;">Заметок пока нет.</p>'}</div>
     <div class="btn-row" style="margin:14px 0 8px;gap:8px;">
@@ -3825,6 +3955,8 @@ function dayNotesBodyHtml(y,m,d){
 }
 function wireDayNotesForm(y,m,d){
   enhanceSelectAsAutocomplete(document.getElementById('dnType'));
+  const summaryBtn = document.getElementById('dnOpenSessionSummary');
+  if (summaryBtn) summaryBtn.addEventListener('click', () => openSessionSummaryModal(y,m,d));
   document.querySelectorAll('[data-open-risk-from-note]').forEach(a => a.addEventListener('click', (e) => {
     e.preventDefault();
     closeModal('chartModalOverlay');
@@ -3843,6 +3975,96 @@ function wireDayNotesForm(y,m,d){
     saveState(); toast('Заметка добавлена');
     document.getElementById('chartModalMount').innerHTML = dayNotesBodyHtml(y,m,d); wireDayNotesForm(y,m,d); renderCalendar();
   });
+}
+
+// Сводка риск-сессии дня — карточка по образцу референса «Sprint Planning»
+// (участники/AI-сводка/решения/пункты действий), но целиком на реальных
+// данных обсуждаемых рисков: без выдуманных "team sentiment"/"participation
+// rate" — вместо них реальный % выполненных мероприятий и % рисков в зоне
+// High среди обсуждаемых (см. также комментарий в renderCalendarWeek про
+// «никаких выдуманных sentiment%/tickets»).
+function pluralRu(n, forms){
+  const n10 = n % 10, n100 = n % 100;
+  if (n10 === 1 && n100 !== 11) return forms[0];
+  if (n10 >= 2 && n10 <= 4 && (n100 < 10 || n100 >= 20)) return forms[1];
+  return forms[2];
+}
+function sessionAiSummaryText(risks, actions, doneActions, highCount){
+  const zoneWords = highCount ? `, из них ${highCount} ${pluralRu(highCount,['в зоне High','в зоне High','в зоне High'])}` : '';
+  const actionsWords = actions.length ? ` Из ${actions.length} ${pluralRu(actions.length,['мероприятия','мероприятий','мероприятий'])} выполнено ${doneActions}.` : ' Мероприятия по обсуждённым рискам пока не заведены.';
+  return `На сессии рассмотрено ${risks.length} ${pluralRu(risks.length,['риск','риска','рисков'])}${zoneWords}.${actionsWords}`;
+}
+function openSessionSummaryModal(y, m, d){
+  const notes = notesFor(y, m, d).filter(n => n.type === 'session');
+  const risks = notes.map(n => n.riskId ? findRisk(n.riskId) : null).filter(Boolean);
+  if (!risks.length) return;
+
+  const dateObj = new Date(y, m, d);
+  const isPast = dateObj < TODAY;
+  const attendeeNames = [...new Set(risks.flatMap(r => r.ownerNames))];
+  const actions = risks.flatMap(r => r.actions.map(a => ({...a, riskId:r.id})));
+  const doneActions = actions.filter(a => a.status === 'done').length;
+  const actionsPct = actions.length ? Math.round(doneActions / actions.length * 100) : 0;
+  const highCount = risks.filter(r => zoneOf(rraOf(r.p, r.iLevel)) === 'high').length;
+  const highPct = risks.length ? Math.round(highCount / risks.length * 100) : 0;
+
+  document.getElementById('sessionModalHead').innerHTML = `
+    <div class="session-modal-badges">
+      <span class="session-badge type">Риск-сессия</span>
+      <span class="session-badge ${isPast?'status-done':'status-planned'}">${isPast?'Проведена':'Запланирована'}</span>
+    </div>
+    <div class="session-modal-title">
+      <h3>Риск-сессия — ${risks.length} ${pluralRu(risks.length,['риск','риска','рисков'])}</h3>
+      <button type="button" class="modal-close" id="sessionModalCloseX"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="session-modal-date"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>${dateObj.toLocaleDateString('ru-RU',{weekday:'short', day:'numeric', month:'long'})}</div>`;
+
+  document.getElementById('sessionModalMount').innerHTML = `
+    <div class="session-sec">
+      <div class="session-sec-title">Участники (${attendeeNames.length})</div>
+      <div class="session-attendees">${attendeeNames.length ? attendeeNames.map(n => {
+        const parts = n.split(' ');
+        return `<span class="session-attendee-chip">${avatarHtml({firstName:parts[0]||'', lastName:parts[1]||'', size:22})}${esc(n)}</span>`;
+      }).join('') : '<span class="session-empty">Владельцы не указаны</span>'}</div>
+    </div>
+    <div class="session-sec">
+      <div class="session-stat-grid">
+        <div class="session-stat-card">
+          <div class="session-stat-label">Мероприятия выполнены</div>
+          <div class="session-stat-bar-row"><div class="session-stat-bar"><div class="session-stat-bar-fill" style="width:${actionsPct}%;background:var(--green-700);"></div></div><span class="session-stat-pct">${actionsPct}%</span></div>
+        </div>
+        <div class="session-stat-card">
+          <div class="session-stat-label">Рисков в зоне High</div>
+          <div class="session-stat-bar-row"><div class="session-stat-bar"><div class="session-stat-bar-fill" style="width:${highPct}%;background:var(--red-700);"></div></div><span class="session-stat-pct">${highPct}%</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="session-sec">
+      <div class="session-sec-title">AI-сводка</div>
+      <div class="session-ai-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg><span>${esc(sessionAiSummaryText(risks, actions, doneActions, highCount))}</span></div>
+    </div>
+    <div class="session-sec">
+      <div class="session-sec-title">Обсуждённые риски</div>
+      ${risks.map(r => `<div class="session-decision-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l2.5 2.5L16 9"/></svg><span><b>${esc(r.id)}</b> — ${esc(r.title)} · статус «${esc(r.status)}»</span></div>`).join('')}
+    </div>
+    <div class="session-sec" style="margin-bottom:0;">
+      <div class="session-sec-title">Мероприятия (${doneActions}/${actions.length} выполнено)</div>
+      ${actions.length ? actions.map(a => `<div class="session-action-row${a.status==='done'?' done':''}"><span class="session-action-check">${a.status==='done'?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>':''}</span><span>${esc(a.title)}</span></div>`).join('') : '<span class="session-empty">Мероприятий по этим рискам пока нет.</span>'}
+    </div>`;
+
+  document.getElementById('sessionModalFoot').innerHTML = `
+    <button type="button" class="btn btn-text" id="sessionModalCloseBtn">Закрыть</button>
+    ${risks.length === 1 ? `<button type="button" class="btn btn-primary" id="sessionOpenRiskBtn">Открыть риск →</button>` : ''}`;
+
+  document.getElementById('sessionModalCloseX').addEventListener('click', () => closeModal('sessionModalOverlay'));
+  document.getElementById('sessionModalCloseBtn').addEventListener('click', () => closeModal('sessionModalOverlay'));
+  if (risks.length === 1){
+    document.getElementById('sessionOpenRiskBtn').addEventListener('click', () => {
+      closeModal('sessionModalOverlay');
+      openPassport(risks[0].id);
+    });
+  }
+  openModal('sessionModalOverlay');
 }
 
 // ===================================================================
