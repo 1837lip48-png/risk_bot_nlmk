@@ -11,13 +11,11 @@
     --logo-blue:#0b5fc2;
     --ai-700:#6E4CD6; --ai-50:#F1ECFC;
     --purple-700:#7c5cff; --purple-50:#efeaff;
-    /* Акцентные цвета ролей на экране входа — каждая роль получает свой,
-       явно отличимый от других цвет (не варианты одного сине-бирюзового
-       оттенка), та же палитра, что и у индивидуального цвета пользователя
-       после входа (см. USER_COLOR_PALETTE). */
-    --role-manager-1:#112542; --role-manager-2:#167ffb;
-    --role-owner-1:#5b21b6; --role-owner-2:#8b5cf6;
-    --role-initiator-1:#92400e; --role-initiator-2:#d97706;
+    /* Акцентные цвета ролей на экране входа — только для иконки роли, в холодной
+       сине-бирюзовой гамме бренда, различаются по тону, а не по «типу сигнала». */
+    --role-manager-1:var(--navy-900); --role-manager-2:var(--accent-600);
+    --role-owner-1:var(--accent-600); --role-owner-2:#17b6c4;
+    --role-initiator-1:var(--logo-blue); --role-initiator-2:#4f6fe0;
     --role-active-bg:var(--accent-50);
     --font-display:'Golos Text','PT Root UI','Segoe UI',Arial,sans-serif;
     --font-body:'Golos Text','PT Root UI','Segoe UI',Arial,sans-serif;
