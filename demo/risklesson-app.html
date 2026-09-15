@@ -372,15 +372,16 @@
   .ws-sidebar.expanded .ws-brand .name{opacity:1; max-width:160px;}
   .ws-nav{flex:1; display:flex; flex-direction:column; overflow-y:auto; overflow-x:hidden;}
   .ws-nav-item{display:flex; align-items:center; gap:12px; padding:10px 11px; border-radius:8px; border:none;
-    background:none; color:#aab4c4; font-size:13.5px; font-weight:600; cursor:pointer; text-align:left; width:100%;}
+    background:none; color:rgba(255,255,255,.75); font-size:13.5px; font-weight:600; cursor:pointer; text-align:left; width:100%;}
   .ws-nav-item span{white-space:nowrap; overflow:hidden; opacity:0; max-width:0; transition:.3s ease;}
   .ws-sidebar.expanded .ws-nav-item span{opacity:1; max-width:160px;}
   .ws-nav-item svg{width:18px; height:18px; flex-shrink:0;}
-  .ws-nav-item:hover{background:rgba(255,255,255,.07); color:#fff;}
-  .ws-nav-item.active{background:rgba(255,255,255,.1); color:#fff;}
-  .ws-nav-item.active svg{color:var(--accent-500);}
-  .ws-signout{margin-left:-2px; background:none; border:none; color:#8b96aa; cursor:pointer; padding:5px; border-radius:4px;
+  .ws-nav-item:hover{background:rgba(255,255,255,.14); color:#fff;}
+  .ws-nav-item.active{background:rgba(255,255,255,.22); color:#fff;}
+  .ws-nav-item.active svg{color:#fff;}
+  .ws-signout{margin-left:-2px; background:none; border:none; color:rgba(255,255,255,.75); cursor:pointer; padding:5px; border-radius:4px;
     flex-shrink:0; opacity:0; width:0; transition:.3s ease;}
+  .ws-signout:hover{color:#fff; background:rgba(255,255,255,.14);}
   .ws-sidebar.expanded .ws-signout{opacity:1; width:24px;}
   .ws-signout svg{width:14px; height:14px;}
 
