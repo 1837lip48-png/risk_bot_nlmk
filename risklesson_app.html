@@ -2044,6 +2044,12 @@ const lastNameInput = document.getElementById('lastName');
 document.querySelectorAll('.role-card').forEach(card => {
   card.addEventListener('click', () => {
     selectedRole = card.dataset.value;
+    // Поля шага 2 — с чистого листа при каждом новом выборе роли: без
+    // сброса здесь данные предыдущего входа (например, после «Выйти» и
+    // возврата на выбор роли) оставались в незакрытых <input>, и следующий
+    // пользователь видел чужие имя/фамилию/СПП уже подставленными.
+    [firstNameInput, lastNameInput, sppInput, emailInput].forEach(inp => { inp.value = ''; inp.classList.remove('err'); });
+    document.querySelectorAll('#entryForm .field').forEach(f => f.classList.remove('invalid'));
     // Email нужен только для роли Инициатор — по нему потом можно связаться
     // с автором риска, у риск-менеджера/владельца эта связь и так есть в АД.
     document.getElementById('emailField').hidden = selectedRole !== 'initiator';
