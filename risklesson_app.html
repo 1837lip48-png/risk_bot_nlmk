@@ -2148,6 +2148,21 @@ function returnToRoleSelect(){
   document.getElementById('loginScreen').hidden = false;
   selectedRole = '';
 }
+// Esc — быстрый выход из текущей роли на выбор роли. Сначала отдаётся
+// открытым модалкам/панелям (закрыть их — более ожидаемое поведение Esc,
+// чем внезапный выход из роли посреди редактирования), выход происходит
+// только когда ничего поверх интерфейса не открыто.
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  const openModals = document.querySelectorAll('.modal-overlay.show');
+  if (openModals.length){ closeModal(openModals[openModals.length - 1].id); return; }
+  const profilePanel = document.getElementById('profilePanel');
+  const notifPanel = document.getElementById('notifPanel');
+  if (profilePanel && !profilePanel.hidden){ profilePanel.hidden = true; return; }
+  if (notifPanel && !notifPanel.hidden){ notifPanel.hidden = true; return; }
+  if (!state.session) return;
+  if (state.session.role === 'initiator') returnToRoleSelect(); else signOut();
+});
 
 // ===================================================================
 // WORKSPACE SHELL
@@ -2375,7 +2390,7 @@ function enhanceSelectAsAutocomplete(selectEl, placeholder){
   input.addEventListener('click', openMenu);
   input.addEventListener('input', () => { renderMenu(input.value); menu.hidden = false; wrap.classList.add('open'); });
   input.addEventListener('blur', () => { setTimeout(() => { syncAc(selectEl.id); closeMenu(); }, 120); });
-  input.addEventListener('keydown', e => { if (e.key === 'Escape'){ syncAc(selectEl.id); closeMenu(); input.blur(); } });
+  input.addEventListener('keydown', e => { if (e.key === 'Escape'){ e.stopPropagation(); syncAc(selectEl.id); closeMenu(); input.blur(); } });
   syncAc(selectEl.id);
 }
 function syncAc(id){
