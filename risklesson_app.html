@@ -2147,6 +2147,16 @@ function returnToRoleSelect(){
   document.getElementById('initiatorScreen').hidden = true;
   document.getElementById('loginScreen').hidden = false;
   selectedRole = '';
+  // #riskForm — общий DOM-узел: enterInitiatorScreen() физически переносит
+  // его (appendChild) из модалки «Новый риск» на отдельный экран Инициатора.
+  // Без возврата назад следующий вход риск-менеджером/владельцем открывал
+  // модалку уже без формы внутри (пустое место между подзаголовком и
+  // кнопками — все поля, включая владельца, «висели» в скрытом initiatorScreen).
+  const modalScroll = document.querySelector('#riskModalOverlay .modal-card-scroll');
+  const riskForm = document.getElementById('riskForm');
+  if (modalScroll && riskForm && riskForm.parentElement !== modalScroll){
+    modalScroll.insertBefore(riskForm, modalScroll.querySelector('.btn-row'));
+  }
 }
 // Esc — быстрый выход из текущей роли на выбор роли. Сначала отдаётся
 // открытым модалкам/панелям (закрыть их — более ожидаемое поведение Esc,
@@ -3056,6 +3066,13 @@ function openRiskCreateModal(prefill){
   renderOwnerChips(); toggleOwnerMenu(false);
   document.getElementById('rStrategyRationale').value = '';
   document.getElementById('rStrategyRationaleField').hidden = true;
+  // «Причина»/«Владелец» — enterInitiatorScreen() скрывает их на общем узле
+  // #riskForm для узкой формы подачи риска Инициатором; эта функция открывает
+  // полную форму (риск-менеджер/владелец), поэтому всегда возвращает оба поля
+  // видимыми — иначе после визита в роль Инициатора они оставались скрытыми
+  // и здесь (тот же DOM-элемент, hidden не сбрасывался обратно).
+  document.querySelector('.field[data-field="rOwner"]').hidden = false;
+  document.querySelector('.field[data-field="rCause"]').hidden = false;
   document.getElementById('riskSourceQuote').innerHTML = (prefill && prefill.sourceQuote)
     ? `<div class="source-quote" style="margin-bottom:12px;">Источник — урок <code class="mono">${prefill.sourceLessonId}</code>: «${esc(prefill.sourceQuote)}»</div>` : '';
   hideAiHint('dupHint'); hideAiHint('lessonHint');
