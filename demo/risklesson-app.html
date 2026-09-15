@@ -1255,6 +1255,12 @@ function userColorPair(name){
   for (let i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) | 0;
   return USER_COLOR_PALETTE[Math.abs(h) % USER_COLOR_PALETTE.length];
 }
+// Цвет рабочего пространства по роли — те же градиенты, что у иконки роли
+// на экране входа (--role-manager-1/2 у щита, --role-owner-1/2 у человека).
+const ROLE_SIDEBAR_COLORS = {
+  riskmanager: ['#112542','#167ffb'],
+  riskowner: ['#167ffb','#17b6c4'],
+};
 
 // ===================================================================
 // Pagination (@nlmk/ds-2.0) — единый компонент постраничной навигации для
@@ -1811,7 +1817,11 @@ function enterWorkspace(){
 
   const isOwner = state.session.role === 'riskowner';
   buildNav(state.session.role);
-  document.getElementById('wsSidebar').style.background = `linear-gradient(165deg, ${userColors[0]}, ${userColors[1]} 150%)`;
+  // Фон рабочего пространства — цвет роли (тот же градиент, что и у иконки
+  // роли на входе: щит → риск-менеджер, человек → владелец риска), а не
+  // индивидуальный per-user цвет — так пространство сразу узнаётся по роли.
+  const sidebarColors = ROLE_SIDEBAR_COLORS[state.session.role] || userColors;
+  document.getElementById('wsSidebar').style.background = `linear-gradient(165deg, ${sidebarColors[0]}, ${sidebarColors[1]} 150%)`;
 
   populateCategorySelect(document.getElementById('rCategory'));
   populateCategorySelect(document.getElementById('regFiltCat'));
