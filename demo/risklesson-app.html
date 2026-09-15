@@ -567,6 +567,7 @@
   .search-box svg{position:absolute; left:11px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:var(--ink-400);}
   .search-box input{width:100%; height:36px; padding:0 12px 0 34px; border-radius:var(--radius-field); border:1px solid var(--line);
     background:var(--paper-0); color:var(--ink-900); font-size:13px;}
+  .search-box input:focus{outline:none; border-color:var(--accent-600); box-shadow:0 0 0 3px var(--accent-100);}
   .toolbar-row select{border:1px solid var(--line); border-radius:var(--radius-field); padding:8px 30px 8px 12px; font-size:12.5px;
     background:var(--paper-0); color:var(--ink-900); cursor:pointer; appearance:none; background-repeat:no-repeat; background-position:right 10px center; background-size:13px;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2399a2a9' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");}
@@ -1963,11 +1964,40 @@ function renderProfilePanel(roleColors){
       </div>
     </div>
     <hr>
+    <button type="button" class="profile-item" id="profileDashboardBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>Мой дэшборд</button>
+    <button type="button" class="profile-item" id="profileTeamBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><circle cx="18" cy="8.5" r="2.6"/><path d="M15.5 13.6c2.9.4 5 2.8 5 6.4h-3"/></svg>Моя команда</button>
+    <button type="button" class="profile-item" id="profileTicketsBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M13 6v12" stroke-dasharray="2 2"/></svg>Мои тикеты</button>
+    <button type="button" class="profile-item" id="profileTasksBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6z"/><path d="M15 3v3h3"/><path d="M9 12h6M9 16h6"/></svg>Мои задачи</button>
+    <hr>
     <button type="button" class="profile-item" id="profileSettingsBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Настройки</button>
     <button type="button" class="profile-item" id="profileHelpBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.7-2.2 2-2.5 3.5"/><path d="M12 17h.01"/></svg>Помощь и поддержка</button>
     <hr>
     <button type="button" class="profile-item danger" id="profileSignOutBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>Выйти</button>
   `;
+  // «Мой дэшборд» — реальная навигация (для владельца риска домашняя
+  // страница — «Мои риски», отдельного Дэшборда у роли нет, см. NAV_BY_ROLE).
+  document.getElementById('profileDashboardBtn').addEventListener('click', () => {
+    document.getElementById('profilePanel').hidden = true;
+    gotoPage(state.session.role === 'riskowner' ? 'register' : 'dashboard');
+  });
+  // «Моя команда» / «Мои тикеты» — в модели RiskLesson нет отдельного
+  // справочника команды или тикет-системы (см. process_full_v4.md) —
+  // демо-заглушки, как «Настройки»/«Помощь».
+  document.getElementById('profileTeamBtn').addEventListener('click', () => {
+    document.getElementById('profilePanel').hidden = true;
+    toast('Моя команда', {body:'Демо-прототип: раздел недоступен в этой версии.', duration:4000});
+  });
+  document.getElementById('profileTicketsBtn').addEventListener('click', () => {
+    document.getElementById('profilePanel').hidden = true;
+    toast('Мои тикеты', {body:'Демо-прототип: раздел недоступен в этой версии.', duration:4000});
+  });
+  // «Мои задачи» — реальные данные: та же логика просрочек/эскалации,
+  // что и в колокольчике уведомлений (renderNotifBell), не выдуманный список.
+  document.getElementById('profileTasksBtn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.getElementById('profilePanel').hidden = true;
+    document.getElementById('notifPanel').hidden = false;
+  });
   document.getElementById('profileSettingsBtn').addEventListener('click', () => {
     document.getElementById('profilePanel').hidden = true;
     toast('Настройки', {body:'Демо-прототип: раздел настроек недоступен в этой версии.', duration:4000});
@@ -3884,7 +3914,14 @@ function renderCalendarMonth(){
     const [yy,mm,dd] = el.dataset.openSession.split('-').map(Number);
     openSessionSummaryModal(yy,mm,dd);
   }));
-  document.querySelectorAll('.cal-cell[data-day]').forEach(c => c.addEventListener('click', () => openDayNotesModal(y, m, parseInt(c.dataset.day,10))));
+  // Клик по дню с запланированной/проведённой риск-сессией — сразу сводка
+  // встречи (шапка/участники/AI-сводка/решения/пункты действий); по обычному
+  // дню — как раньше, форма заметок (добавить встречу/просмотр/согласование).
+  document.querySelectorAll('.cal-cell[data-day]').forEach(c => c.addEventListener('click', () => {
+    const dd = parseInt(c.dataset.day,10);
+    const hasSession = notesFor(y,m,dd).some(n => n.type === 'session' && n.riskId);
+    hasSession ? openSessionSummaryModal(y,m,dd) : openDayNotesModal(y,m,dd);
+  }));
 }
 function renderCalendarWeek(){
   // Понедельник недели, содержащей calDate
@@ -4044,8 +4081,11 @@ function openSessionSummaryModal(y, m, d){
       <div class="session-ai-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg><span>${esc(sessionAiSummaryText(risks, actions, doneActions, highCount))}</span></div>
     </div>
     <div class="session-sec">
-      <div class="session-sec-title">Обсуждённые риски</div>
-      ${risks.map(r => `<div class="session-decision-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l2.5 2.5L16 9"/></svg><span><b>${esc(r.id)}</b> — ${esc(r.title)} · статус «${esc(r.status)}»</span></div>`).join('')}
+      <div class="session-sec-title">Ключевые решения</div>
+      ${risks.map(r => {
+        const decision = r.committeeDecision ? `решение комитета: «${esc(r.committeeDecision)}»` : `статус переведён в «${esc(r.status)}»`;
+        return `<div class="session-decision-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l2.5 2.5L16 9"/></svg><span><b>${esc(r.id)}</b> — ${esc(r.title)}: ${decision}</span></div>`;
+      }).join('')}
     </div>
     <div class="session-sec" style="margin-bottom:0;">
       <div class="session-sec-title">Мероприятия (${doneActions}/${actions.length} выполнено)</div>
