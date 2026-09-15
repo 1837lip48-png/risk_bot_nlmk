@@ -611,6 +611,10 @@
   .events-table td{padding:7px 8px 7px 0; border-top:1px solid var(--line);}
   .ai-insight-row{display:flex; gap:8px; align-items:flex-start; padding:9px 11px; background:var(--canvas); border-radius:8px; font-size:12.5px; margin-bottom:6px;}
   .ai-insight-row svg{width:14px; height:14px; flex-shrink:0; margin-top:1px; color:var(--accent-600);}
+  .ai-insights-block{margin-top:14px; padding-top:12px; border-top:1px solid var(--line);}
+  .ai-insights-block .ai-insight-row:last-child{margin-bottom:0;}
+  .ai-insights-title{display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; color:var(--gold-700); margin-bottom:9px;}
+  .ai-insights-title svg{width:13px; height:13px;}
 
   .toolbar-row{display:flex; gap:10px; align-items:center; margin-bottom:16px; flex-wrap:wrap;}
   .quick-chip{display:inline-flex; align-items:center; gap:8px; background:var(--accent-50); color:var(--accent-600);
@@ -830,6 +834,28 @@
     background:var(--purple-50); border-radius:var(--radius-field); margin-bottom:8px; font-size:12.5px; flex-wrap:wrap;}
   .ai-suggest-row .t{flex:1; min-width:220px; color:var(--ink-900);}
   .ai-suggest-row .score{font-family:var(--font-mono); font-size:11px; color:var(--ai-700); font-weight:700;}
+  .es-risk-level-row{display:flex; align-items:center; gap:8px;}
+  .es-trend-word{display:inline-flex; align-items:center; gap:3px; font-size:11px; font-weight:700;}
+  .es-trend-word svg{width:12px; height:12px;}
+  .es-trend-word.improving{color:var(--green-700);} .es-trend-word.worsening{color:var(--red-700);} .es-trend-word.stable{color:var(--ink-400);}
+  .decision-row{display:flex; align-items:flex-start; gap:12px; padding:12px 14px; border:1px solid var(--line); border-radius:var(--radius-field); margin-bottom:10px; flex-wrap:wrap;}
+  .decision-row-main{flex:1; min-width:220px;}
+  .decision-row-title{font-size:13px; font-weight:700; color:var(--ink-900); margin-bottom:4px;}
+  .decision-row-meta{font-size:11.5px; color:var(--ink-600); display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+  .decision-row-actions{display:flex; gap:8px; flex-shrink:0;}
+  .wt-row{padding:12px 14px; border:1px solid var(--line); border-radius:var(--radius-field); margin-bottom:10px;}
+  .wt-row-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px; flex-wrap:wrap;}
+  .wt-row-title{font-size:13px; font-weight:700; color:var(--ink-900);}
+  .wt-row-damage{font-size:11.5px; color:var(--ink-600); display:flex; gap:14px; flex-wrap:wrap; margin-top:6px;}
+  .wt-row-damage b{color:var(--ink-900);}
+  .rt-toolbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .rt-card{border:1px solid var(--line); border-radius:var(--radius-field); padding:14px 16px; margin-bottom:10px;}
+  .rt-card-head{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px;}
+  .rt-card-title{font-size:13.5px; font-weight:700; color:var(--ink-900);}
+  .rt-card-desc{font-size:12px; color:var(--ink-600); margin-bottom:8px;}
+  .rt-card-meta{font-size:11px; color:var(--ink-400); display:flex; gap:14px; flex-wrap:wrap;}
+  .rt-card-actions{display:flex; gap:8px; flex-shrink:0; margin-left:auto;}
+  .rt-card-row{display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap;}
 
   /* ===== Паспорт риска ===== */
   .passport-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:16px;}
@@ -1730,6 +1756,7 @@ function computeKpiSnapshot(risks){
       const d = parseRuShortDate(a.plannedDate);
       return d && d < TODAY;
     }).length,
+    escalated: active.filter(r => r.committeeFlag).length,
   };
 }
 function freshState(){
@@ -2326,6 +2353,12 @@ function openChartModal(title, sub, bodyHtml){
 function aiInsightRow(text){
   return `<div class="ai-insight-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg><span>${text}</span></div>`;
 }
+// «AI Insights» под графиками дэшборда (Блок 4, п.6) — 2-3 кратких наблюдения,
+// каждое посчитано из тех же реальных данных, что уже отрисованы в графике
+// над блоком, не выдуманный текст.
+function aiInsightsBlock(lines){
+  return `<div class="ai-insights-block"><div class="ai-insights-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg>AI Insights</div>${lines.map(t=>aiInsightRow(t)).join('')}</div>`;
+}
 
 // ===== Колокольчик уведомлений — реальные данные: просроченные мероприятия,
 // риски на эскалации, риски без оценки P/I дольше всего в очереди =====
@@ -2386,6 +2419,34 @@ function renderDashboard(){
   const recentAudit = state.audit.slice(-6).reverse();
   const draftLessons = state.lessons.filter(l => l.isDraft).slice(0,4);
 
+  // AI Insights под графиками (Блок 4, п.6) — короткие наблюдения, каждое
+  // посчитано из тех же данных, что уже в графике над блоком.
+  const catRows = byCat.filter(c=>c.count).sort((a,b)=>b.count-a.count);
+  const catInsights = catRows.length ? [
+    `Больше всего рисков в категории «${esc(catRows[0].label)}» — ${catRows[0].count} из ${risks.length} (${Math.round(catRows[0].count/risks.length*100)}%).`,
+    `Категорий без единого риска: ${CATEGORIES.length - catRows.length} из ${CATEGORIES.length}.`,
+  ] : [`Активных рисков в портфеле пока нет.`];
+  const statusRows = byStatus.filter(s=>s.count).sort((a,b)=>b.count-a.count);
+  const closedCount = risks.filter(r=>r.status==='Закрыт').length;
+  const statusInsights = statusRows.length ? [
+    `Больше всего рисков в статусе «${statusRows[0].label}» — ${statusRows[0].count} (${Math.round(statusRows[0].count/risks.length*100)}%).`,
+    closedCount ? `Уже закрыто: ${closedCount} ${pluralRu(closedCount,['риск','риска','рисков'])}.` : `Пока ни один риск не закрыт.`,
+  ] : [`Статусы ещё не распределены.`];
+  const peakMonth = monthData.slice().sort((a,b)=>b.count-a.count)[0];
+  const monthInsights = (peakMonth && peakMonth.count) ? [
+    `Пик нагрузки — ${esc(peakMonth.label)}: ${peakMonth.count} ${pluralRu(peakMonth.count,['мероприятие','мероприятия','мероприятий'])} в работе/план.`,
+    `Всего в очереди (не выполнено и не отклонено): ${allActions.filter(a=>a.status!=='done'&&a.status!=='rejected').length}.`,
+  ] : [`Плановых мероприятий в работе пока нет.`];
+  const worstCell = matrixCells.filter(c=>c.count).sort((a,b)=>b.rra-a.rra)[0];
+  const matrixInsights = worstCell ? [
+    `Самая заполненная ячейка — P=${worstCell.p}, I=${worstCell.i} (RRA=${worstCell.rra}): ${worstCell.count} ${pluralRu(worstCell.count,['риск','риска','рисков'])}.`,
+    `${highCount} из ${risks.length} рисков — в зоне High (RRA 6–9).`,
+  ] : [`Оценённых по P×I рисков пока нет.`];
+  const top5Insights = top5.length ? [
+    `Максимальный RRA в портфеле — ${rraOf(top5[0].p,top5[0].iLevel) ?? '—'} («${esc(top5[0].title.slice(0,44))}${top5[0].title.length>44?'…':''}»).`,
+    `Среди топ-5 ${top5.filter(r=>r.committeeFlag).length} ${pluralRu(top5.filter(r=>r.committeeFlag).length,['риск требует','риска требуют','рисков требуют'])} решения комитета.`,
+  ] : [`Оценённых по P×I рисков пока нет.`];
+
   renderNotifBell();
 
   const el = document.getElementById('dashMount');
@@ -2421,24 +2482,29 @@ function renderDashboard(){
     <div class="panel-2col">
       <div class="panel"><h3>Риски по категориям <button type="button" class="panel-expand" id="expCat" title="Развернуть"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg></button></h3>
         ${svgBarChartRows(byCat.filter(c=>c.count))}
+        ${aiInsightsBlock(catInsights)}
       </div>
       <div class="panel"><h3>Риски по статусу <button type="button" class="panel-expand" id="expStatus" title="Развернуть"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg></button></h3>
         <div class="donut-wrap">${svgDonutHtml(byStatus)}<div class="donut-legend">${byStatus.map(s=>`<div class="donut-legend-item" data-goto-status="${esc(s.key)}"><span class="donut-legend-dot" style="background:${s.color}"></span>${s.label} — <b>${s.count}</b></div>`).join('')}</div></div>
+        ${aiInsightsBlock(statusInsights)}
       </div>
     </div>
 
     <div class="panel">
       <h3>Мероприятия по плановым месяцам (в работе/план) <button type="button" class="panel-expand" id="expMonths" title="Развернуть"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg></button></h3>
       ${svgLineChartHtml(monthData)}
+      ${aiInsightsBlock(monthInsights)}
     </div>
 
     <div class="panel-2col">
       <div class="panel"><h3>Матрица критичности</h3>
         <div class="mini-matrix">${matrixCells.map(c => `<div class="mini-matrix-cell" data-mini-cell="${c.p}-${c.i}" style="background:${c.rra>=6?'var(--red-700)':c.rra>=3?'var(--amber-700)':'var(--green-700)'};opacity:${c.count?1:.35};">${c.count||''}</div>`).join('')}</div>
         <div class="muted" style="font-size:11px;margin-top:8px;">P (ось X) × I (ось Y, снизу вверх) → RRA</div>
+        ${aiInsightsBlock(matrixInsights)}
       </div>
       <div class="panel"><h3>Топ-5 рисков по критичности</h3>
         ${top5.length ? top5.map((r,idx) => `<div class="top5-row" data-open-risk="${r.id}"><span class="top5-rank">${idx+1}</span><span class="top5-title" title="${esc(r.title)}">${esc(r.title)}</span><span class="badge-pill ${ZONE_BADGE[zoneOf(rraOf(r.p,r.iLevel))]||''}">${r.p&&r.iLevel?rraOf(r.p,r.iLevel):'—'}</span></div>`).join('') : '<p class="muted">Нет данных</p>'}
+        ${aiInsightsBlock(top5Insights)}
       </div>
     </div>
 
@@ -4629,8 +4695,116 @@ function renderPremortem(){
 }
 
 // ===================================================================
-// PRIVACY REPORTS & ANALYTICS
+// PRIVACY REPORTS & ANALYTICS (Блок 4 — AI-отчёт)
 // ===================================================================
+// «Ухудшающийся тренд» (п.4 ТЗ) — в демо-модели нет истории P/I риска во
+// времени (единственная точка отсчёта, state.baseline, хранит только
+// агрегаты портфеля, не per-риск), поэтому вместо выдуманной динамики
+// используем реальный композитный индикатор: просроченные/отклонённые
+// мероприятия + материальность I=3 + текущая зона RRA.
+function deteriorationScore(r){
+  const overdue = r.actions.filter(a => { if (a.status==='done'||a.status==='rejected') return false; const d=parseRuShortDate(a.plannedDate); return d && d<TODAY; }).length;
+  const rejected = r.actions.filter(a=>a.status==='rejected').length;
+  const rra = rraOf(r.p, r.iLevel) || 0;
+  return overdue*3 + rejected*2 + (r.committeeFlag?2:0) + rra;
+}
+function worseningFactorsText(r){
+  const overdue = r.actions.filter(a => { if (a.status==='done'||a.status==='rejected') return false; const d=parseRuShortDate(a.plannedDate); return d && d<TODAY; }).length;
+  const rejected = r.actions.filter(a=>a.status==='rejected').length;
+  const parts = [];
+  if (overdue) parts.push(`${overdue} ${pluralRu(overdue,['мероприятие просрочено','мероприятия просрочено','мероприятий просрочено'])}`);
+  if (rejected) parts.push(`${rejected} ${pluralRu(rejected,['мероприятие отклонено','мероприятия отклонено','мероприятий отклонено'])}`);
+  if (r.committeeFlag) parts.push('материальность I=3 (эскалация комитету)');
+  if (zoneOf(rraOf(r.p,r.iLevel)) === 'high') parts.push('текущая зона RRA — High');
+  return parts.length ? parts.join(', ') : 'явных факторов ухудшения не выявлено';
+}
+function damageEstimateHtml(r){
+  const sum = r.quantBudgetImpactMln!=null ? `${r.quantBudgetImpactMln} млн ₽` : 'не оценено';
+  const nearestOverdue = r.actions.map(a=>({a,d:parseRuShortDate(a.plannedDate)}))
+    .filter(x=>x.d && x.a.status!=='done' && x.a.status!=='rejected' && x.d<TODAY).sort((a,b)=>a.d-b.d)[0];
+  const term = r.quantScheduleImpactMonths!=null ? `${r.quantScheduleImpactMonths} мес.` : (nearestOverdue ? `план ${nearestOverdue.a.plannedDate} (просрочено)` : '—');
+  return `<span>Ущерб (бюджет): <b>${sum}</b></span><span>Срок: <b>${term}</b></span>`;
+}
+function worseningRowHtml(r, idx){
+  const zone = zoneOf(rraOf(r.p, r.iLevel));
+  return `<div class="wt-row">
+    <div class="wt-row-head">
+      <span class="wt-row-title">${idx+1}. <a href="#" data-open-risk="${r.id}">${esc(r.id)}</a> — ${esc(r.title.slice(0,60))}${r.title.length>60?'…':''}</span>
+      ${zone ? `<span class="badge-pill ${ZONE_BADGE[zone]}">${ZONE_LABEL[zone]} (RRA=${rraOf(r.p,r.iLevel)})</span>` : ''}
+    </div>
+    ${aiInsightRow('AI: ухудшение — ' + esc(worseningFactorsText(r)) + '.')}
+    <div class="wt-row-damage">${damageEstimateHtml(r)}</div>
+  </div>`;
+}
+// «Решения, требующие принятия» (п.2-3 ТЗ) — реальные риски с материальностью
+// I=3, ожидающие решения комитета (committeeFlag=true, committeeDecision пуст).
+function decisionRowHtml(r){
+  const zone = zoneOf(rraOf(r.p, r.iLevel));
+  return `<div class="decision-row">
+    <div class="decision-row-main">
+      <div class="decision-row-title"><a href="#" data-open-risk="${r.id}">${esc(r.id)}</a> — ${esc(r.title)}</div>
+      <div class="decision-row-meta">
+        <span>${esc(r.category)}</span>
+        ${zone ? `<span class="badge-pill ${ZONE_BADGE[zone]}">${ZONE_LABEL[zone]} (RRA=${rraOf(r.p,r.iLevel)})</span>` : ''}
+        <span>Владелец: ${esc(r.ownerNames.join(', ')||'—')}</span>
+      </div>
+    </div>
+    <div class="decision-row-actions">
+      <button type="button" class="btn btn-secondary btn-sm" data-schedule-committee="${r.id}">К рассмотрению</button>
+      <button type="button" class="btn btn-primary btn-sm" data-approve-decision="${r.id}">Одобрить</button>
+    </div>
+  </div>`;
+}
+// Назначить рассмотрение риск-комитетом с датой — та же модель dayNotes
+// (тип 'session'), что и повестка риск-сессии, поэтому появляется и в
+// Календаре, и в сводке риск-сессии (Блок 3a/3b), п.3 ТЗ.
+function openScheduleCommitteeModal(r){
+  const body = `
+    <div class="field"><label>Дата рассмотрения риск-комитетом</label><input type="date" id="commDateInput" value="${isoDatePlus(7)}"></div>
+    <div class="btn-row" style="margin-top:10px;"><button type="button" class="btn btn-primary" id="commSubmitBtn" style="flex:1;">Назначить рассмотрение</button></div>`;
+  openChartModal('Назначить рассмотрение риск-комитетом', `Риск: «${r.title}»`, body);
+  document.getElementById('commSubmitBtn').addEventListener('click', () => {
+    const val = document.getElementById('commDateInput').value;
+    if (!val){ toast('Выберите дату'); return; }
+    const [y,m,d] = val.split('-').map(Number);
+    const key = dayKey(y, m-1, d);
+    (state.dayNotes[key] = state.dayNotes[key]||[]).push({id:uid('note'), type:'session',
+      text:'Рассмотрение риск-комитетом: ' + r.title, author:sessionName(), createdAt:nowStr(), riskId:r.id, durationMin:60});
+    saveState(); closeModal('chartModalOverlay');
+    toast('Рассмотрение назначено', {body: new Date(y,m-1,d).toLocaleDateString('ru-RU'), duration:4000});
+  });
+}
+// Шаблоны отчётов (п.7 ТЗ) — фиксированный набор из 3 отчётов, актуальных
+// для процесса RiskLesson (portfolio/committee/lessons); даты «последний раз»/
+// «следующий» считаются из текущей условной даты TODAY, не выдумываются.
+function buildReportTemplates(){
+  const startOfMonth = new Date(TODAY.getFullYear(), TODAY.getMonth(), 1);
+  const nextMonth = new Date(TODAY.getFullYear(), TODAY.getMonth()+1, 1);
+  return [
+    {title:'Ежемесячный отчёт по рискам портфеля', tag:'Риск-менеджмент', status:'Актуален',
+     desc:'Комплексный обзор портфеля рисков и статуса мероприятий за месяц.',
+     freq:'Ежемесячно', lastGen: startOfMonth.toLocaleDateString('ru-RU'), nextDue: nextMonth.toLocaleDateString('ru-RU')},
+    {title:'Отчёт для риск-комитета', tag:'Эскалации', status:'По требованию',
+     desc:'Риски с материальностью I=3 и решения, требующие принятия комитетом.',
+     freq:'По требованию', lastGen:'—', nextDue:'—'},
+    {title:'Отчёт по урокам проекта', tag:'База знаний', status:'Актуален',
+     desc:'Сводка уроков, извлечённых из закрытых рисков, с хештегами и повторяемостью.',
+     freq:'Ежеквартально', lastGen: startOfMonth.toLocaleDateString('ru-RU'), nextDue: nextMonth.toLocaleDateString('ru-RU')},
+  ];
+}
+function templateCardHtml(t, idx){
+  return `<div class="rt-card"><div class="rt-card-row">
+    <div>
+      <div class="rt-card-head"><span class="rt-card-title">${esc(t.title)}</span><span class="badge-pill" style="background:var(--red-50);color:var(--red-700);">${esc(t.tag)}</span><span class="badge-pill" style="background:var(--green-50);color:var(--green-700);">${esc(t.status)}</span></div>
+      <div class="rt-card-desc">${esc(t.desc)}</div>
+      <div class="rt-card-meta"><span>Периодичность: ${esc(t.freq)}</span><span>Последний раз: ${esc(t.lastGen)}</span><span>Следующий: ${esc(t.nextDue)}</span></div>
+    </div>
+    <div class="rt-card-actions">
+      <button type="button" class="btn btn-secondary btn-sm" data-download-template="${idx}">Скачать</button>
+      <button type="button" class="btn btn-primary btn-sm" data-generate-template="${idx}">Сгенерировать</button>
+    </div>
+  </div></div>`;
+}
 function renderReports(){
   const risks = state.risks.filter(r=>r.status!=='Архивирован');
   const highs = risks.filter(r=>zoneOf(rraOf(r.p,r.iLevel))==='high');
@@ -4639,6 +4813,19 @@ function renderReports(){
   const overdueRisks = risks.filter(r => trafficLight(r.actions).label.startsWith('Просрочено'));
   const doneRisks = risks.filter(r => r.actions.length && r.actions.every(a=>a.status==='done'));
   const rejectedRisks = risks.filter(r => r.actions.some(a=>a.status==='rejected'));
+  const base = state.baseline || computeKpiSnapshot(risks);
+
+  // Динамика Executive Summary (п.1 ТЗ) — реальная разница с началом сессии
+  // (тот же state.baseline, что и у KPI-карточек дэшборда).
+  const highRatioBase = base.active ? base.high/base.active : 0;
+  const highRatioNow = risks.length ? highs.length/risks.length : 0;
+  const levelTrend = highRatioNow < highRatioBase ? {cls:'improving', text:'Улучшается', arrow:'↗'}
+    : highRatioNow > highRatioBase ? {cls:'worsening', text:'Ухудшается', arrow:'↘'}
+    : {cls:'stable', text:'Стабильно', arrow:'→'};
+
+  const pendingDecisions = risks.filter(r => r.committeeFlag && !r.committeeDecision);
+  const worsening = risks.map(r => ({r, score: deteriorationScore(r)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,5);
+  const templates = buildReportTemplates();
 
   // AI-подсказки Knowledge Graph: похожесть текста риска и урока (клиентская эвристика, см. выше)
   const suggestions = [];
@@ -4649,13 +4836,17 @@ function renderReports(){
   suggestions.sort((a,b)=>b.score-a.score);
 
   document.getElementById('reportsMount').innerHTML = `
+    <div class="dash-toolbar">
+      <span class="dash-freshness"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Данные актуальны на: <b>${TODAY.toLocaleDateString('ru-RU')}</b></span>
+      <button type="button" class="btn btn-secondary btn-sm" id="btnExportReportPpt"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M3 17v2a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/></svg>Экспорт AI-отчёта в PPT</button>
+    </div>
     <div class="panel">
       <h3>Executive Summary</h3>
       <div class="es-metrics">
-        <div class="es-metric"><div class="k">Общий уровень риска</div><div class="v">${highs.length > risks.length/2 ? 'Высокий' : 'Средний'}</div></div>
-        <div class="es-metric"><div class="k">Выявлено рисков</div><div class="v">${risks.length}</div></div>
-        <div class="es-metric clickable" data-goto-register="high"><div class="k">Из них Высокий (H)</div><div class="v">${highs.length}</div></div>
-        <div class="es-metric clickable" data-goto-register="escalated"><div class="k">Требуют решения комитета (I=3)</div><div class="v">${escalations.length}</div></div>
+        <div class="es-metric"><div class="k">Общий уровень риска</div><div class="es-risk-level-row"><div class="v">${highs.length > risks.length/2 ? 'Высокий' : 'Средний'}</div><span class="es-trend-word ${levelTrend.cls}">${levelTrend.arrow} ${levelTrend.text}</span></div></div>
+        <div class="es-metric"><div class="k">Выявлено рисков</div><div class="v">${risks.length} ${trendBadge(risks.length, base.active, true)}</div></div>
+        <div class="es-metric clickable" data-goto-register="high"><div class="k">Из них Высокий (H)</div><div class="v">${highs.length} ${trendBadge(highs.length, base.high, false)}</div></div>
+        <div class="es-metric clickable" data-goto-register="escalated"><div class="k">Требуют решения комитета (I=3)</div><div class="v">${escalations.length} ${trendBadge(escalations.length, base.escalated ?? escalations.length, false)}</div></div>
         <div class="es-metric"><div class="k">Совокупный EL</div><div class="v">${el ? el.toFixed(0)+' млн ₽' : '—'}</div></div>
       </div>
       <div class="panel-2col">
@@ -4665,6 +4856,23 @@ function renderReports(){
           <ul>${overdueRisks.concat(rejectedRisks).slice(0,4).map(r=>`<li><a href="#" data-open-risk="${r.id}">Риск ${r.id}</a> — ${trafficLight(r.actions).label.toLowerCase()}</li>`).join('') || '<li class="muted">Явных приоритетов не выявлено.</li>'}</ul></div>
       </div>
     </div>
+
+    <div class="panel">
+      <h3>Решения, требующие принятия — ${pendingDecisions.length}</h3>
+      ${pendingDecisions.length ? pendingDecisions.map(r=>decisionRowHtml(r)).join('') : '<p class="muted" style="margin:0;">Решений, ожидающих принятия комитетом, нет.</p>'}
+    </div>
+
+    <div class="panel">
+      <h3>Топ-5 рисков с ухудшающимся трендом</h3>
+      <p class="muted" style="font-size:12.5px;margin-top:-6px;">Композитный индикатор: просроченные/отклонённые мероприятия + материальность I=3 + текущая зона RRA.</p>
+      ${worsening.length ? worsening.map((x,idx)=>worseningRowHtml(x.r,idx)).join('') : '<p class="muted" style="margin:0;">Рисков с признаками ухудшения не выявлено.</p>'}
+    </div>
+
+    <div class="panel">
+      <div class="rt-toolbar"><h3 style="margin:0;">Шаблоны отчётов</h3><button type="button" class="btn btn-secondary btn-sm" id="btnManageTemplates">Управление шаблонами</button></div>
+      ${templates.map((t,idx)=>templateCardHtml(t,idx)).join('')}
+    </div>
+
     <div class="panel">
       <h3>Knowledge Graph — AI-предлагаемые связи риск↔урок</h3>
       <p class="muted" style="font-size:12.5px;margin-top:-6px;">Похожесть формулировок риск-события и текста урока (клиентская эвристика). Требует подтверждения риск-менеджером.</p>
@@ -4675,6 +4883,21 @@ function renderReports(){
   document.querySelectorAll('[data-view-l]').forEach(b=>b.addEventListener('click', ()=>openLessonModal(b.dataset.viewL)));
   document.querySelectorAll('#reportsMount [data-open-risk]').forEach(a=>a.addEventListener('click', e=>{ e.preventDefault(); openPassport(a.dataset.openRisk); }));
   document.querySelectorAll('#reportsMount [data-goto-register]').forEach(a=>a.addEventListener('click', ()=> goToRegisterWithFilter(a.dataset.gotoRegister)));
+  document.getElementById('btnExportReportPpt').addEventListener('click', () => toast('Экспорт AI-отчёта в PPT', {body:'Демо-прототип: формирование презентации недоступно в этой версии.', duration:4000}));
+  document.getElementById('btnManageTemplates').addEventListener('click', () => toast('Управление шаблонами', {body:'Демо-прототип: раздел недоступен в этой версии.', duration:4000}));
+  document.querySelectorAll('[data-download-template]').forEach(b => b.addEventListener('click', () => toast(templates[b.dataset.downloadTemplate].title, {body:'Демо-прототип: скачивание недоступно в этой версии.', duration:4000})));
+  document.querySelectorAll('[data-generate-template]').forEach(b => b.addEventListener('click', () => toast(templates[b.dataset.generateTemplate].title, {body:'Демо-прототип: генерация недоступна в этой версии.', duration:4000})));
+  document.querySelectorAll('[data-schedule-committee]').forEach(b => b.addEventListener('click', () => openScheduleCommitteeModal(findRisk(b.dataset.scheduleCommittee))));
+  document.querySelectorAll('[data-approve-decision]').forEach(b => b.addEventListener('click', () => {
+    const r = findRisk(b.dataset.approveDecision);
+    r.committeeDecision = 'Одобрено';
+    r.committeeDecisionDate = nowStr();
+    pushAudit(r.id, r.status, r.status, 'Решение комитета: Одобрено');
+    saveState();
+    toast('Решение зафиксировано', {body:'Одобрено', duration:3000});
+    renderReports();
+    renderNotifBell();
+  }));
 }
 
 // ===================================================================
