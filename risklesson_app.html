@@ -1899,6 +1899,7 @@ function freshState(){
     session: null,
     baseline: computeKpiSnapshot(risks),
     dayNotes: {},
+    premortemSessions: [],
   };
 }
 function loadState(){
@@ -1920,6 +1921,7 @@ function resetDemoData(){
 state = loadState();
 if (!state.baseline) state.baseline = computeKpiSnapshot(state.risks); // апгрейд старого localStorage без baseline
 if (!state.dayNotes) state.dayNotes = {};
+if (!state.premortemSessions) state.premortemSessions = []; // апгрейд старого localStorage без PreMortem
 
 function findRisk(id){ return state.risks.find(r => r.id === id); }
 function findLesson(id){ return state.lessons.find(l => l.id === id); }
@@ -2300,7 +2302,7 @@ const PAGE_META = {
   calendar:{title:'Календарь', desc:'Список мероприятий и плановые даты.'},
   map:{title:'Карта взаимосвязей', desc:'Ручное построение связей между рисками и объединение дублей.'},
   reports:{title:'Privacy Reports & Analytics', desc:'Executive Summary и AI-подсказки связей — считаются из текущих данных.'},
-  premortem:{title:'PreMortem Analysis', desc:'Заблаговременный разбор «что могло пойти не так» — раздел в разработке.'},
+  premortem:{title:'PreMortem Analysis', desc:'Заблаговременный разбор «представим, что проект провалился — что стало причиной»: сценарии, чек-листы, перенос в реестр рисков.'},
 };
 // Заголовки вкладок для владельца риска — то же пространство физически
 // (одни и те же контейнеры и функции рендера), но подписи и описания честно
@@ -4966,15 +4968,567 @@ document.getElementById('mergeSubmit').addEventListener('click', () => {
 });
 
 // ===================================================================
-// PREMORTEM ANALYSIS — пока пустая заглушка под будущее наполнение
+// PREMORTEM ANALYSIS
+// Визуально переиспользует существующие компоненты приложения (risk-card,
+// badge-pill/badge-status-*, kpi-card, audit-list/audit-row, chartModalOverlay
+// как общий модальный контейнер, ds-ms-item как чекбокс-мультивыбор, ту же
+// автокомплит-обвязку выпадающих списков) — своей CSS для вкладки нет.
 // ===================================================================
-function renderPremortem(){
-  document.getElementById('premortemMount').innerHTML = `
-    <div class="empty-state" style="padding:48px 24px;">
-      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:10px;color:var(--ink-400);"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.6 18a1.5 1.5 0 0 0 1.3 2.2h16.2a1.5 1.5 0 0 0 1.3-2.2L13.7 3.9a1.5 1.5 0 0 0-2.6 0z"/></svg>
-      <div style="font-weight:700; color:var(--ink-700); margin-bottom:4px;">Раздел в разработке</div>
-      <div>PreMortem Analysis — заблаговременный разбор «представим, что проект провалился: что стало причиной» — появится здесь в следующих итерациях.</div>
+
+// Чек-листы — фиксированный справочник (вопрос/фаза/раздел), общий для всех
+// сессий проекта; в реальной системе редактируется администратором отдельно,
+// здесь — сид одного чек-листа по категориям риска ЦГП-2/БВН.
+const PREMORTEM_CHECKLISTS = [
+  {id:'chk-1', name:'Базовый чек-лист PreMortem (ЦГП-2)', questions:[
+    {id:'q1', phase:'Фаза 1', category:'Процессные', text:'Зафиксированы ли цели и границы проекта до начала проектирования?'},
+    {id:'q2', phase:'Фаза 4', category:'Процессные', text:'Ведётся ли сквозной реестр изменений требований заказчика?'},
+    {id:'q3', phase:'Фаза 3', category:'Процессные', text:'Учтена ли загрузка ресурсов по всему портфелю проектов, а не только по этому?'},
+    {id:'q4', phase:'Фаза 1', category:'Регуляторные', text:'Пройдена ли предварительная оценка соответствия требованиям регулятора?'},
+    {id:'q5', phase:'Фаза 2', category:'Регуляторные', text:'Согласованы ли отступления от нормативной базы РФ с профильным регулятором?'},
+    {id:'q6', phase:'Фаза 2', category:'ПИР', text:'Учтены ли в ТЗ на проектирование требования эксплуатации и монтажа?'},
+    {id:'q7', phase:'Фаза 2', category:'ПИР', text:'Проведена ли независимая экспертиза проектной документации?'},
+    {id:'q8', phase:'Фаза 2', category:'Технологические', text:'Подтверждена ли технологическая схема поставщиком основного оборудования?'},
+    {id:'q9', phase:'Фаза 3', category:'Технологические', text:'Проведены ли пусконаладочные испытания на аналогичном оборудовании у других заказчиков?'},
+    {id:'q10', phase:'Фаза 2', category:'Технические', text:'Проведена ли оценка соответствия проектных решений действующей нормативной базе РФ?'},
+    {id:'q11', phase:'Фаза 2', category:'Технические', text:'Какие мероприятия предусмотрены для стабилизации показаний весового оборудования?'},
+    {id:'q12', phase:'Фаза 3', category:'СМР/ПНР', text:'Согласован ли график СМР с реальными сроками поставки материалов?'},
+    {id:'q13', phase:'Фаза 4', category:'СМР/ПНР', text:'Проведена ли оценка компетенций подрядчика на монтаж уникального оборудования?'},
+    {id:'q14', phase:'Фаза 3', category:'Снабжение', text:'Есть ли альтернативный поставщик на позиции с единственным источником?'},
+    {id:'q15', phase:'Фаза 3', category:'Снабжение', text:'Учтены ли санкционные и логистические риски в контрактах на поставку?'},
+    {id:'q16', phase:'Фаза 3', category:'Экономические', text:'Учтён ли резерв бюджета на изменение стоимости материалов и услуг?'},
+  ]},
+];
+const PM_MATERIAL_FIELDS = [
+  ['goals','Цели и подцели проекта'], ['schedule','График проекта'], ['minutes','Протоколы совещаний'],
+  ['riskRegisterSnapshot','Текущий реестр рисков'], ['expertComments','Комментарии экспертов'],
+];
+const PM_STATUS_BADGE = {
+  'предложено':'badge-status-ident', 'принято':'badge-status-closed', 'изменено':'badge-status-progress',
+  'отклонено':'badge-status-archived', 'требует уточнения':'badge-medium', 'объединено':'badge-status-archived',
+  'перенесено в реестр':'badge-low',
+};
+let premortemActiveSessionId = null;
+let pmChecklistPos = null;
+function currentPremortemProjectSessions(){
+  return state.premortemSessions.filter(s => s.projectSpp === state.session.spp).sort((a,b) => b.createdAtMs - a.createdAtMs);
+}
+function pushPremortemLog(session, actorType, action, details){
+  session.log.push({id:uid('pmlog'), actorType, actorName: actorType==='ai' ? 'AI-генератор' : sessionName(), timestamp: nowStr(), action, details: details||''});
+}
+function pmCreateSession(prevSession){
+  const s = {
+    id: uid('pm'), projectSpp: state.session.spp,
+    date: TODAY.toLocaleDateString('ru-RU'),
+    createdAt: nowStr(), createdAtMs: Date.now(),
+    materials: prevSession ? JSON.parse(JSON.stringify(prevSession.materials)) : {goals:null, schedule:null, minutes:null, riskRegisterSnapshot:null, expertComments:null},
+    scenarios: [], log: [], checklistAnswers: {}, checklistContextEnabled: true,
+  };
+  state.premortemSessions.push(s);
+  pushPremortemLog(s, 'user', 'Сессия создана', prevSession ? `Материалы перенесены из сессии от ${prevSession.date}` : '');
+  saveState();
+  return s;
+}
+function pmEnsureSession(){
+  let list = currentPremortemProjectSessions();
+  if (!premortemActiveSessionId || !list.find(s => s.id === premortemActiveSessionId)){
+    if (!list.length) list = [pmCreateSession(null)];
+    premortemActiveSessionId = list[0].id;
+  }
+  return list.find(s => s.id === premortemActiveSessionId);
+}
+function newPmScenario(fields){
+  return Object.assign({
+    id: uid('sc'), title:'', cause:'', event:'', consequence:'', category:'',
+    status:'предложено', isNew:true, source:'', sourceId:null,
+    ownerName:null, rejectReason:null, mergedIntoId:null, linkedRiskId:null, createdAt: nowStr(),
+  }, fields);
+}
+// Пул реальных прецедентов для AI-генерации сценариев по категории — те же
+// риски/уроки проекта (никогда не выдуманный текст), тот же принцип, что и
+// у остальных AI-эвристик приложения (aiRephraseLessonForRisk и т.п.).
+function pmScenarioSourcePool(category){
+  const fromRisks = state.risks.filter(r => r.category === category && r.status !== 'Архивирован')
+    .map(r => ({kind:'risk', id:r.id, title:r.title, cause:r.cause, event:r.event, consequence:r.consequence}));
+  const fromLessons = state.lessons.filter(l => mapLessonCategory(l.category) === category)
+    .map(l => ({kind:'lesson', id:l.id, title:l.title, cause:l.rootCause||'', event:l.problemOrRiskEvent||l.description, consequence:l.impact||l.description}));
+  return fromRisks.concat(fromLessons);
+}
+function pmAddScenarioFromChecklist(session, checklist, question, opts){
+  opts = opts || {};
+  const sourceId = 'chk:' + checklist.id + ':' + question.id;
+  const qNum = checklist.questions.indexOf(question) + 1;
+  const scenario = newPmScenario({
+    title: question.text,
+    event: `Чек-лист-вопрос без подтверждённого ответа: «${question.text}»`,
+    category: question.category, status:'требует уточнения',
+    source: `Чек-лист · ${question.category} · вопрос №${qNum}`, sourceId,
+  });
+  session.scenarios.push(scenario);
+  pushPremortemLog(session, opts.silent ? 'ai' : 'user', 'Создан сценарий из чек-листа', `«${scenario.title}» (${scenario.source})`);
+  return scenario;
+}
+function pmGenerateScenarios(session, categories){
+  const used = new Set(session.scenarios.map(s => s.sourceId).filter(Boolean));
+  const created = [];
+  categories.forEach(cat => {
+    const src = pmScenarioSourcePool(cat).find(s => !used.has(s.kind + ':' + s.id));
+    if (!src) return;
+    const sourceId = src.kind + ':' + src.id;
+    const scenario = newPmScenario({
+      title: src.title, cause: src.cause, event: src.event, consequence: src.consequence, category: cat,
+      source: src.kind === 'risk' ? `AI · на основе риска ${src.id}` : `AI · на основе урока ${src.id}`, sourceId,
+    });
+    session.scenarios.push(scenario);
+    used.add(sourceId);
+    pushPremortemLog(session, 'ai', 'Сгенерирован сценарий', `«${scenario.title}» (категория: ${cat}, источник: ${scenario.source})`);
+    created.push(scenario);
+  });
+  // «Учитывать чек-лист как контекст» — генерация дополнительно подбирает
+  // сценарии по вопросам чек-листа с ответом «Нет», ещё не переведённым
+  // в сценарий вручную (тот же смысл вопроса, привязанный к чек-листу).
+  if (session.checklistContextEnabled){
+    PREMORTEM_CHECKLISTS.forEach(chk => {
+      chk.questions.forEach(q => {
+        const ans = (session.checklistAnswers[chk.id] || {})[q.id];
+        const already = session.scenarios.some(s => s.sourceId === 'chk:' + chk.id + ':' + q.id);
+        if (ans === 'no' && !already) created.push(pmAddScenarioFromChecklist(session, chk, q, {silent:true}));
+      });
+    });
+  }
+  saveState();
+  return created;
+}
+function pmScenarioChain(s){
+  const parts = [];
+  if (s.cause) parts.push('Причина: ' + s.cause);
+  if (s.event) parts.push('Событие: ' + s.event);
+  if (s.consequence) parts.push('Следствие: ' + s.consequence);
+  return parts.length ? parts.join(' → ') : '<span class="muted">формулировка не заполнена</span>';
+}
+function pmScenarioActionsHtml(s){
+  if (s.status === 'предложено' || s.status === 'требует уточнения'){
+    return `<button class="btn-sm" data-pm-merge="${s.id}">Объединить</button>
+      <button class="btn-sm" data-pm-reject="${s.id}">Отклонить</button>
+      <button class="btn-sm" style="background:var(--ink-900);color:#fff;border-color:var(--ink-900);" data-pm-accept="${s.id}">Принять</button>`;
+  }
+  if (s.status === 'принято' || s.status === 'изменено'){
+    return `<button class="btn-sm" style="background:var(--ink-900);color:#fff;border-color:var(--ink-900);" data-pm-toregister="${s.id}">В реестр</button>`;
+  }
+  return '';
+}
+function pmScenarioCardHtml(s, session){
+  const dim = s.status === 'отклонено' || s.status === 'объединено';
+  const mergedTarget = s.mergedIntoId ? session.scenarios.find(x => x.id === s.mergedIntoId) : null;
+  const linkedRisk = s.linkedRiskId ? findRisk(s.linkedRiskId) : null;
+  return `<div class="risk-card"${dim ? ' style="opacity:.6;"' : ''}>
+    <div class="rc-head">
+      <div class="rc-head-left">
+        <div class="risk-card-top" style="cursor:default;">
+          <span class="risk-card-title">${esc(s.title)}</span>
+          ${s.isNew ? '<span class="badge-pill badge-new">NEW</span>' : ''}
+          <span class="badge-pill ${PM_STATUS_BADGE[s.status] || ''}">${esc(s.status)}</span>
+          <span class="badge-pill badge-strategy">${esc(s.category)}</span>
+        </div>
+        <div class="lesson-preview-quote" style="margin-top:6px;">${pmScenarioChain(s)}</div>
+        <div class="field-hint" style="margin-top:6px;">${esc(s.source || 'Ручной ввод')}${s.ownerName ? ' · Владелец: ' + esc(s.ownerName) : ''}</div>
+        ${s.status === 'отклонено' && s.rejectReason ? `<div class="field-hint" style="margin-top:4px;color:var(--red-700);">Причина отклонения: ${esc(s.rejectReason)}</div>` : ''}
+        ${s.status === 'объединено' && mergedTarget ? `<div class="field-hint" style="margin-top:4px;">Объединён с «${esc(mergedTarget.title)}»</div>` : ''}
+        ${s.status === 'перенесено в реестр' && linkedRisk ? `<div class="field-hint" style="margin-top:4px;">→ <a href="#" data-open-risk="${linkedRisk.id}"><code class="mono">${esc(linkedRisk.id)}</code></a></div>` : ''}
+      </div>
+      <div class="rc-head-actions">${pmScenarioActionsHtml(s)}</div>
+    </div>
+  </div>`;
+}
+function renderPremortemScenarios(session){
+  const wrap = document.getElementById('pmScenarioList');
+  if (!wrap) return;
+  const list = session.scenarios.slice().sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
+  wrap.innerHTML = list.length ? list.map(s => pmScenarioCardHtml(s, session)).join('')
+    : '<div class="empty-state">Сценариев пока нет — загрузите материалы и нажмите «Сгенерировать сценарии», либо создайте сценарий из чек-листа.</div>';
+  wrap.querySelectorAll('[data-open-risk]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); openPassport(a.dataset.openRisk); }));
+  wrap.querySelectorAll('[data-pm-merge]').forEach(b => b.addEventListener('click', () => openPremortemMergeModal(session, session.scenarios.find(s => s.id === b.dataset.pmMerge))));
+  wrap.querySelectorAll('[data-pm-reject]').forEach(b => b.addEventListener('click', () => openPremortemRejectModal(session, session.scenarios.find(s => s.id === b.dataset.pmReject))));
+  wrap.querySelectorAll('[data-pm-accept]').forEach(b => b.addEventListener('click', () => openPremortemAcceptModal(session, session.scenarios.find(s => s.id === b.dataset.pmAccept))));
+  wrap.querySelectorAll('[data-pm-toregister]').forEach(b => b.addEventListener('click', () => openPremortemToRiskModal(session, session.scenarios.find(s => s.id === b.dataset.pmToregister))));
+}
+function pmMetricsHtml(session){
+  const total = session.scenarios.length;
+  const accepted = session.scenarios.filter(s => s.status === 'принято' || s.status === 'изменено' || s.status === 'перенесено в реестр').length;
+  const inRegister = session.scenarios.filter(s => s.status === 'перенесено в реестр').length;
+  const minutes = Math.max(0, Math.round((Date.now() - session.createdAtMs) / 60000));
+  return `<div class="kpi-grid">
+    <div class="kpi-card"><span class="kpi-value">${total}</span><span class="kpi-label">Сценариев</span></div>
+    <div class="kpi-card"><span class="kpi-value">${accepted}</span><span class="kpi-label">Принято</span></div>
+    <div class="kpi-card"><span class="kpi-value">${inRegister}</span><span class="kpi-label">В реестре</span></div>
+    <div class="kpi-card"><span class="kpi-value">${minutes} мин</span><span class="kpi-label">Время подготовки</span></div>
+  </div>`;
+}
+function pmLogHtml(session){
+  if (!session.log.length) return '<p class="muted" style="font-size:12.5px;">Журнал сессии пока пуст.</p>';
+  const rows = session.log.slice().reverse();
+  return `<div class="audit-list">${rows.map(l => `<div class="audit-row"${l.details ? ` data-pm-log-toggle="${l.id}" style="cursor:pointer;"` : ''}>
+    <span class="t">${l.timestamp}</span>
+    <span class="desc">${l.actorType === 'ai' ? '🤖 ' : ''}${esc(l.actorName)}: ${esc(l.action)}${l.details ? ` <span class="muted" data-pm-log-body="${l.id}" hidden style="display:block;margin-top:2px;">${esc(l.details)}</span>` : ''}</span>
+  </div>`).join('')}</div>`;
+}
+function pmHistoryHtml(){
+  const sessions = currentPremortemProjectSessions().filter(s => s.id !== premortemActiveSessionId);
+  if (!sessions.length) return '<p class="muted" style="font-size:12.5px;">Других сессий по этому проекту пока нет.</p>';
+  return sessions.map(s => {
+    const inReg = s.scenarios.filter(x => x.status === 'перенесено в реестр').length;
+    return `<div class="decision-row" data-pm-open-session="${s.id}" style="cursor:pointer;">
+      <div class="decision-row-main">
+        <div class="decision-row-title">Сессия от ${esc(s.date)}</div>
+        <div class="decision-row-meta"><span>${s.scenarios.length} сценариев</span><span>· ${inReg} перенесено в реестр</span></div>
+      </div>
     </div>`;
+  }).join('');
+}
+function renderPremortem(){
+  const session = pmEnsureSession();
+  const mount = document.getElementById('premortemMount');
+  mount.innerHTML = `
+    <div class="toolbar-row" style="justify-content:space-between;">
+      <div>
+        <div class="field-hint">PreMortem · проект СПП ${esc(state.session.spp)}</div>
+        <h2 class="t-h3" style="margin-top:2px;" id="pmSessionDateHeading">Сессия от ${esc(session.date)} <button type="button" class="link-btn" id="pmEditDateBtn" style="font-size:11px;">изменить дату</button></h2>
+      </div>
+      <div class="btn-row" style="width:auto;">
+        <button type="button" class="btn btn-secondary" id="pmMaterialsBtn">Материалы</button>
+        <button type="button" class="btn btn-secondary" id="pmChecklistBtn">Чек-листы</button>
+        <button type="button" class="btn btn-primary" id="pmGenerateBtn">Сгенерировать сценарии</button>
+      </div>
+    </div>
+    <div id="pmMetrics" style="margin-top:18px;"></div>
+    <h3 class="pp-h" style="margin-top:22px;">Сценарии сессии</h3>
+    <div id="pmScenarioList"></div>
+    <h3 class="pp-h" style="margin-top:24px;">Журнал сессии</h3>
+    <div id="pmLog"></div>
+    <h3 class="pp-h" style="margin-top:24px;">История сессий</h3>
+    <div class="btn-row" style="width:auto;justify-content:flex-end;margin-bottom:10px;"><button type="button" class="btn btn-secondary btn-sm" id="pmNewSessionBtn">+ Новая сессия</button></div>
+    <div id="pmHistory"></div>`;
+  document.getElementById('pmMetrics').innerHTML = pmMetricsHtml(session);
+  renderPremortemScenarios(session);
+  document.getElementById('pmLog').innerHTML = pmLogHtml(session);
+  document.getElementById('pmLog').querySelectorAll('[data-pm-log-toggle]').forEach(row => row.addEventListener('click', () => {
+    const body = row.querySelector('[data-pm-log-body]');
+    if (body) body.hidden = !body.hidden;
+  }));
+  document.getElementById('pmHistory').innerHTML = pmHistoryHtml();
+  document.getElementById('pmHistory').querySelectorAll('[data-pm-open-session]').forEach(row => row.addEventListener('click', () => {
+    premortemActiveSessionId = row.dataset.pmOpenSession;
+    renderPremortem();
+  }));
+  document.getElementById('pmMaterialsBtn').addEventListener('click', () => openPremortemMaterialsModal(session));
+  document.getElementById('pmChecklistBtn').addEventListener('click', () => {
+    const chk = PREMORTEM_CHECKLISTS[0];
+    renderPremortemChecklist(session, chk.id, pmChecklistPos && pmChecklistPos.checklistId === chk.id ? pmChecklistPos.qGlobalIdx : 0);
+  });
+  document.getElementById('pmGenerateBtn').addEventListener('click', () => openPremortemGenerateModal(session));
+  document.getElementById('pmNewSessionBtn').addEventListener('click', () => {
+    const s = pmCreateSession(session);
+    premortemActiveSessionId = s.id;
+    toast('Новая PreMortem-сессия создана', {body:'Материалы предыдущей сессии перенесены.', duration:4000});
+    renderPremortem();
+  });
+  document.getElementById('pmEditDateBtn').addEventListener('click', () => {
+    const heading = document.getElementById('pmSessionDateHeading');
+    heading.innerHTML = `Сессия от <input type="text" id="pmDateInput" value="${esc(session.date)}" style="width:120px;">`;
+    const input = document.getElementById('pmDateInput');
+    input.focus(); input.select();
+    const commit = () => { const v = input.value.trim(); if (v) session.date = v; saveState(); renderPremortem(); };
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); });
+  });
+}
+
+// ---- Модалки PreMortem (все через общий chartModalOverlay, как и в остальном приложении) ----
+
+function openPremortemMaterialsModal(session){
+  const body = `
+    ${PM_MATERIAL_FIELDS.map(([key, label]) => {
+      const m = session.materials[key];
+      return `<div class="field" style="margin-bottom:12px;">
+        <label>${esc(label)}</label>
+        <textarea id="pmMat_${key}" placeholder="Вставьте текст (демо: файлы не поддерживаются в этой версии)" style="min-height:60px;">${esc(m ? m.text : '')}</textarea>
+        ${m ? `<div class="field-hint" style="margin-top:4px;">Загружено ${esc(m.uploadedAt)} · <button type="button" class="link-btn" data-clear-mat="${key}">удалить</button></div>` : ''}
+      </div>`;
+    }).join('')}
+    <div class="btn-row" style="margin-top:8px;">
+      <button type="button" class="btn btn-text" id="pmMatCancel">Отмена</button>
+      <button type="button" class="btn btn-primary" id="pmMatSave" style="flex:2;">Сохранить и закрыть</button>
+    </div>`;
+  openChartModal('Загрузить материалы', 'Материалы сохраняются в контекст текущей PreMortem-сессии', body);
+  document.querySelectorAll('[data-clear-mat]').forEach(b => b.addEventListener('click', () => {
+    session.materials[b.dataset.clearMat] = null; saveState(); openPremortemMaterialsModal(session);
+  }));
+  document.getElementById('pmMatCancel').addEventListener('click', () => closeModal('chartModalOverlay'));
+  document.getElementById('pmMatSave').addEventListener('click', () => {
+    const loaded = [];
+    PM_MATERIAL_FIELDS.forEach(([key, label]) => {
+      const val = document.getElementById('pmMat_' + key).value.trim();
+      if (val){ session.materials[key] = {text: val, uploadedAt: nowStr()}; loaded.push(label); }
+    });
+    closeModal('chartModalOverlay');
+    if (loaded.length) pushPremortemLog(session, 'user', 'Материалы обновлены', loaded.join(', '));
+    saveState();
+    toast('Материалы добавлены в сессию');
+    renderPremortem();
+  });
+}
+function openPremortemGenerateModal(session){
+  const body = `
+    <div class="field-hint" style="margin-bottom:10px;">Категории риска для генерации сценариев (демо-эвристика: реальные риски/уроки проекта в этой категории, ещё не использованные в текущей сессии).</div>
+    <div class="ds-ms-menu" style="position:static; max-height:280px;" id="pmGenCatList">
+      ${CATEGORIES.map(c => `<div class="ds-ms-item" data-cat="${esc(c)}">☐ ${esc(c)}</div>`).join('')}
+    </div>
+    <div class="btn-row" style="margin-top:14px;">
+      <button type="button" class="btn btn-text" id="pmGenCancel">Отмена</button>
+      <button type="button" class="btn btn-primary" id="pmGenStart" style="flex:2;">Начать генерацию</button>
+    </div>`;
+  openChartModal('Сгенерировать сценарии', 'Проект СПП ' + session.projectSpp, body);
+  const picked = new Set();
+  document.querySelectorAll('#pmGenCatList [data-cat]').forEach(el => el.addEventListener('click', () => {
+    const c = el.dataset.cat;
+    if (picked.has(c)){ picked.delete(c); el.textContent = '☐ ' + c; }
+    else { picked.add(c); el.textContent = '☑ ' + c; }
+  }));
+  document.getElementById('pmGenCancel').addEventListener('click', () => closeModal('chartModalOverlay'));
+  document.getElementById('pmGenStart').addEventListener('click', () => {
+    if (!picked.size){ toast('Выберите хотя бы одну категорию', {tone:'warning'}); return; }
+    const btn = document.getElementById('pmGenStart');
+    btn.disabled = true; btn.textContent = 'Генерация…';
+    setTimeout(() => {
+      const created = pmGenerateScenarios(session, Array.from(picked));
+      closeModal('chartModalOverlay');
+      toast(created.length ? `Сгенерировано сценариев: ${created.length}` : 'Новых сценариев не найдено',
+        {body: created.length ? 'Добавлены в список ниже с пометкой NEW.' : 'Все доступные риски/уроки выбранных категорий уже использованы в этой сессии.', duration:4200, tone: created.length ? 'success' : 'info'});
+      renderPremortem();
+    }, 900);
+  });
+}
+function openPremortemMergeModal(session, scenario){
+  scenario.isNew = false;
+  const others = session.scenarios.filter(s => s.id !== scenario.id && !['объединено','отклонено','перенесено в реестр'].includes(s.status));
+  if (!others.length){ saveState(); toast('Нет других активных сценариев для объединения'); renderPremortem(); return; }
+  const body = `
+    <div class="field-hint" style="margin-bottom:10px;">С каким сценарием объединить «${esc(scenario.title)}»?</div>
+    <div class="ds-ms-menu" style="position:static; max-height:260px;" id="pmMergeList">
+      ${others.map(s => `<div class="ds-ms-item" data-sid="${s.id}">${esc(s.title)} <span class="muted" style="font-size:11px;">(${esc(s.category)})</span></div>`).join('')}
+    </div>
+    <div class="btn-row" style="margin-top:14px;">
+      <button type="button" class="btn btn-text" id="pmMergeCancel">Отмена</button>
+      <button type="button" class="btn btn-primary" id="pmMergeSubmit" style="flex:2;" disabled>Объединить</button>
+    </div>`;
+  openChartModal('Объединить сценарии', scenario.title, body);
+  let pickedId = null;
+  document.querySelectorAll('#pmMergeList [data-sid]').forEach(el => el.addEventListener('click', () => {
+    document.querySelectorAll('#pmMergeList [data-sid]').forEach(x => { x.style.background = ''; x.style.color = ''; });
+    el.style.background = 'var(--accent-50)'; el.style.color = 'var(--accent-600)';
+    pickedId = el.dataset.sid;
+    document.getElementById('pmMergeSubmit').disabled = false;
+  }));
+  document.getElementById('pmMergeCancel').addEventListener('click', () => closeModal('chartModalOverlay'));
+  document.getElementById('pmMergeSubmit').addEventListener('click', () => {
+    if (!pickedId) return;
+    const target = session.scenarios.find(s => s.id === pickedId);
+    scenario.status = 'объединено'; scenario.mergedIntoId = target.id;
+    pushPremortemLog(session, 'user', 'Сценарии объединены', `«${scenario.title}» объединён с «${target.title}»`);
+    saveState(); closeModal('chartModalOverlay');
+    toast('Сценарии объединены');
+    renderPremortem();
+  });
+}
+function openPremortemRejectModal(session, scenario){
+  scenario.isNew = false; saveState();
+  const body = `
+    <div class="field"><label>Причина отклонения</label><textarea id="pmRejectReason" placeholder="Почему сценарий отклонён"></textarea></div>
+    <div class="btn-row" style="margin-top:12px;">
+      <button type="button" class="btn btn-text" id="pmRejectCancel">Отмена</button>
+      <button type="button" class="btn btn-primary" id="pmRejectSubmit" style="flex:2;">Отклонить</button>
+    </div>`;
+  openChartModal('Отклонить сценарий', scenario.title, body);
+  document.getElementById('pmRejectCancel').addEventListener('click', () => closeModal('chartModalOverlay'));
+  document.getElementById('pmRejectSubmit').addEventListener('click', () => {
+    const reason = document.getElementById('pmRejectReason').value.trim();
+    if (!reason){ toast('Укажите причину отклонения', {tone:'warning'}); return; }
+    scenario.status = 'отклонено'; scenario.rejectReason = reason;
+    pushPremortemLog(session, 'user', 'Сценарий отклонён', `«${scenario.title}» — ${reason}`);
+    saveState(); closeModal('chartModalOverlay');
+    toast('Сценарий отклонён');
+    renderPremortem();
+  });
+}
+function openPremortemAcceptModal(session, scenario){
+  scenario.isNew = false; saveState();
+  const body = `
+    <div class="row2" style="margin-bottom:10px;">
+      <div class="field"><label>Причина</label><textarea id="pmAccCause">${esc(scenario.cause)}</textarea></div>
+      <div class="field"><label>Риск-событие</label><textarea id="pmAccEvent">${esc(scenario.event)}</textarea></div>
+    </div>
+    <div class="field" style="margin-bottom:10px;"><label>Прямое следствие</label><textarea id="pmAccConsequence">${esc(scenario.consequence)}</textarea></div>
+    <div class="field" style="margin-bottom:10px;"><label>Владелец риска</label><select id="pmAccOwner"><option value="">Не назначен</option>${ALL_USERS.map(u => `<option value="${esc(u)}" ${u === scenario.ownerName ? 'selected' : ''}>${esc(u)}</option>`).join('')}</select></div>
+    <div class="btn-row" style="margin-top:8px;">
+      <button type="button" class="btn btn-text" id="pmAccCancel">Отмена</button>
+      <button type="button" class="btn btn-primary" id="pmAccSubmit" style="flex:2;">Принять</button>
+    </div>`;
+  openChartModal('Принять сценарий', scenario.title, body);
+  enhanceSelectAsAutocomplete(document.getElementById('pmAccOwner'), 'Не назначен');
+  document.getElementById('pmAccCancel').addEventListener('click', () => closeModal('chartModalOverlay'));
+  document.getElementById('pmAccSubmit').addEventListener('click', () => {
+    const cause = document.getElementById('pmAccCause').value.trim();
+    const event = document.getElementById('pmAccEvent').value.trim();
+    const consequence = document.getElementById('pmAccConsequence').value.trim();
+    const owner = document.getElementById('pmAccOwner').value;
+    const edited = cause !== scenario.cause || event !== scenario.event || consequence !== scenario.consequence;
+    scenario.cause = cause; scenario.event = event; scenario.consequence = consequence;
+    scenario.ownerName = owner || null;
+    scenario.status = edited ? 'изменено' : 'принято';
+    pushPremortemLog(session, 'user', edited ? 'Сценарий принят с изменениями' : 'Сценарий принят', `«${scenario.title}»${owner ? ', владелец: ' + owner : ''}`);
+    saveState(); closeModal('chartModalOverlay');
+    toast('Сценарий принят');
+    renderPremortem();
+  });
+}
+// «В реестр» — тот же шаблон полей, что и в модалке «перевести урок в риск»
+// (openLessonToRiskModal), предзаполненный данными сценария.
+function openPremortemToRiskModal(session, scenario){
+  scenario.isNew = false;
+  const suggestedCategory = CATEGORIES.includes(scenario.category) ? scenario.category : '';
+  const body = `
+    <div class="source-quote" style="margin-bottom:14px;">Сформировано на основе PreMortem-сценария «${esc(scenario.title)}» (${esc(scenario.source || 'ручной ввод')})</div>
+    <div class="field"><label>Причина</label><textarea id="pm2rCause" style="min-height:50px;">${esc(scenario.cause)}</textarea></div>
+    <div class="field" style="margin-top:10px;"><label>Риск-событие</label><textarea id="pm2rEvent" style="min-height:60px;">${esc(scenario.event)}</textarea></div>
+    <div class="field" style="margin-top:10px;"><label>Прямое следствие</label><textarea id="pm2rConsequence" style="min-height:50px;">${esc(scenario.consequence)}</textarea></div>
+    <div class="row2" style="margin-top:10px;">
+      <div class="field"><label>Категория</label><select id="pm2rCategory"></select></div>
+      <div class="field"><label>Стадия</label><input type="text" id="pm2rPhase" placeholder="Например, Фаза 2"></div>
+    </div>
+    <div class="row2" style="margin-top:10px;">
+      <div class="field"><label>Владелец</label><select id="pm2rOwner"><option value="">Не назначен</option>${ALL_USERS.map(u => `<option value="${esc(u)}" ${u === scenario.ownerName ? 'selected' : ''}>${esc(u)}</option>`).join('')}</select></div>
+      <div class="field"><label>Стратегия реагирования</label><select id="pm2rStrategy"><option value="">Не выбрана</option>${['Снижение','Передача','Уклонение','Принятие'].map(s => `<option value="${s}">${s}</option>`).join('')}</select></div>
+    </div>
+    <div class="row2" style="margin-top:10px;">
+      <div class="field"><label>Вероятность P (1–3)</label><select id="pm2rP"><option value="">—</option>${[1,2,3].map(v => `<option value="${v}">${v} — ${PLEVEL_LABEL[v]}</option>`).join('')}</select></div>
+      <div class="field"><label>Материальность I (1–3)</label><select id="pm2rI"><option value="">—</option>${[1,2,3].map(v => `<option value="${v}">${v} — ${PLEVEL_LABEL[v]}</option>`).join('')}</select></div>
+    </div>
+    ${aiInsightRow('Риск попадает в реестр как черновик и требует верификации риск-менеджером.')}
+    <div class="btn-row" style="margin-top:12px;">
+      <button type="button" class="btn btn-text" id="pm2rCancelBtn">Отмена</button>
+      <button type="button" class="btn btn-primary" id="pm2rSubmitBtn" style="flex:2;">Добавить в реестр</button>
+    </div>`;
+  openChartModal('Риск на основе PreMortem-сценария', `Новый риск · проект СПП ${state.session.spp}`, body);
+  populateCategorySelect(document.getElementById('pm2rCategory'));
+  document.getElementById('pm2rCategory').value = suggestedCategory;
+  enhanceSelectAsAutocomplete(document.getElementById('pm2rCategory'), 'Выберите категорию');
+  enhanceSelectAsAutocomplete(document.getElementById('pm2rOwner'), 'Не назначен');
+  enhanceSelectAsAutocomplete(document.getElementById('pm2rStrategy'));
+  enhanceSelectAsAutocomplete(document.getElementById('pm2rP'));
+  enhanceSelectAsAutocomplete(document.getElementById('pm2rI'));
+  syncAc('pm2rCategory'); syncAc('pm2rStrategy');
+  document.getElementById('pm2rCancelBtn').addEventListener('click', () => closeModal('chartModalOverlay'));
+  document.getElementById('pm2rSubmitBtn').addEventListener('click', () => {
+    const cause = document.getElementById('pm2rCause').value.trim();
+    const event = document.getElementById('pm2rEvent').value.trim();
+    const category = document.getElementById('pm2rCategory').value;
+    if (!event || !category){ toast('Заполните риск-событие и категорию', {tone:'warning'}); return; }
+    const consequence = document.getElementById('pm2rConsequence').value.trim();
+    const phase = document.getElementById('pm2rPhase').value.trim();
+    const owner = document.getElementById('pm2rOwner').value;
+    const strategy = document.getElementById('pm2rStrategy').value;
+    const p = parseInt(document.getElementById('pm2rP').value, 10) || null;
+    const iLevel = parseInt(document.getElementById('pm2rI').value, 10) || null;
+    const num = Math.max(0, ...state.risks.map(x => x.displayNumber || 0)) + 1;
+    const risk = {
+      id: uid('12-1111-new'), displayNumber:num, projectSpp: state.session.spp, category,
+      title: 'PreMortem: ' + scenario.title, status:'Идентификация', authorName: sessionName(),
+      ownerNames: owner ? [owner] : [], cause, event, consequence,
+      pChecklist:null, p, iLevel, iJustification:null, committeeFlag: iLevel === 3,
+      committeeDecision:null, committeeDecisionDate:null,
+      quantProbabilityPct:null, quantBudgetImpactMln:null, quantScheduleImpactMonths:null,
+      residualRra:null, residualP:null, residualI:null,
+      sourceLessonId:null, mergedIntoId:null, reviewFrequencyDays:null, nextReviewDate:null,
+      createdAt: nowStr(), actions:[], isNew:true, phase: phase || null,
+      strategyRationale: strategy ? `Стратегия реагирования (по PreMortem-сценарию сессии от ${session.date}): ${strategy}` : '',
+    };
+    state.risks.push(risk);
+    pushAudit(risk.id, null, 'Идентификация', 'Риск создан на основе PreMortem-сценария сессии от ' + session.date);
+    scenario.status = 'перенесено в реестр'; scenario.linkedRiskId = risk.id;
+    pushPremortemLog(session, 'user', 'Сценарий перенесён в реестр', `«${scenario.title}» → риск ${risk.id}`);
+    saveState(); closeModal('chartModalOverlay');
+    toast('Риск добавлен в реестр', {body:'Черновик создан на основе PreMortem-сценария.', duration:4000});
+    renderPremortem();
+  });
+}
+// Модалка чек-листов — не постоянный блок вкладки, открывается отдельно;
+// перерисовывается на каждый Да/Нет/Предыдущий/Следующий тем же openChartModal
+// (идемпотентно — как и остальные модалки приложения).
+function renderPremortemChecklist(session, checklistId, qGlobalIdx){
+  const checklist = PREMORTEM_CHECKLISTS.find(c => c.id === checklistId) || PREMORTEM_CHECKLISTS[0];
+  const total = checklist.questions.length;
+  qGlobalIdx = Math.max(0, Math.min(total - 1, qGlobalIdx));
+  const q = checklist.questions[qGlobalIdx];
+  const sectionQs = checklist.questions.filter(x => x.category === q.category);
+  const posInSection = sectionQs.indexOf(q) + 1;
+  const answers = session.checklistAnswers[checklist.id] || {};
+  const answered = answers[q.id];
+  const sectionAnsweredCount = sectionQs.filter(x => answers[x.id]).length;
+  const alreadyScenario = session.scenarios.some(s => s.sourceId === 'chk:' + checklist.id + ':' + q.id);
+
+  const checklistPicker = PREMORTEM_CHECKLISTS.length > 1 ? `
+    <div class="field" style="margin-bottom:12px;"><label>Чек-лист</label>
+      <select id="pmChkPicker">${PREMORTEM_CHECKLISTS.map(c => `<option value="${c.id}" ${c.id === checklist.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select>
+    </div>` : '';
+  const body = `
+    ${checklistPicker}
+    <label style="display:flex;justify-content:space-between;align-items:center;background:var(--ai-50);color:var(--ai-700);border-radius:var(--radius-field);padding:10px 12px;font-size:12.5px;margin-bottom:14px;cursor:pointer;">
+      <span>✳ Учитывать как контекст для AI-генерации</span>
+      <input type="checkbox" id="pmChkAiToggle" ${session.checklistContextEnabled ? 'checked' : ''}>
+    </label>
+    <div class="question-box" style="border:1px solid var(--line); border-radius:var(--radius-field); padding:14px; margin-bottom:14px;">
+      <div style="font-size:14.5px; margin-bottom:12px;">${esc(q.text)}</div>
+      <div class="btn-row" style="margin-bottom:${answered === 'no' ? '10px' : '0'};">
+        <button type="button" class="btn${answered === 'yes' ? ' btn-primary' : ''}" id="pmChkYes">Да, предусмотрено</button>
+        <button type="button" class="btn" style="${answered === 'no' ? 'background:var(--amber-700);color:#fff;border-color:var(--amber-700);' : 'border-color:var(--amber-700);color:var(--amber-700);'}" id="pmChkNo">Нет, не уверены</button>
+      </div>
+      ${answered === 'no' ? `<div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--amber-700);flex-wrap:wrap;">
+        <span>⚠ Ответ «нет» — создать сценарий на основе этого вопроса</span>
+        <span style="flex:1;"></span>
+        <button type="button" class="btn-sm" id="pmChkMakeScenario" ${alreadyScenario ? 'disabled' : ''}>${alreadyScenario ? 'Сценарий уже создан' : 'Создать сценарий'}</button>
+      </div>` : ''}
+    </div>
+    <div class="field-hint" style="margin-bottom:14px;">✓ ${sectionAnsweredCount} из ${sectionQs.length} вопросов раздела «${esc(q.category)}» уже отвечены в этой сессии</div>
+    <div class="btn-row">
+      <button type="button" class="btn" id="pmChkPrev" ${qGlobalIdx === 0 ? 'disabled' : ''}>← Предыдущий</button>
+      <button type="button" class="btn" id="pmChkNext" ${qGlobalIdx === total - 1 ? 'disabled' : ''}>Следующий →</button>
+    </div>`;
+  openChartModal('Чек-листы', `${q.phase} · ${q.category} · вопрос ${posInSection} из ${sectionQs.length}`, body);
+  pmChecklistPos = {checklistId: checklist.id, qGlobalIdx};
+
+  if (PREMORTEM_CHECKLISTS.length > 1) document.getElementById('pmChkPicker').addEventListener('change', e => renderPremortemChecklist(session, e.target.value, 0));
+  document.getElementById('pmChkAiToggle').addEventListener('change', e => { session.checklistContextEnabled = e.target.checked; saveState(); });
+  document.getElementById('pmChkYes').addEventListener('click', () => {
+    if (!session.checklistAnswers[checklist.id]) session.checklistAnswers[checklist.id] = {};
+    session.checklistAnswers[checklist.id][q.id] = 'yes';
+    saveState();
+    renderPremortemChecklist(session, checklist.id, qGlobalIdx < total - 1 ? qGlobalIdx + 1 : qGlobalIdx);
+  });
+  document.getElementById('pmChkNo').addEventListener('click', () => {
+    if (!session.checklistAnswers[checklist.id]) session.checklistAnswers[checklist.id] = {};
+    session.checklistAnswers[checklist.id][q.id] = 'no';
+    saveState();
+    renderPremortemChecklist(session, checklist.id, qGlobalIdx);
+  });
+  const makeBtn = document.getElementById('pmChkMakeScenario');
+  if (makeBtn) makeBtn.addEventListener('click', () => {
+    pmAddScenarioFromChecklist(session, checklist, q, {});
+    saveState();
+    closeModal('chartModalOverlay');
+    toast('Сценарий создан на основе вопроса чек-листа', {body:q.text, duration:4000});
+    renderPremortem();
+  });
+  document.getElementById('pmChkPrev').addEventListener('click', () => renderPremortemChecklist(session, checklist.id, qGlobalIdx - 1));
+  document.getElementById('pmChkNext').addEventListener('click', () => renderPremortemChecklist(session, checklist.id, qGlobalIdx + 1));
 }
 
 // ===================================================================
