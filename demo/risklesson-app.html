@@ -176,6 +176,25 @@
   .ds-ac-item{padding:8px 10px; font-size:13px; border-radius:4px; cursor:pointer;}
   .ds-ac-item:hover, .ds-ac-item.selected{background:var(--accent-50); color:var(--accent-600);}
   .ds-ac-empty{padding:8px 10px; font-size:12.5px; color:var(--ink-400);}
+
+  /* MultiSelect (@nlmk/ds-2.0) — выбор нескольких владельцев/ответственных
+     из реального каталога пользователей (ALL_USERS), а не свободный текст. */
+  .ds-ms{position:relative;}
+  .ds-ms-chips{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;}
+  .ds-ms-chips:empty{margin-bottom:0;}
+  .ds-chip{display:inline-flex; align-items:center; gap:6px; background:var(--accent-50); color:var(--accent-600);
+    border-radius:var(--radius-pill); padding:4px 6px 4px 11px; font-size:12.5px; font-weight:600;}
+  .ds-chip button{background:none; border:none; color:inherit; cursor:pointer; width:16px; height:16px;
+    border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; line-height:1; padding:0;}
+  .ds-chip button:hover{background:var(--accent-100);}
+  .ds-ms-addbtn{border:1px dashed var(--line); background:var(--paper-0); color:var(--ink-600); border-radius:var(--radius-field);
+    padding:8px 12px; font-size:12.5px; font-weight:600; cursor:pointer;}
+  .ds-ms-addbtn:hover{border-color:var(--accent-600); color:var(--accent-600);}
+  .ds-ms-menu{position:absolute; top:calc(100% + 4px); left:0; right:0; max-height:220px; overflow-y:auto; background:var(--paper-0);
+    border:1px solid var(--line); border-radius:var(--radius-field); box-shadow:var(--shadow-pop); z-index:40; padding:4px;}
+  .ds-ms-item{padding:8px 10px; font-size:13px; border-radius:4px; cursor:pointer;}
+  .ds-ms-item:hover{background:var(--accent-50); color:var(--accent-600);}
+  .ds-ms-empty{padding:8px 10px; font-size:12.5px; color:var(--ink-400);}
   .toolbar-row .ds-ac{width:180px; flex-shrink:0;}
   .toolbar-row .ds-ac-input{font-size:12.5px; padding:8px 30px 8px 12px;}
   .map-link-picker .ds-ac{width:150px; flex-shrink:0;}
@@ -346,15 +365,6 @@
   .ws-sidebar{width:74px; flex-shrink:0; background:var(--navy-900); display:flex; flex-direction:column;
     padding:18px 12px; gap:4px; transition:width .3s cubic-bezier(.4,0,.2,1), background-color .3s ease; overflow:hidden;}
   .ws-sidebar.expanded{width:238px;}
-  /* Личное пространство владельца риска — отдельный оттенок сайдбара (тот же
-     бирюзовый акцент, что и у роли на входе), чтобы пространство читалось как
-     своё, а не как урезанная версия менеджерского. */
-  .ws-sidebar--owner{background:linear-gradient(165deg,#0e2f3a,var(--navy-900) 55%);}
-  .ws-owner-badge{display:inline-flex; align-items:center; gap:6px; font-size:10px; font-weight:700;
-    text-transform:uppercase; letter-spacing:.3px; color:#7bdce8; background:rgba(23,182,196,.16);
-    padding:3px 8px; border-radius:var(--radius-pill); white-space:nowrap; overflow:hidden; opacity:0; max-width:0;
-    transition:opacity .2s ease, max-width .32s cubic-bezier(.4,0,.2,1); margin:0 8px 10px;}
-  .ws-sidebar.expanded .ws-owner-badge{opacity:1; max-width:180px;}
   .ws-brand{display:flex; align-items:center; gap:10px; padding:6px 8px 18px; border-bottom:1px solid rgba(255,255,255,.12); margin-bottom:10px;}
   .ws-brand .brand-mark{width:34px; height:19px;}
   .ws-brand .name{font-family:var(--font-display); font-weight:800; font-size:15px; color:#fff; white-space:nowrap;
@@ -491,6 +501,7 @@
   .badge-status-closed{background:var(--green-50); color:var(--green-700);}
   .badge-status-archived{background:var(--canvas); color:var(--ink-400); border:1px solid var(--line);}
   .badge-esc{background:var(--red-700); color:#fff;}
+  .badge-new{background:var(--ai-700); color:#fff;}
   .risk-card-meta{font-size:11.5px; color:var(--ink-600); margin-bottom:12px;}
   .risk-card-meta code{font-family:var(--font-mono); font-size:11px;}
   .risk-card-grid{display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:14px; margin-bottom:12px; align-items:start;}
@@ -690,6 +701,16 @@
   .stepper .lbl{font-size:10.5px; color:var(--ink-600); white-space:nowrap;}
   .stepper .step.filled .lbl, .stepper .step.current .lbl{color:var(--ink-900); font-weight:600;}
   .stepper .bar{width:26px; height:2px; background:var(--line); margin:0 4px; flex-shrink:0;}
+  .lifecycle-timeline{display:flex; flex-direction:column; margin-bottom:6px;}
+  .lc-row{position:relative; padding-left:24px; padding-bottom:14px;}
+  .lc-row:last-child{padding-bottom:0;}
+  .lc-row:not(:last-child)::before{content:''; position:absolute; left:5px; top:15px; bottom:-2px; width:2px; background:var(--line);}
+  .lc-row.reached:not(:last-child)::before{background:var(--green-700);}
+  .lc-dot{position:absolute; left:0; top:3px; width:11px; height:11px; border-radius:50%; background:var(--paper-0); border:2px solid var(--line);}
+  .lc-row.reached .lc-dot{background:var(--green-700); border-color:var(--green-700);}
+  .lc-title{font-size:12.5px; font-weight:700; color:var(--ink-900); line-height:1.4;}
+  .lc-row:not(.reached) .lc-title{color:var(--ink-400); font-weight:600;}
+  .lc-meta{font-size:11.5px; color:var(--ink-600); margin-top:2px;}
   .stepper .step.filled + .bar{background:var(--accent-600);}
 
   .audit-list{display:flex; flex-direction:column; gap:8px; max-height:180px; overflow-y:auto;}
@@ -922,7 +943,12 @@
         </div>
       </div>
       <div class="field" data-field="rConsequence"><label>Прямое следствие</label><textarea id="rConsequence" placeholder="К чему это приведёт для проекта"></textarea></div>
-      <div class="field" data-field="rOwner"><label>Предполагаемый владелец(ы)</label><input type="text" id="rOwner" placeholder="ФИО через запятую, если несколько">
+      <div class="field" data-field="rOwner"><label>Предполагаемый владелец(ы)</label>
+        <div class="ds-ms" id="rOwnerMs">
+          <div class="ds-ms-chips" id="rOwnerChips"></div>
+          <button type="button" class="ds-ms-addbtn" id="rOwnerAddBtn">+ Добавить из списка пользователей</button>
+          <div class="ds-ms-menu" id="rOwnerMenu" hidden></div>
+        </div>
         <div class="field-hint">Владелец риска — массив; на карточке можно указать нескольких совладельцев</div>
       </div>
       <div class="field" data-field="rStrategyRationale" id="rStrategyRationaleField" hidden><label>Обоснование выбора стратегии обработки</label><textarea id="rStrategyRationale" placeholder="Почему выбрана эта стратегия и мероприятия именно такие"></textarea></div>
@@ -1206,13 +1232,28 @@ function findSimilarLesson(text){
 // фото (imageSrc) → инициалы (userName/userSurname) → нейтральная иконка-
 // силуэт (полный аналог поведения <Avatar/> без пропсов из образца кода).
 // ===================================================================
-function avatarHtml({firstName, lastName, imageSrc, size} = {}){
+function avatarHtml({firstName, lastName, imageSrc, size, colorPair} = {}){
   const sz = size || 36;
-  const style = `width:${sz}px;height:${sz}px;font-size:${Math.round(sz*0.38)}px;`;
+  let style = `width:${sz}px;height:${sz}px;font-size:${Math.round(sz*0.38)}px;`;
+  if (colorPair) style += `background:linear-gradient(135deg,${colorPair[0]},${colorPair[1]});`;
   if (imageSrc) return `<span class="ds-avatar" style="${style}"><img src="${esc(imageSrc)}" alt=""></span>`;
   const initials = ((firstName||'').trim().charAt(0) + (lastName||'').trim().charAt(0)).toUpperCase();
   if (initials.trim()) return `<span class="ds-avatar" style="${style}">${esc(initials)}</span>`;
   return `<span class="ds-avatar" style="${style}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg></span>`;
+}
+// Индивидуальный цвет пользователя (не общий синий для всей роли) — hash
+// имени в пару оттенков из фиксированной палитры; детерминированно и
+// стабильно для одного и того же ФИО между заходами.
+const USER_COLOR_PALETTE = [
+  ['#112542','#167ffb'], ['#0b5fc2','#4f6fe0'], ['#167ffb','#17b6c4'],
+  ['#5b21b6','#8b5cf6'], ['#0f766e','#14b8a6'], ['#92400e','#d97706'],
+  ['#9f1239','#e11d48'], ['#065f46','#059669'],
+];
+function userColorPair(name){
+  let h = 0;
+  const s = name || '';
+  for (let i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) | 0;
+  return USER_COLOR_PALETTE[Math.abs(h) % USER_COLOR_PALETTE.length];
 }
 
 // ===================================================================
@@ -1459,6 +1500,17 @@ function buildSeedLessons(){
     sourceRiskId: null, createdAt: null,
   }));
 }
+// Каталог пользователей для пикеров «Владелец риска» / «Ответственный» —
+// реальные ФИО из seed-данных (владельцы рисков + ответственные по
+// мероприятиям ЦГП-2), а не выдуманный справочник.
+const ALL_USERS = (function(){
+  const set = new Set();
+  RAW_RISKS.forEach(r => {
+    (r.owner||'').split(',').forEach(n => { const t=n.trim(); if (t) set.add(t); });
+    (r.actions||[]).forEach(a => (a.resp||'').split(',').forEach(n => { const t=n.trim(); if (t) set.add(t); }));
+  });
+  return Array.from(set).sort((a,b) => a.localeCompare(b,'ru'));
+})();
 
 // ===== состояние + персистентность =====
 // v3: раньше в это же хранилище мог быть сохранён устаревший снимок, где
@@ -1751,14 +1803,15 @@ function enterWorkspace(){
   document.getElementById('appShell').hidden = false;
   document.getElementById('notifWrap').hidden = false;
 
+  const userColors = userColorPair(sessionName());
   document.getElementById('topbarUser').hidden = false;
   document.getElementById('topbarUserName').textContent = sessionName();
   document.getElementById('topbarUserRole').textContent = roleLabel(state.session.role);
-  document.getElementById('topbarAvatar').innerHTML = avatarHtml({firstName:state.session.firstName, lastName:state.session.lastName, size:38});
+  document.getElementById('topbarAvatar').innerHTML = avatarHtml({firstName:state.session.firstName, lastName:state.session.lastName, size:38, colorPair:userColors});
 
   const isOwner = state.session.role === 'riskowner';
   buildNav(state.session.role);
-  document.getElementById('wsSidebar').classList.toggle('ws-sidebar--owner', isOwner);
+  document.getElementById('wsSidebar').style.background = `linear-gradient(165deg, ${userColors[0]}, ${userColors[1]} 150%)`;
 
   populateCategorySelect(document.getElementById('rCategory'));
   populateCategorySelect(document.getElementById('regFiltCat'));
@@ -2194,6 +2247,7 @@ function riskCardHtml(r){
     <div class="rc-head">
       <div class="rc-head-left">
         <div class="risk-card-top" style="margin-bottom:6px;">
+          ${r.isNew ? `<span class="badge-pill badge-new">NEW</span>` : ''}
           <span class="risk-card-title">${esc(r.title)}</span>
           ${zone ? `<span class="badge-pill ${ZONE_BADGE[zone]}">${ZONE_LABEL[zone]}</span>` : `<span class="badge-pill" style="background:var(--canvas);color:var(--ink-400);">Не оценён</span>`}
           ${r.committeeFlag ? `<span class="badge-pill badge-esc">Эскалация комитету</span>` : ''}
@@ -2280,8 +2334,10 @@ function renderRegister(){
   if (search) list = list.filter(r => (r.title+r.event+r.consequence+r.ownerNames.join(' ')+r.id).toLowerCase().includes(search));
   if (registerQuickFilter && QUICK_FILTERS[registerQuickFilter]) list = list.filter(QUICK_FILTERS[registerQuickFilter].test);
 
-  // Сортировка топ-критичных сверху (RRA убыв., без оценки — в конце).
+  // Новые риски — всегда первыми (метка NEW), внутри каждой группы —
+  // сортировка топ-критичных сверху (RRA убыв., без оценки — в конце).
   list = list.slice().sort((a,b) => {
+    if (!!b.isNew !== !!a.isNew) return (b.isNew?1:0) - (a.isNew?1:0);
     const ra = rraOf(a.p, a.iLevel), rb = rraOf(b.p, b.iLevel);
     if (ra == null && rb == null) return 0;
     if (ra == null) return 1;
@@ -2385,6 +2441,33 @@ let riskCreatePrefill = null;
 // ОДНОВРЕМЕННО создавало ещё и новый риск (оба обработчика срабатывали разом).
 let riskFormMode = 'create';
 let riskEditingRisk = null;
+// MultiSelect «Владелец(ы) риска» — общее состояние формы создания/правки,
+// подставляется из ALL_USERS (реальный каталог, не свободный текст).
+let riskOwnerSelection = [];
+function renderOwnerChips(){
+  document.getElementById('rOwnerChips').innerHTML = riskOwnerSelection.map(n =>
+    `<span class="ds-chip">${esc(n)}<button type="button" data-remove-owner="${esc(n)}" aria-label="Удалить">×</button></span>`).join('');
+  document.querySelectorAll('#rOwnerChips [data-remove-owner]').forEach(b => b.addEventListener('click', () => {
+    riskOwnerSelection = riskOwnerSelection.filter(n => n !== b.dataset.removeOwner);
+    renderOwnerChips();
+  }));
+}
+function toggleOwnerMenu(show){
+  const menu = document.getElementById('rOwnerMenu');
+  if (show){
+    const rest = ALL_USERS.filter(n => !riskOwnerSelection.includes(n));
+    menu.innerHTML = rest.length ? rest.map(n => `<div class="ds-ms-item" data-add-owner="${esc(n)}">${esc(n)}</div>`).join('')
+      : '<div class="ds-ms-empty">Все пользователи уже добавлены</div>';
+    menu.querySelectorAll('[data-add-owner]').forEach(el => el.addEventListener('click', () => {
+      riskOwnerSelection.push(el.dataset.addOwner);
+      renderOwnerChips();
+      toggleOwnerMenu(false);
+    }));
+  }
+  menu.hidden = !show;
+}
+document.getElementById('rOwnerAddBtn').addEventListener('click', (e) => { e.stopPropagation(); toggleOwnerMenu(document.getElementById('rOwnerMenu').hidden); });
+document.addEventListener('click', (e) => { if (!e.target.closest('#rOwnerMs')) toggleOwnerMenu(false); });
 function openRiskCreateModal(prefill){
   riskFormMode = 'create'; riskEditingRisk = null;
   riskCreatePrefill = prefill || null;
@@ -2395,7 +2478,7 @@ function openRiskCreateModal(prefill){
   document.getElementById('rTitle').value = prefill && prefill.title ? prefill.title : '';
   document.getElementById('rEvent').value = prefill && prefill.event ? prefill.event : '';
   document.getElementById('rConsequence').value = prefill && prefill.consequence ? prefill.consequence : '';
-  document.getElementById('rOwner').value = '';
+  riskOwnerSelection = []; renderOwnerChips(); toggleOwnerMenu(false);
   document.getElementById('rStrategyRationale').value = '';
   document.getElementById('rStrategyRationaleField').hidden = true;
   document.getElementById('riskSourceQuote').innerHTML = (prefill && prefill.sourceQuote)
@@ -2440,7 +2523,6 @@ function submitNewRisk(){
   const title = document.getElementById('rTitle');
   const eventEl = document.getElementById('rEvent');
   const cons = document.getElementById('rConsequence');
-  const owner = document.getElementById('rOwner');
   let ok = true;
   [['rCategory',category.value], ['rTitle',title.value.trim()], ['rEvent',eventEl.value.trim()], ['rConsequence',cons.value.trim()]].forEach(([name,val]) => {
     const f = document.querySelector(`.field[data-field="${name}"]`);
@@ -2453,14 +2535,14 @@ function submitNewRisk(){
   const risk = {
     id: uid('12-1111-new') , displayNumber: num, projectSpp: state.session.spp, category: category.value,
     title: title.value.trim(), status: 'Идентификация', authorName: sessionName(),
-    ownerNames: owner.value.trim() ? owner.value.split(',').map(s=>s.trim()).filter(Boolean) : [],
+    ownerNames: riskOwnerSelection.slice(),
     cause: '', event: eventEl.value.trim(), consequence: cons.value.trim(),
     pChecklist: null, p: null, iLevel: null, iJustification: null, committeeFlag: false,
     committeeDecision: null, committeeDecisionDate: null,
     quantProbabilityPct: null, quantBudgetImpactMln: null, quantScheduleImpactMonths: null, residualRra: null,
     sourceLessonId: riskCreatePrefill ? riskCreatePrefill.sourceLessonId||null : null,
     mergedIntoId: null, reviewFrequencyDays: null, nextReviewDate: null, createdAt: nowStr(),
-    actions: [],
+    actions: [], isNew: true,
   };
   state.risks.push(risk);
   pushAudit(risk.id, null, 'Идентификация', 'Риск подан' + (risk.sourceLessonId ? ` на основе урока ${risk.sourceLessonId}` : ''));
@@ -2483,6 +2565,8 @@ function submitNewRisk(){
 let currentPassportId = null;
 function openPassport(riskId){
   currentPassportId = riskId;
+  const r = findRisk(riskId);
+  if (r && r.isNew){ r.isNew = false; saveState(); }
   renderPassport();
   openModal('passportModalOverlay');
 }
@@ -2505,6 +2589,88 @@ function relatedRisksHtml(riskId){
   }).join('');
   return rows || '<span class="muted">не связан с другими рисками</span>';
 }
+// Жизненный цикл и согласование — вертикальный таймлайн по реальным
+// переходам статуса из AuditLog (тот же принцип, что и у renderRraTrend/
+// renderAuditForRisk: без выдуманных дат и ответственных). Если риск уже
+// достиг стадии, но запись перехода отсутствует (обычная ситуация для
+// seed-рисков, загруженных сразу в статусе «Мониторинг и Контроль», без
+// истории переходов в этой демо-сессии) — честно показываем заглушку,
+// а не придуманные имя/дату.
+const LIFECYCLE_STAGE_DESC = {
+  'Идентификация': 'риск выявлен, заявлен владельцем',
+  'Анализ и оценка': 'определены корневые причины и риск-событие, проведена оценка по уровню критичности',
+  'Управление': 'определена стратегия управления риском (реагирование), разработаны мероприятия',
+  'Мониторинг и Контроль': 'периодический мониторинг внешних факторов и выполнения мероприятий',
+  'Закрыт': 'риск закрыт, черновик урока сформирован в базе знаний',
+};
+function lifecycleTimelineHtml(r){
+  const stepIdx = STATUSES.indexOf(r.status);
+  return `<div class="lifecycle-timeline">${STATUSES.map((s,i) => {
+    const reached = i <= stepIdx;
+    const entry = state.audit.find(a => a.riskId === r.id && a.toStatus === s);
+    return `<div class="lc-row${reached?' reached':''}">
+      <span class="lc-dot"></span>
+      <div class="lc-body">
+        <div class="lc-title">${esc(s)} — ${esc(LIFECYCLE_STAGE_DESC[s]||'')}</div>
+        ${reached ? (entry ? `<div class="lc-meta">${esc(entry.actorName)} · ${esc(entry.timestamp)}</div>` : `<div class="lc-meta muted">данные о переходе не зафиксированы в этой демо-сессии</div>`) : ''}
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+// Ячейка «Ответственный» в таблице мероприятий — если ответственный ещё
+// не назначен, вместо «—» показываем кнопку назначения (из каталога
+// пользователей ALL_USERS или по email — для внешних участников).
+function assigneeCellHtml(a, editable){
+  if (a.assignee) return esc(a.assignee);
+  if (!editable) return '<span class="muted">—</span>';
+  return `<button type="button" class="btn-sm" data-assign-action="${a.id}">Назначить</button>`;
+}
+function openAssignActionModal(r, action){
+  const body = `
+    <div class="ds-ms-menu" style="position:static; max-height:220px;">
+      ${ALL_USERS.map(n => `<div class="ds-ms-item" data-assign-user="${esc(n)}">${esc(n)}</div>`).join('')}
+    </div>
+    <div class="field" style="margin-top:14px;"><label>Или назначить по email (если не в списке пользователей)</label>
+      <input type="email" id="assignEmailInput" placeholder="name@nlmk.com">
+    </div>
+    <div class="btn-row" style="margin-top:10px;"><button type="button" class="btn btn-primary" id="assignEmailBtn" style="flex:1;">Отправить приглашение на email</button></div>`;
+  openChartModal('Назначить ответственного', `Мероприятие: «${action.title}»`, body);
+  document.querySelectorAll('#chartModalMount [data-assign-user]').forEach(el => el.addEventListener('click', () => {
+    action.assignee = el.dataset.assignUser;
+    saveState(); closeModal('chartModalOverlay'); toast(`Ответственным назначен(а) ${action.assignee}`); renderPassport();
+  }));
+  document.getElementById('assignEmailBtn').addEventListener('click', () => {
+    const email = document.getElementById('assignEmailInput').value.trim();
+    if (!email){ toast('Введите email'); return; }
+    action.assignee = email; action.assigneeInvitedByEmail = true;
+    saveState(); closeModal('chartModalOverlay');
+    toast('Приглашение отправлено на ' + email, {body:'Демо: реальная отправка письма не выполняется.', duration:4000});
+    renderPassport();
+  });
+}
+function isoDatePlus(days){
+  const d = new Date(TODAY); d.setDate(d.getDate()+days);
+  return d.toISOString().slice(0,10);
+}
+// «Добавить в повестку риск-сессии» — связывает риск с календарём через
+// ту же модель дневных заметок (dayNotes, тип 'session'), что уже
+// используется для риск-сессий в календаре, плюс riskId для обратной ссылки.
+function openAddToAgendaModal(r){
+  const body = `
+    <div class="field"><label>Дата риск-сессии</label><input type="date" id="agendaDateInput" value="${isoDatePlus(7)}"></div>
+    <div class="btn-row" style="margin-top:10px;"><button type="button" class="btn btn-primary" id="agendaSubmitBtn" style="flex:1;">Добавить в повестку</button></div>`;
+  openChartModal('Добавить в повестку риск-сессии', `Риск: «${r.title}»`, body);
+  document.getElementById('agendaSubmitBtn').addEventListener('click', () => {
+    const val = document.getElementById('agendaDateInput').value;
+    if (!val){ toast('Выберите дату'); return; }
+    const [y,m,d] = val.split('-').map(Number);
+    const key = dayKey(y, m-1, d);
+    (state.dayNotes[key] = state.dayNotes[key]||[]).push({id:uid('note'), type:'session',
+      text:'Обсуждение риска: ' + r.title, author:sessionName(), createdAt:nowStr(), riskId:r.id});
+    saveState(); closeModal('chartModalOverlay');
+    toast('Риск добавлен в повестку риск-сессии', {body: new Date(y,m-1,d).toLocaleDateString('ru-RU'), duration:4000});
+  });
+}
 function renderPassport(){
   const r = findRisk(currentPassportId);
   const mount = document.getElementById('passportMount');
@@ -2525,9 +2691,13 @@ function renderPassport(){
 
   mount.innerHTML = `
     <div class="btn-row" style="justify-content:flex-end;margin-bottom:10px;">
+      <button type="button" class="btn btn-text btn-sm" id="pAgendaBtn">📅 Добавить в повестку риск-сессии</button>
       <button type="button" class="btn btn-text btn-sm" id="pPrintBtn">🖶 Экспорт / печать паспорта</button>
     </div>
     <div class="stepper">${STATUSES.map((s,i) => `<span class="step ${i<stepIdx?'filled':''} ${i===stepIdx?'current':''}"><span class="dot">${i+1}</span><span class="lbl">${s}</span></span>${i<STATUSES.length-1?'<span class="bar"></span>':''}`).join('')}</div>
+
+    <h3 class="pp-h">ЖИЗНЕННЫЙ ЦИКЛ И СОГЛАСОВАНИЕ</h3>
+    ${lifecycleTimelineHtml(r)}
 
     <h3 class="pp-h">ИДЕНТИФИКАЦИЯ</h3>
     <div class="passport-grid passport-grid-2">
@@ -2580,7 +2750,7 @@ function renderPassport(){
 
     <h3 class="pp-h">КОНТРОЛИ (существующие процедуры)</h3>
     ${controls.length ? `<div class="actions-table-wrap" style="margin-bottom:16px;"><table class="data-table"><thead><tr><th>Контроль</th><th>Эффективность</th><th>Ответственный оператор</th>${editable?'<th></th>':''}</tr></thead><tbody>
-      ${controls.map(a => `<tr><td>${esc(a.title)}</td><td>${CONTROL_EFFECT[a.status]}</td><td>${esc(a.assignee||'—')}</td>${editable?`<td><button class="btn-sm" data-edit-action="${a.id}">✎</button></td>`:''}</tr>`).join('')}
+      ${controls.map(a => `<tr><td>${esc(a.title)}</td><td>${CONTROL_EFFECT[a.status]}</td><td>${assigneeCellHtml(a, editable)}</td>${editable?`<td><button class="btn-sm" data-edit-action="${a.id}">✎</button></td>`:''}</tr>`).join('')}
     </tbody></table></div>` : `<div class="empty-state" style="margin-bottom:16px;">Существующих процедур контроля пока не привязано.</div>`}
 
     <div class="btn-row" style="margin-bottom:16px;">
@@ -2593,7 +2763,7 @@ function renderPassport(){
 
     <h3 class="pp-h">МЕРОПРИЯТИЯ (${planActions.length})</h3>
     ${planActions.length ? `<div class="actions-table-wrap"><table class="data-table"><thead><tr><th>Стратегия</th><th>Мероприятие</th><th>Вид</th><th>Ответственный</th><th>План</th><th>Прогноз/факт</th><th>Стоимость</th><th>Статус</th>${editable?'<th></th>':''}</tr></thead><tbody>
-      ${planActions.map(a => `<tr><td>${esc(a.strategy)}</td><td>${esc(a.title)}${a.triggerCondition?`<div class="muted" style="font-size:11px;margin-top:2px;">Запасной план: ${esc(a.triggerCondition)}</div>`:''}</td><td>${ACTION_KIND_LABEL[a.kind]}</td><td>${esc(a.assignee||'—')}</td>
+      ${planActions.map(a => `<tr><td>${esc(a.strategy)}</td><td>${esc(a.title)}${a.triggerCondition?`<div class="muted" style="font-size:11px;margin-top:2px;">Запасной план: ${esc(a.triggerCondition)}</div>`:''}</td><td>${ACTION_KIND_LABEL[a.kind]}</td><td>${assigneeCellHtml(a, editable)}</td>
         <td class="mono">${esc(a.plannedDate||'—')}${a.plannedDate && a.status!=='done' && a.status!=='rejected' && parseRuShortDate(a.plannedDate) && parseRuShortDate(a.plannedDate) < TODAY ? ' <span style="color:var(--red-700);">⚠ просрочено</span>' : ''}</td><td class="mono">${esc(a.forecastActualDate||'—')}</td><td class="mono">${esc(a.cost||'—')}</td>
         <td><span class="status-dot-row"><i class="status-dot" style="background:${ACTION_STATUS_COLOR[a.status]}"></i>${ACTION_STATUS_LABEL[a.status]}</span></td>
         ${editable?`<td><button class="btn-sm" data-edit-action="${a.id}">✎</button></td>`:''}</tr>`).join('')}
@@ -2626,6 +2796,8 @@ function renderPassport(){
   mount.querySelectorAll('[data-related-risk]').forEach(el => el.addEventListener('click', () => openPassport(el.dataset.relatedRisk)));
   const printBtn = document.getElementById('pPrintBtn');
   if (printBtn) printBtn.addEventListener('click', () => window.print());
+  const agendaBtn = document.getElementById('pAgendaBtn');
+  if (agendaBtn) agendaBtn.addEventListener('click', () => openAddToAgendaModal(r));
   const residualBtn = document.getElementById('pResidualBtn');
   if (residualBtn) residualBtn.addEventListener('click', () => {
     const comment = prompt('Комментарий к принятию остаточного риска (необязательно):') || '';
@@ -2644,6 +2816,7 @@ function renderPassport(){
     saveState(); toast('Риск эскалирован'); renderPassport(); renderAll();
   });
   mount.querySelectorAll('[data-edit-action]').forEach(b => b.addEventListener('click', () => openActionModal(r, r.actions.find(a=>a.id===b.dataset.editAction))));
+  mount.querySelectorAll('[data-assign-action]').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); openAssignActionModal(r, r.actions.find(a=>a.id===b.dataset.assignAction)); }));
 }
 // Оценка риска по времени — берём из AuditLog реальные переходы статуса
 // (единственная реальная временная ось, которая у нас есть на риске), без
@@ -2706,7 +2879,7 @@ function generateLessonDraft(r){
 }
 function openRiskEditModal(r){
   openRiskCreateModal({title:r.title, event:r.event, consequence:r.consequence, category:r.category, editingId:r.id});
-  document.getElementById('rOwner').value = r.ownerNames.join(', ');
+  riskOwnerSelection = r.ownerNames.slice(); renderOwnerChips(); toggleOwnerMenu(false);
   // «Обоснование стратегии» имеет смысл только когда у риска уже есть мероприятия —
   // при создании нового риска (компактная форма Инициатора/«+Добавить риск») поле скрыто.
   document.getElementById('rStrategyRationaleField').hidden = false;
@@ -2722,7 +2895,7 @@ function saveRiskEdit(r){
   if (!title || !eventVal || !consVal){ toast('Заполните название, риск-событие и следствие'); return; }
   r.title = title; r.category = document.getElementById('rCategory').value;
   r.event = eventVal; r.consequence = consVal;
-  r.ownerNames = document.getElementById('rOwner').value.split(',').map(s=>s.trim()).filter(Boolean);
+  r.ownerNames = riskOwnerSelection.slice();
   r.strategyRationale = document.getElementById('rStrategyRationale').value.trim();
   saveState(); closeModal('riskModalOverlay'); toast('Карточка риска обновлена');
   riskFormMode = 'create'; riskEditingRisk = null;
@@ -3005,7 +3178,21 @@ function renderLessonsTable(){
 // Заголовок карточки — формулировка проблемы (description, реальный нарратив
 // инцидента), не короткое имя; рекомендация/вывод (title) — подстрокой ниже;
 // всё остальное (корневая причина, влияние, триггер, урок, рекомендация) — в детальной карточке.
+// Процент повторяемости — схожесть с самым похожим ДРУГИМ уроком базы по
+// категории и хештегам (тот же принцип пересечения токенов — jaccard —
+// что и у AI-поиска/поиска дублей выше), а не фиксированная оценка.
+function lessonRepeatRate(l){
+  const myTokens = tokenize(l.category + ' ' + l.hashtags.join(' '));
+  let best = 0, bestMatch = null;
+  state.lessons.forEach(x => {
+    if (x.id === l.id) return;
+    const score = jaccard(myTokens, tokenize(x.category + ' ' + x.hashtags.join(' ')));
+    if (score > best){ best = score; bestMatch = x; }
+  });
+  return {pct: Math.round(best*100), matchId: bestMatch ? bestMatch.id : null, matchTitle: bestMatch ? bestMatch.title : null};
+}
 function lessonCardHtml(l){
+  const rr = lessonRepeatRate(l);
   return `<div class="risk-card" data-lesson-id="${l.id}" style="cursor:pointer;" data-open-lesson="${l.id}">
     <div class="rc-head">
       <div class="rc-head-left">
@@ -3019,10 +3206,11 @@ function lessonCardHtml(l){
         <button class="btn btn-sm" data-open-lesson="${l.id}">Детали</button>
       </div>
     </div>
-    <div class="rc-meta4" style="grid-template-columns:1fr 1fr 1fr;">
+    <div class="rc-meta4">
       <div><div class="k">Категория</div><div class="v">${esc(l.category)}</div></div>
       <div><div class="k">Фаза</div><div class="v">${esc(l.phase||'—')}</div></div>
       <div><div class="k">Стратегия</div><div class="v">${esc(l.strategy||'—')}</div></div>
+      <div><div class="k">Повторяемость</div><div class="v" title="${rr.matchTitle ? 'Похож на урок '+esc(rr.matchId)+': «'+esc(rr.matchTitle)+'»' : 'Похожих уроков по категории/тегам не найдено'}">${rr.pct}%</div></div>
     </div>
     <div style="margin-bottom:10px;">${l.hashtags.map(t=>`<span class="lesson-tag-pill">${t}</span>`).join('')}</div>
     <div class="risk-card-foot">${l.sourceRiskId?`<span>источник — риск <code class="mono">${l.sourceRiskId}</code></span>`:'<span></span>'}<button class="link-btn btn-sm" data-create-risk="${l.id}">Создать риск на основе урока →</button></div>
@@ -3239,7 +3427,7 @@ function openDayNotesModal(y, m, d){
 function dayNotesBodyHtml(y,m,d){
   const notes = notesFor(y,m,d);
   return `<div id="dayNotesList">${notes.length ? notes.map(n => { const t=noteType(n.type); return `
-    <div class="cal-note-row"><div style="flex:1;"><div class="cal-note-type" style="color:${t.color}">${esc(t.label)}</div><div style="font-size:13px;margin-top:2px;">${esc(n.text)}</div>${n.author?`<div class="muted" style="font-size:11px;margin-top:2px;">${esc(n.author)}</div>`:''}</div>
+    <div class="cal-note-row"><div style="flex:1;"><div class="cal-note-type" style="color:${t.color}">${esc(t.label)}</div><div style="font-size:13px;margin-top:2px;">${esc(n.text)}</div>${n.author?`<div class="muted" style="font-size:11px;margin-top:2px;">${esc(n.author)}</div>`:''}${n.riskId?`<a href="#" data-open-risk-from-note="${n.riskId}" style="font-size:11px;font-weight:600;">Открыть риск →</a>`:''}</div>
       <button type="button" class="cal-note-del" data-del-note="${n.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`; }).join('') : '<p class="muted" style="font-size:12.5px;">Заметок пока нет.</p>'}</div>
     <div class="btn-row" style="margin:14px 0 8px;gap:8px;">
       <select id="dnType" style="flex:1;">${NOTE_TYPES.map(t=>`<option value="${t.key}">${t.label}</option>`).join('')}</select>
@@ -3249,6 +3437,11 @@ function dayNotesBodyHtml(y,m,d){
 }
 function wireDayNotesForm(y,m,d){
   enhanceSelectAsAutocomplete(document.getElementById('dnType'));
+  document.querySelectorAll('[data-open-risk-from-note]').forEach(a => a.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeModal('chartModalOverlay');
+    openPassport(a.dataset.openRiskFromNote);
+  }));
   document.querySelectorAll('[data-del-note]').forEach(b => b.addEventListener('click', () => {
     const key = dayKey(y,m,d);
     state.dayNotes[key] = (state.dayNotes[key]||[]).filter(n=>n.id!==b.dataset.delNote);
