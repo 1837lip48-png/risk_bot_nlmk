@@ -351,6 +351,16 @@
   .migration-dot-sw.inherent{background:#fff; border:2px solid var(--ink-700);}
   .migration-dot-sw.residual{background:var(--accent-600); border:2px solid var(--accent-600);}
 
+  /* Risk Heat Map Radar — карточки категорий под радаром */
+  .radar-cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; margin-top:22px;}
+  .radar-card{border:1px solid var(--line); border-radius:var(--radius-field); padding:12px 14px; background:var(--paper-0); transition:border-color .15s ease;}
+  .radar-card:hover{border-color:var(--accent-600);}
+  .radar-card-top{display:flex; align-items:center; gap:8px;}
+  .radar-card-dot{width:9px; height:9px; border-radius:50%; flex-shrink:0;}
+  .radar-card-name{font-size:12.5px; font-weight:700; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .radar-card-bar{height:5px; border-radius:3px; background:var(--canvas); overflow:hidden;}
+  .radar-card-bar-fill{height:100%; border-radius:3px;}
+
   .ai-hint{display:none; margin-top:8px; background:var(--ai-50); border:1px solid var(--purple-50); border-radius:var(--radius-field);
     padding:10px 12px; gap:8px;}
   .ai-hint.show{display:flex;}
@@ -401,7 +411,12 @@
   .ws-content h1{font-family:var(--font-display); font-size:var(--fs-h3); line-height:var(--lh-h3); font-weight:800; margin:0 0 4px;}
   .ws-content .ws-desc{font-size:var(--fs-body2); line-height:var(--lh-body2); color:var(--ink-600); margin:0; max-width:60ch;}
   .ws-page[hidden]{display:none;}
-  .ws-header-row{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:22px;}
+  /* Sticky — шапка страницы остаётся видимой при прокрутке .ws-content, но
+     не наезжает "прозрачно" на контент: сплошной фон под цвет канвы плюс
+     нижняя граница/паддинг, растянутые до краёв контейнера. */
+  .ws-header-row{display:flex; align-items:flex-start; justify-content:space-between; gap:16px;
+    position:sticky; top:0; z-index:6; background:var(--canvas);
+    margin:-30px -34px 22px; padding:26px 34px 16px; border-bottom:1px solid var(--line);}
 
   .notif-wrap{position:relative; flex-shrink:0;}
   .notif-bell{position:relative; width:38px; height:38px; border-radius:50%; border:1px solid var(--line);
@@ -423,6 +438,16 @@
   .notif-item .nt-d{font-size:11.5px; color:var(--ink-600); margin-top:2px;}
   .notif-empty{padding:16px; text-align:center; font-size:12.5px; color:var(--ink-400);}
 
+  .dash-toolbar{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; flex-wrap:wrap;}
+  .dash-freshness{display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-600);}
+  .dash-freshness svg{width:14px; height:14px; color:var(--ink-400);}
+  .trend-crit-row{display:flex; gap:28px; align-items:flex-end; padding-top:10px; flex-wrap:wrap;}
+  .trend-crit-col{display:flex; flex-direction:column; align-items:center; gap:4px;}
+  .trend-crit-bars{display:flex; align-items:flex-end; gap:4px; height:110px;}
+  .trend-crit-bar{width:22px; border-radius:4px 4px 0 0; min-height:3px;}
+  .trend-crit-lbl{font-size:11.5px; font-weight:700; color:var(--ink-700); margin-top:4px;}
+  .trend-crit-nums{font-size:10.5px; color:var(--ink-400); font-family:var(--font-mono);}
+  .trend-delta{font-size:10.5px; font-weight:700;}
   .kpi-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:22px;}
   .kpi-card{display:flex; flex-direction:column; gap:8px; padding:15px; border-radius:var(--radius-field); background:var(--paper-0); border:1px solid var(--line); transition:background-color .15s ease;}
   .kpi-card.clickable{cursor:pointer;}
@@ -915,6 +940,7 @@
     <div class="ws-page" data-page="calendar" hidden><div id="calendarMount"></div></div>
     <div class="ws-page" data-page="map" hidden><div id="mapMount"></div></div>
     <div class="ws-page" data-page="reports" hidden><div id="reportsMount"></div></div>
+    <div class="ws-page" data-page="premortem" hidden><div id="premortemMount"></div></div>
   </main>
 </div>
 
@@ -1569,6 +1595,8 @@ function computeKpiSnapshot(risks){
   return {
     active: active.length,
     high: active.filter(r => zoneOf(rraOf(r.p, r.iLevel)) === 'high').length,
+    medium: active.filter(r => zoneOf(rraOf(r.p, r.iLevel)) === 'medium').length,
+    low: active.filter(r => zoneOf(rraOf(r.p, r.iLevel)) === 'low').length,
     done: allActions.filter(a => a.status === 'done').length,
     overdue: allActions.filter(a => {
       if (a.status === 'done' || a.status === 'rejected') return false;
@@ -1820,6 +1848,7 @@ const NAV_ICONS = {
   calendar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>',
   map:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M8.5 10.8L15.5 7M8.5 13.2L15.5 17"/></svg>',
   reports:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.8 5.6L19 9l-5.2 1.4L12 16l-1.8-5.6L5 9l5.2-1.4L12 2z"/></svg>',
+  premortem:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.6 18a1.5 1.5 0 0 0 1.3 2.2h16.2a1.5 1.5 0 0 0 1.3-2.2L13.7 3.9a1.5 1.5 0 0 0-2.6 0z"/></svg>',
 };
 // Риск-менеджер — портфель проекта целиком, 7 вкладок.
 // Владелец риска — ОТДЕЛЬНОЕ, намеренно узкое рабочее пространство: только
@@ -1829,6 +1858,7 @@ const NAV_BY_ROLE = {
   riskmanager:[
     ['dashboard','Дэшборд'], ['register','Реестр рисков'], ['matrix','Матрица рисков'],
     ['lessons','Реестр уроков'], ['calendar','Календарь'], ['map','Карта взаимосвязей'], ['reports','Reports & Analytics'],
+    ['premortem','PreMortem Analysis'],
   ],
   riskowner:[
     ['register','Мои риски'], ['calendar','Календарь'],
@@ -1888,6 +1918,7 @@ const PAGE_META = {
   calendar:{title:'Календарь', desc:'Сроки мероприятий и просрочки, рассчитанные из реальных плановых дат.'},
   map:{title:'Карта взаимосвязей', desc:'Ручное построение связей между рисками и объединение дублей.'},
   reports:{title:'Privacy Reports & Analytics', desc:'Executive Summary и AI-подсказки связей — считаются из текущих данных.'},
+  premortem:{title:'PreMortem Analysis', desc:'Заблаговременный разбор «что могло пойти не так» — раздел в разработке.'},
 };
 // Заголовки вкладок для владельца риска — то же пространство физически
 // (одни и те же контейнеры и функции рендера), но подписи и описания честно
@@ -1904,7 +1935,7 @@ function gotoPage(key){
   document.getElementById('wsDesc').textContent = meta.desc;
   document.querySelectorAll('.ws-page').forEach(p => p.hidden = p.dataset.page !== key);
   ({dashboard:renderDashboard, register:renderRegister, matrix:renderMatrix,
-    lessons:renderLessons, calendar:renderCalendar, map:renderMap, reports:renderReports})[key]();
+    lessons:renderLessons, calendar:renderCalendar, map:renderMap, reports:renderReports, premortem:renderPremortem})[key]();
   renderNotifBell();
 }
 function populateCategorySelect(sel, withEmpty){
@@ -2001,6 +2032,39 @@ function svgBarChartRows(data){
     <div class="chart-bar" style="height:${Math.max(4, d.count/max*120)}px;background:${d.color};"></div>
     <span class="chart-bar-lbl">${esc(d.shortLabel||d.label)}</span>
   </div>`).join('')}</div>`;
+}
+// Тренд рисков по критичности — реальное сравнение с началом текущей
+// демо-сессии (state.baseline, тот же снимок, что уже используется для
+// трендов KPI-карточек), без выдуманной многоточечной истории.
+function trendCriticalityHtml(base, risks){
+  const now = {
+    low: risks.filter(r=>zoneOf(rraOf(r.p,r.iLevel))==='low').length,
+    medium: risks.filter(r=>zoneOf(rraOf(r.p,r.iLevel))==='medium').length,
+    high: risks.filter(r=>zoneOf(rraOf(r.p,r.iLevel))==='high').length,
+  };
+  const zones = [
+    {key:'low', label:'Low', color:'var(--green-700)'},
+    {key:'medium', label:'Medium', color:'var(--amber-700)'},
+    {key:'high', label:'High', color:'var(--red-700)'},
+  ];
+  const max = Math.max(base.low||0, base.medium||0, base.high||0, now.low, now.medium, now.high, 1);
+  const cols = zones.map(z => {
+    const b = base[z.key]||0, n = now[z.key], delta = n - b;
+    const deltaHtml = delta===0 ? `<span class="trend-delta muted">без изменений</span>`
+      : delta>0 ? `<span class="trend-delta" style="color:var(--red-700)">▲ +${delta}</span>`
+      : `<span class="trend-delta" style="color:var(--green-700)">▼ ${delta}</span>`;
+    return `<div class="trend-crit-col">
+      <div class="trend-crit-bars">
+        <div class="trend-crit-bar" style="height:${Math.max(3,b/max*100)}px;background:${z.color};opacity:.35;" title="Было: ${b}"></div>
+        <div class="trend-crit-bar" style="height:${Math.max(3,n/max*100)}px;background:${z.color};" title="Сейчас: ${n}"></div>
+      </div>
+      <div class="trend-crit-lbl">${z.label}</div>
+      <div class="trend-crit-nums">${b} → ${n}</div>
+      ${deltaHtml}
+    </div>`;
+  }).join('');
+  return `<div class="trend-crit-row">${cols}</div>
+    <div class="muted" style="font-size:11px;margin-top:10px;">Было (начало сессии) → сейчас; светлый столбец — было, тёмный — сейчас.</div>`;
 }
 function svgDonutHtml(data, size){
   size = size || 128;
@@ -2122,6 +2186,10 @@ function renderDashboard(){
 
   const el = document.getElementById('dashMount');
   el.innerHTML = `
+    <div class="dash-toolbar">
+      <span class="dash-freshness"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Данные актуальны на: <b>${TODAY.toLocaleDateString('ru-RU')}</b></span>
+      <button type="button" class="btn btn-secondary btn-sm" id="btnExportPpt"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M3 17v2a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/></svg>Экспорт в PPT</button>
+    </div>
     <div class="kpi-grid">
       <div class="kpi-card clickable" data-goto-register="_all">
         <div class="kpi-top-row"><span class="kpi-icon" style="background:var(--accent-50);color:var(--accent-600);">${KPI_ICONS.active}</span>${trendBadge(risks.length, base.active, true)}</div>
@@ -2141,6 +2209,11 @@ function renderDashboard(){
       </div>
     </div>
 
+    <div class="panel">
+      <h3>Тренд рисков по критичности</h3>
+      ${trendCriticalityHtml(base, risks)}
+    </div>
+
     <div class="panel-2col">
       <div class="panel"><h3>Риски по категориям <button type="button" class="panel-expand" id="expCat" title="Развернуть"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg></button></h3>
         ${svgBarChartRows(byCat.filter(c=>c.count))}
@@ -2155,26 +2228,26 @@ function renderDashboard(){
       ${svgLineChartHtml(monthData)}
     </div>
 
-    <div class="panel-3col">
-      <div class="panel"><h3>Топ-5 рисков по критичности</h3>
-        ${top5.length ? top5.map((r,idx) => `<div class="top5-row" data-open-risk="${r.id}"><span class="top5-rank">${idx+1}</span><span class="top5-title" title="${esc(r.title)}">${esc(r.title)}</span><span class="badge-pill ${ZONE_BADGE[zoneOf(rraOf(r.p,r.iLevel))]||''}">${r.p&&r.iLevel?rraOf(r.p,r.iLevel):'—'}</span></div>`).join('') : '<p class="muted">Нет данных</p>'}
-      </div>
+    <div class="panel-2col">
       <div class="panel"><h3>Матрица критичности</h3>
         <div class="mini-matrix">${matrixCells.map(c => `<div class="mini-matrix-cell" data-mini-cell="${c.p}-${c.i}" style="background:${c.rra>=6?'var(--red-700)':c.rra>=3?'var(--amber-700)':'var(--green-700)'};opacity:${c.count?1:.35};">${c.count||''}</div>`).join('')}</div>
         <div class="muted" style="font-size:11px;margin-top:8px;">P (ось X) × I (ось Y, снизу вверх) → RRA</div>
       </div>
-      <div class="panel"><h3>Ближайшие события</h3>
-        ${upcoming.length ? `<table class="events-table"><thead><tr><th>Дата</th><th>Событие</th></tr></thead><tbody>${upcoming.map(ev=>`<tr><td class="mono">${ev.date.toLocaleDateString('ru-RU')}</td><td><a href="#" data-open-risk="${ev.riskId}">${esc(ev.title.slice(0,46))}</a></td></tr>`).join('')}</tbody></table>` : '<p class="muted">Ближайших событий нет</p>'}
-        <a href="#" class="see-all" data-goto-page="calendar" style="display:inline-block;margin-top:8px;">Смотреть все в календаре →</a>
+      <div class="panel"><h3>Топ-5 рисков по критичности</h3>
+        ${top5.length ? top5.map((r,idx) => `<div class="top5-row" data-open-risk="${r.id}"><span class="top5-rank">${idx+1}</span><span class="top5-title" title="${esc(r.title)}">${esc(r.title)}</span><span class="badge-pill ${ZONE_BADGE[zoneOf(rraOf(r.p,r.iLevel))]||''}">${r.p&&r.iLevel?rraOf(r.p,r.iLevel):'—'}</span></div>`).join('') : '<p class="muted">Нет данных</p>'}
       </div>
     </div>
 
-    <div class="panel-2col">
+    <div class="panel-3col">
       <div class="panel"><h3>На эскалации (I=3) — ${escalated.length}</h3>
         ${escalated.length ? `<ul>${escalated.slice(0,6).map(r=>`<li><a href="#" data-open-risk="${r.id}">${esc(r.title.slice(0,64))}${r.title.length>64?'…':''}</a></li>`).join('')}</ul>` : '<p class="muted" style="margin:0;">Рисков, требующих решения комитета, нет.</p>'}
       </div>
       <div class="panel"><h3>Черновики уроков на проверку<a href="#" class="see-all" data-goto-page="lessons">смотреть все →</a></h3>
         ${draftLessons.length ? `<ul>${draftLessons.map(l=>`<li>${esc(l.title)}</li>`).join('')}</ul>` : '<p class="muted" style="margin:0;">Черновиков нет — появятся при закрытии риска.</p>'}
+      </div>
+      <div class="panel"><h3>Ближайшие события</h3>
+        ${upcoming.length ? `<table class="events-table"><thead><tr><th>Дата</th><th>Событие</th></tr></thead><tbody>${upcoming.map(ev=>`<tr><td class="mono">${ev.date.toLocaleDateString('ru-RU')}</td><td><a href="#" data-open-risk="${ev.riskId}">${esc(ev.title.slice(0,46))}</a></td></tr>`).join('')}</tbody></table>` : '<p class="muted">Ближайших событий нет</p>'}
+        <a href="#" class="see-all" data-goto-page="calendar" style="display:inline-block;margin-top:8px;">Смотреть все в календаре →</a>
       </div>
     </div>
 
@@ -2239,6 +2312,7 @@ function renderDashboard(){
   });
 
   document.getElementById('btnResetDemo').addEventListener('click', () => { if (confirm('Сбросить все изменения и вернуться к исходным seed-данным?')) resetDemoData(); });
+  document.getElementById('btnExportPpt').addEventListener('click', () => toast('Экспорт в PPT', {body:'Демо-прототип: формирование презентации недоступно в этой версии.', duration:4000}));
 }
 
 function maybeAdvanceOnActionChange(r){
@@ -3150,11 +3224,75 @@ function migrationMatrixHtml(ip, ii, rp, ri, size){
   }
   return `<div class="migration-matrix" style="width:${S}px;height:${S}px;">${cells}${dots}</div>`;
 }
+// Risk Heat Map Radar — альтернативный вид матрицы: 8 реальных категорий
+// вокруг центра, положение точки — по зоне САМОГО критичного оцененного
+// риска в категории (worst-case), а не по выдуманной 0–100 шкале — те же
+// 3 зоны L/M/H (никакой отдельной 5-уровневой Extreme-шкалы, чтобы не
+// расходиться с методикой, принятой во всём приложении).
+const ZONE_RADIUS_FRAC = {high:0.28, medium:0.58, low:0.88};
+function computeCategoryRadarStats(risks){
+  return CATEGORIES.map(c => {
+    const catRisks = risks.filter(r => r.category === c);
+    const assessed = catRisks.filter(r => r.p && r.iLevel);
+    let worst = null, worstRra = 0;
+    assessed.forEach(r => { const rra = rraOf(r.p, r.iLevel); if (rra > worstRra){ worstRra = rra; worst = r; } });
+    const zone = worst ? zoneOf(worstRra) : null;
+    return {key:c, label:c, shortLabel: c.length>12 ? c.slice(0,11)+'…' : c, count:catRisks.length, score: worst?worstRra:null, zone, worst};
+  });
+}
+function radarChartHtml(catStats){
+  const size = 520, cx = size/2, cy = size/2, maxR = 158, n = catStats.length;
+  const zoneColor = z => z==='high'?'var(--red-700)':z==='medium'?'var(--amber-700)':'var(--green-700)';
+  const rings = [
+    {frac:0.88, fill:'var(--green-50)', stroke:'var(--green-700)'},
+    {frac:0.58, fill:'var(--amber-50)', stroke:'var(--amber-700)'},
+    {frac:0.28, fill:'var(--red-50)', stroke:'var(--red-700)'},
+  ].map(r => `<circle cx="${cx}" cy="${cy}" r="${(maxR*r.frac).toFixed(1)}" fill="${r.fill}" stroke="${r.stroke}" stroke-width="1" stroke-dasharray="2 3"/>`).join('');
+  const axes = catStats.map((c,i) => {
+    const angle = -Math.PI/2 + i*(2*Math.PI/n);
+    const x2 = cx + maxR*Math.cos(angle), y2 = cy + maxR*Math.sin(angle);
+    return `<line x1="${cx}" y1="${cy}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`;
+  }).join('');
+  const labels = catStats.map((c,i) => {
+    const angle = -Math.PI/2 + i*(2*Math.PI/n);
+    const lr = maxR + 22;
+    const x = cx + lr*Math.cos(angle), y = cy + lr*Math.sin(angle);
+    const anchor = Math.abs(Math.cos(angle))<0.2 ? 'middle' : (Math.cos(angle)>0?'start':'end');
+    return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="${anchor}" dominant-baseline="middle" font-size="10" font-weight="700" fill="var(--ink-700)">${esc(c.shortLabel)}</text>`;
+  }).join('');
+  const dots = catStats.map((c,i) => {
+    if (!c.zone) return '';
+    const angle = -Math.PI/2 + i*(2*Math.PI/n);
+    const r = maxR * ZONE_RADIUS_FRAC[c.zone];
+    const x = cx + r*Math.cos(angle), y = cy + r*Math.sin(angle);
+    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="7" fill="#fff" stroke="${zoneColor(c.zone)}" stroke-width="3" data-goto-cat-radar="${esc(c.key)}" style="cursor:pointer;"><title>${esc(c.label)}: RRA=${c.score} (${ZONE_LABEL[c.zone]})</title></circle>`;
+  }).join('');
+  return `<svg viewBox="0 0 ${size} ${size}" style="width:100%; max-width:520px; height:auto; display:block; margin:0 auto;">
+    ${rings}${axes}
+    <text x="${cx}" y="${(cy-maxR*ZONE_RADIUS_FRAC.high+3).toFixed(1)}" text-anchor="middle" font-size="8.5" font-weight="800" fill="var(--red-700)">HIGH</text>
+    <text x="${cx}" y="${(cy-maxR*ZONE_RADIUS_FRAC.medium+3).toFixed(1)}" text-anchor="middle" font-size="8.5" font-weight="800" fill="var(--amber-700)">MEDIUM</text>
+    <text x="${cx}" y="${(cy-maxR*ZONE_RADIUS_FRAC.low+3).toFixed(1)}" text-anchor="middle" font-size="8.5" font-weight="800" fill="var(--green-700)">LOW</text>
+    ${labels}${dots}
+  </svg>`;
+}
+function radarCardsHtml(catStats){
+  return `<div class="radar-cards">${catStats.map(c => `
+    <div class="radar-card${c.zone?'':' no-data'}" data-goto-cat-radar="${esc(c.key)}" style="cursor:pointer;">
+      <div class="radar-card-top">
+        <span class="radar-card-dot" style="background:${c.zone==='high'?'var(--red-700)':c.zone==='medium'?'var(--amber-700)':c.zone==='low'?'var(--green-700)':'var(--ink-400)'}"></span>
+        <span class="radar-card-name">${esc(c.label)}</span>
+        <span class="badge-pill ${c.zone?ZONE_BADGE[c.zone]:''}" ${c.zone?'':'style="background:var(--canvas);color:var(--ink-400);"'}>${c.zone?ZONE_LABEL[c.zone]:'нет оценки'}</span>
+      </div>
+      <div class="muted" style="font-size:11.5px;margin:5px 0;">${c.worst ? esc(c.worst.title.slice(0,50))+(c.worst.title.length>50?'…':'') : (c.count?`${c.count} риск(ов) без оценки P/I`:'Рисков в категории нет')}</div>
+      ${c.score ? `<div class="radar-card-bar"><div class="radar-card-bar-fill" style="width:${Math.round(c.score/9*100)}%;background:${c.zone==='high'?'var(--red-700)':c.zone==='medium'?'var(--amber-700)':'var(--green-700)'};"></div></div><div class="muted" style="font-size:10.5px;margin-top:3px;">RRA=${c.score}</div>` : ''}
+    </div>`).join('')}</div>`;
+}
 let matrixSelected = null;
 // Режим матрицы: 'inherent' — текущий/свойственный риск (до мер реагирования,
 // как было раньше), 'residual' — остаточный (после мер), 'migration' — список
 // миграций свойственный→остаточный по каждому риску, у которого зафиксированы
-// обе оценки (переиспользует migrationMatrixHtml с паспорта риска).
+// обе оценки (переиспользует migrationMatrixHtml с паспорта риска), 'radar' —
+// Risk Heat Map Radar по категориям.
 let matrixMode = 'inherent';
 function matrixGridHtml(risks, pKey, iKey){
   const cells = {};
@@ -3177,9 +3315,23 @@ function renderMatrix(){
     <button type="button" data-mode="inherent" class="${matrixMode==='inherent'?'active':''}">Текущий риск</button>
     <button type="button" data-mode="residual" class="${matrixMode==='residual'?'active':''}">Остаточный риск</button>
     <button type="button" data-mode="migration" class="${matrixMode==='migration'?'active':''}">Миграция</button>
+    <button type="button" data-mode="radar" class="${matrixMode==='radar'?'active':''}">Radar</button>
   </div>`;
 
-  if (matrixMode === 'migration'){
+  if (matrixMode === 'radar'){
+    const catStats = computeCategoryRadarStats(scopedRisks());
+    mount.innerHTML = `${toolbar}
+      <p class="muted" style="font-size:12.5px;margin-bottom:6px;">Risk Heat Map Radar — положение точки по самому критичному оцененному риску в категории (worst-case), центр — High.</p>
+      ${radarChartHtml(catStats)}
+      ${radarCardsHtml(catStats)}`;
+    mount.querySelectorAll('[data-goto-cat-radar]').forEach(el => el.addEventListener('click', () => {
+      registerQuickFilter = null;
+      gotoPage('register');
+      document.getElementById('regFiltCat').value = el.dataset.gotoCatRadar;
+      syncAc('regFiltCat');
+      renderRegister();
+    }));
+  } else if (matrixMode === 'migration'){
     const risks = scopedRisks().filter(r => r.p && r.iLevel && r.residualP && r.residualI);
     mount.innerHTML = `${toolbar}
       <p class="muted" style="font-size:12.5px;margin-bottom:14px;">Риски, у которых зафиксирован и свойственный, и остаточный уровень — полая точка «было», заливка «стало».</p>
@@ -3950,6 +4102,18 @@ document.getElementById('mergeSubmit').addEventListener('click', () => {
   saveState(); closeModal('mergeModalOverlay'); toast(`Риск ${b.id} объединён с ${a.id}`);
   renderAll();
 });
+
+// ===================================================================
+// PREMORTEM ANALYSIS — пока пустая заглушка под будущее наполнение
+// ===================================================================
+function renderPremortem(){
+  document.getElementById('premortemMount').innerHTML = `
+    <div class="empty-state" style="padding:48px 24px;">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:10px;color:var(--ink-400);"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.6 18a1.5 1.5 0 0 0 1.3 2.2h16.2a1.5 1.5 0 0 0 1.3-2.2L13.7 3.9a1.5 1.5 0 0 0-2.6 0z"/></svg>
+      <div style="font-weight:700; color:var(--ink-700); margin-bottom:4px;">Раздел в разработке</div>
+      <div>PreMortem Analysis — заблаговременный разбор «представим, что проект провалился: что стало причиной» — появится здесь в следующих итерациях.</div>
+    </div>`;
+}
 
 // ===================================================================
 // PRIVACY REPORTS & ANALYTICS
