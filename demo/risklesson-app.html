@@ -1810,19 +1810,19 @@ function enterWorkspace(){
   document.getElementById('appShell').hidden = false;
   document.getElementById('notifWrap').hidden = false;
 
-  const userColors = userColorPair(sessionName());
+  // Цвет роли (тот же градиент, что и у иконки роли на входе: щит → риск-
+  // менеджер, человек → владелец риска) — используется и для аватара, и
+  // для фона сайдбара, чтобы оба элемента совпадали, а не для аватара был
+  // отдельный индивидуальный per-user цвет.
+  const roleColors = ROLE_SIDEBAR_COLORS[state.session.role] || userColorPair(sessionName());
   document.getElementById('topbarUser').hidden = false;
   document.getElementById('topbarUserName').textContent = sessionName();
   document.getElementById('topbarUserRole').textContent = roleLabel(state.session.role);
-  document.getElementById('topbarAvatar').innerHTML = avatarHtml({firstName:state.session.firstName, lastName:state.session.lastName, size:38, colorPair:userColors});
+  document.getElementById('topbarAvatar').innerHTML = avatarHtml({firstName:state.session.firstName, lastName:state.session.lastName, size:38, colorPair:roleColors});
 
   const isOwner = state.session.role === 'riskowner';
   buildNav(state.session.role);
-  // Фон рабочего пространства — цвет роли (тот же градиент, что и у иконки
-  // роли на входе: щит → риск-менеджер, человек → владелец риска), а не
-  // индивидуальный per-user цвет — так пространство сразу узнаётся по роли.
-  const sidebarColors = ROLE_SIDEBAR_COLORS[state.session.role] || userColors;
-  document.getElementById('wsSidebar').style.background = `linear-gradient(165deg, ${sidebarColors[0]}, ${sidebarColors[1]} 150%)`;
+  document.getElementById('wsSidebar').style.background = `linear-gradient(165deg, ${roleColors[0]}, ${roleColors[1]} 150%)`;
 
   populateCategorySelect(document.getElementById('rCategory'));
   populateCategorySelect(document.getElementById('regFiltCat'));
