@@ -339,6 +339,18 @@
   .esc-note{display:flex; gap:8px; align-items:flex-start; background:var(--red-50); color:var(--red-700);
     border-radius:var(--radius-field); padding:9px 12px; font-size:12px; line-height:1.4;}
 
+  /* Миграция риска (свойственный → остаточный) — мини-матрица 3×3 с двумя
+     точками: полая — свойственный (до мер), заливка — остаточный (после). */
+  .migration-matrix{position:relative; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); gap:3px; border-radius:6px; overflow:hidden; flex-shrink:0;}
+  .migration-matrix .mm-cell{border-radius:2px;}
+  .migration-dot{position:absolute; width:13px; height:13px; border-radius:50%; margin:-6.5px; box-shadow:0 0 0 2px #fff;}
+  .migration-dot.inherent{background:#fff; border:2px solid var(--ink-700);}
+  .migration-dot.residual{background:var(--accent-600); border:2px solid #fff;}
+  .migration-legend-row{display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--ink-700); padding:4px 0;}
+  .migration-dot-sw{width:12px; height:12px; border-radius:50%; flex-shrink:0; box-shadow:0 0 0 1.5px var(--line);}
+  .migration-dot-sw.inherent{background:#fff; border:2px solid var(--ink-700);}
+  .migration-dot-sw.residual{background:var(--accent-600); border:2px solid var(--accent-600);}
+
   .ai-hint{display:none; margin-top:8px; background:var(--ai-50); border:1px solid var(--purple-50); border-radius:var(--radius-field);
     padding:10px 12px; gap:8px;}
   .ai-hint.show{display:flex;}
@@ -881,9 +893,9 @@
       <div id="regOwnerCounters"></div>
       <div class="toolbar-row">
         <div class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          <input type="text" id="regSearch" placeholder="Поиск по названию, событию, владельцу..."></div>
+          <input type="text" id="regSearch" placeholder="Поиск по риску..."></div>
         <div class="search-box" id="regAiAskWrap" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2M20 14h2M9 13v2M15 13v2"/></svg>
-          <input type="text" id="regAiAsk" placeholder="Спросить AI: например «риски по срокам поставки»"></div>
+          <input type="text" id="regAiAsk" placeholder="Спросить AI..."></div>
         <select id="regFiltCat"><option value="">Все категории</option></select>
         <select id="regFiltStatus"><option value="">Все статусы</option></select>
         <button type="button" class="filter-reset-btn" id="regFilterReset" title="Сбросить все фильтры" aria-label="Сбросить все фильтры">
@@ -1227,6 +1239,29 @@ function findSimilarLesson(text){
   });
   return bestScore >= 0.12 ? {lesson:best, score:bestScore} : null;
 }
+// Похожесть риска и урока для персистентной рекомендации на паспорте риска
+// (в отличие от findSimilarLesson выше, который ищет по сырому тексту при
+// наборе в форме) — взвешенная сумма: категория (0.35) + пересечение
+// ключевых слов события/следствия/причины с текстом урока (jaccard, 0.45)
+// + доля хештегов урока, встречающихся в тексте риска (0.2).
+function riskLessonSimilarity(r, l){
+  let score = 0;
+  if (r.category && l.category === r.category) score += 0.35;
+  const riskTokens = tokenize(r.event + ' ' + r.consequence + ' ' + (r.cause||''));
+  score += 0.45 * jaccard(riskTokens, tokenize(l.title + ' ' + l.description));
+  const riskSet = new Set(riskTokens);
+  const tagWords = l.hashtags.map(t => t.replace('#','').toLowerCase());
+  score += 0.2 * (tagWords.length ? tagWords.filter(w => riskSet.has(w)).length / tagWords.length : 0);
+  return score;
+}
+function findBestLessonForRisk(r){
+  let best = null, bestScore = 0;
+  state.lessons.forEach(l => {
+    const score = riskLessonSimilarity(r, l);
+    if (score > bestScore){ bestScore = score; best = l; }
+  });
+  return bestScore >= 0.12 ? {lesson:best, score:bestScore} : null;
+}
 
 // ===================================================================
 // Avatar (@nlmk/ds-2.0) — единая точка рендера пользовательского аватара:
@@ -1485,7 +1520,7 @@ function buildSeedRisks(){
     committeeFlag: r.i === 3,
     committeeDecision: null, committeeDecisionDate: null,
     quantProbabilityPct: null, quantBudgetImpactMln: null, quantScheduleImpactMonths: null,
-    residualRra: null,
+    residualRra: null, residualP: null, residualI: null,
     sourceLessonId: null, mergedIntoId: null,
     reviewFrequencyDays: r.sev === 'low' ? 60 : 30, nextReviewDate: null,
     createdAt: null,
@@ -1858,7 +1893,7 @@ const PAGE_META = {
 // (одни и те же контейнеры и функции рендера), но подписи и описания честно
 // отражают, что видно только подмножество, ограниченное его рисками.
 const PAGE_META_OWNER_OVERRIDE = {
-  register:{title:'Мои риски', desc:'Риски, где вы указаны владельцем — плюс возможность предложить новый. Фильтр по владельцу заблокирован, это не общий реестр проекта.'},
+  register:{title:'Мои риски', desc:'Риски, где вы указаны владельцем — плюс возможность предложить новый.'},
   calendar:{title:'Календарь', desc:'Только сроки мероприятий по вашим рискам.'},
 };
 function gotoPage(key){
@@ -2550,7 +2585,7 @@ function submitNewRisk(){
     cause: '', event: eventEl.value.trim(), consequence: cons.value.trim(),
     pChecklist: null, p: null, iLevel: null, iJustification: null, committeeFlag: false,
     committeeDecision: null, committeeDecisionDate: null,
-    quantProbabilityPct: null, quantBudgetImpactMln: null, quantScheduleImpactMonths: null, residualRra: null,
+    quantProbabilityPct: null, quantBudgetImpactMln: null, quantScheduleImpactMonths: null, residualRra: null, residualP: null, residualI: null,
     sourceLessonId: riskCreatePrefill ? riskCreatePrefill.sourceLessonId||null : null,
     mergedIntoId: null, reviewFrequencyDays: null, nextReviewDate: null, createdAt: nowStr(),
     actions: [], isNew: true,
@@ -2682,6 +2717,35 @@ function openAddToAgendaModal(r){
     toast('Риск добавлен в повестку риск-сессии', {body: new Date(y,m-1,d).toLocaleDateString('ru-RU'), duration:4000});
   });
 }
+// Остаточный риск — отдельная оценка P×I ПОСЛЕ мероприятий (не копия
+// текущей свойственной оценки), чтобы на мини-матрице миграции были две
+// реально разные точки, когда меры реагирования снизили уровень риска.
+function openResidualModal(r){
+  const body = `
+    <div class="field"><label>Вероятность P (1–3) после мероприятий</label>
+      <select id="resP">${[1,2,3].map(v=>`<option value="${v}" ${v===(r.residualP||r.p)?'selected':''}>${v} — ${PLEVEL_LABEL[v]}</option>`).join('')}</select>
+    </div>
+    <div class="field" style="margin-top:10px;"><label>Материальность I (1–3) после мероприятий</label>
+      <select id="resI">${[1,2,3].map(v=>`<option value="${v}" ${v===(r.residualI||r.iLevel)?'selected':''}>${v} — ${PLEVEL_LABEL[v]}</option>`).join('')}</select>
+    </div>
+    <div class="field" style="margin-top:10px;"><label>Комментарий (необязательно)</label><textarea id="resComment" placeholder="Почему остаточный риск такой">${esc(r.residualComment||'')}</textarea></div>
+    <div class="btn-row" style="margin-top:10px;"><button type="button" class="btn btn-primary" id="resSubmitBtn" style="flex:1;">Зафиксировать остаточный риск</button></div>`;
+  openChartModal('Остаточный риск', `Риск: «${r.title}» — оцените P×I ПОСЛЕ выполнения мероприятий`, body);
+  enhanceSelectAsAutocomplete(document.getElementById('resP'));
+  enhanceSelectAsAutocomplete(document.getElementById('resI'));
+  document.getElementById('resSubmitBtn').addEventListener('click', () => {
+    const resP = parseInt(document.getElementById('resP').value, 10);
+    const resI = parseInt(document.getElementById('resI').value, 10);
+    const comment = document.getElementById('resComment').value.trim();
+    r.residualP = resP; r.residualI = resI;
+    r.residualRra = rraOf(resP, resI);
+    r.residualAcceptedBy = sessionName();
+    r.residualAcceptedDate = nowStr();
+    r.residualComment = comment;
+    pushAudit(r.id, r.status, r.status, `Остаточный риск: P${resP}×I${resI}=${r.residualRra}` + (comment?' — '+comment:''));
+    saveState(); closeModal('chartModalOverlay'); toast('Остаточный риск зафиксирован'); renderPassport(); renderAll();
+  });
+}
 function renderPassport(){
   const r = findRisk(currentPassportId);
   const mount = document.getElementById('passportMount');
@@ -2698,7 +2762,8 @@ function renderPassport(){
   const decisionEntry = state.audit.find(a => a.riskId === r.id && a.toStatus === 'Управление');
   const decisionDate = r.committeeDecisionDate || (decisionEntry ? decisionEntry.timestamp : null);
   const CONTROL_EFFECT = {done:'Эффективен — выполнено', in_progress:'Внедряется', planned:'Не начат', rejected:'Не применяется'};
-  const canAcceptResidual = editable && r.p && r.iLevel && r.status !== 'Идентификация' && !r.residualAcceptedBy;
+  const canAcceptResidual = editable && r.p && r.iLevel && r.status !== 'Идентификация';
+  const similarLesson = findBestLessonForRisk(r);
 
   mount.innerHTML = `
     <div class="btn-row" style="justify-content:flex-end;margin-bottom:10px;">
@@ -2715,6 +2780,7 @@ function renderPassport(){
       <div class="passport-block">
         <div class="k">ID / № паспорта</div><div class="v mono">${r.id}<br>№ ${r.displayNumber||'—'}</div>
         <div class="k" style="margin-top:10px;">Категория</div><div class="v">${esc(r.category)}</div>
+        ${r.phase ? `<div class="k" style="margin-top:10px;">Стадия</div><div class="v">${esc(r.phase)}</div>` : ''}
         <div class="k" style="margin-top:10px;">Владелец(ы)</div><div class="v">${esc(r.ownerNames.join(', ')||'—')}</div>
         <div class="k" style="margin-top:10px;">Светофор</div><div class="v"><span class="status-dot" style="background:${tl.color}"></span> ${tl.label}</div>
         <div class="k" style="margin-top:10px;">Связанные риски</div><div class="v">${relatedRisksHtml(r.id)}</div>
@@ -2724,6 +2790,20 @@ function renderPassport(){
         <div class="k" style="margin-top:10px;">Риск-событие</div><div class="v">${esc(r.event)}</div>
         <div class="k" style="margin-top:10px;">Прямое следствие</div><div class="v">${esc(r.consequence)}</div>
       </div>
+    </div>
+
+    <h3 class="pp-h">ПОХОЖИЙ УРОК В БАЗЕ ЗНАНИЙ</h3>
+    <div class="passport-block" style="margin-bottom:16px;">
+      ${similarLesson ? `
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:200px;">
+            <div class="v" style="font-weight:600;">${esc(similarLesson.lesson.title)}</div>
+            <div class="muted" style="font-size:12px; margin-top:2px;">${esc(similarLesson.lesson.id)} · ${esc(similarLesson.lesson.category)}</div>
+          </div>
+          <span class="badge-pill" style="background:var(--ai-50); color:var(--ai-700); flex-shrink:0;">${Math.round(similarLesson.score*100)}% схожести</span>
+          <button type="button" class="btn btn-sm" id="pOpenSimilarLesson">Открыть урок</button>
+        </div>
+      ` : `<div class="muted" style="font-size:12.5px;">Похожих уроков в базе знаний не найдено.</div>`}
     </div>
 
     <h3 class="pp-h">ОЦЕНКА</h3>
@@ -2752,11 +2832,20 @@ function renderPassport(){
 
     <h3 class="pp-h">ОСТАТОЧНЫЙ РИСК</h3>
     <div class="passport-block" style="margin-bottom:16px;">
-      ${r.residualAcceptedBy ? `
-        <div class="k">Оценка после мероприятий</div><div class="v">RRA=${r.residualRra}${r.residualComment?' — '+esc(r.residualComment):''}</div>
-        <div class="k" style="margin-top:10px;">Кто и когда принял</div><div class="v">${esc(r.residualAcceptedBy)} · ${r.residualAcceptedDate}</div>
-      ` : `<div class="muted" style="font-size:12.5px;">Остаточный риск ещё не зафиксирован владельцем.</div>`}
-      ${canAcceptResidual ? `<div class="btn-row" style="margin-top:10px;"><button class="btn btn-secondary btn-sm" id="pResidualBtn">Принять остаточный риск</button></div>` : ''}
+      ${r.p && r.iLevel ? `
+        <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
+          <div>
+            <div class="k" style="margin-bottom:8px;">Миграция риска при мерах реагирования</div>
+            ${migrationMatrixHtml(r.p, r.iLevel, r.residualP, r.residualI)}
+          </div>
+          <div style="flex:1; min-width:180px;">
+            <div class="migration-legend-row"><span class="migration-dot-sw inherent"></span>свойственный (P${r.p}×I${r.iLevel})</div>
+            ${r.residualP ? `<div class="migration-legend-row"><span class="migration-dot-sw residual"></span>остаточный (P${r.residualP}×I${r.residualI})</div>` : `<div class="migration-legend-row muted">остаточный — ещё не зафиксирован</div>`}
+          </div>
+        </div>
+      ` : `<div class="muted" style="font-size:12.5px;">Нужна оценка P/I, чтобы увидеть миграцию риска.</div>`}
+      ${r.residualAcceptedBy ? `<div class="k" style="margin-top:12px;">Кто и когда принял</div><div class="v">${esc(r.residualAcceptedBy)} · ${r.residualAcceptedDate}${r.residualComment?' — '+esc(r.residualComment):''}</div>` : ''}
+      ${canAcceptResidual ? `<div class="btn-row" style="margin-top:10px;"><button class="btn btn-secondary btn-sm" id="pResidualBtn">${r.residualAcceptedBy?'Обновить остаточный риск':'Принять остаточный риск'}</button></div>` : ''}
     </div>
 
     <h3 class="pp-h">КОНТРОЛИ (существующие процедуры)</h3>
@@ -2809,16 +2898,10 @@ function renderPassport(){
   if (printBtn) printBtn.addEventListener('click', () => window.print());
   const agendaBtn = document.getElementById('pAgendaBtn');
   if (agendaBtn) agendaBtn.addEventListener('click', () => openAddToAgendaModal(r));
+  const openSimilarBtn = document.getElementById('pOpenSimilarLesson');
+  if (openSimilarBtn) openSimilarBtn.addEventListener('click', () => openLessonModal(similarLesson.lesson.id));
   const residualBtn = document.getElementById('pResidualBtn');
-  if (residualBtn) residualBtn.addEventListener('click', () => {
-    const comment = prompt('Комментарий к принятию остаточного риска (необязательно):') || '';
-    r.residualRra = rraOf(r.p, r.iLevel);
-    r.residualAcceptedBy = sessionName();
-    r.residualAcceptedDate = nowStr();
-    r.residualComment = comment;
-    pushAudit(r.id, r.status, r.status, 'Остаточный риск принят' + (comment?': '+comment:''));
-    saveState(); toast('Остаточный риск зафиксирован'); renderPassport(); renderAll();
-  });
+  if (residualBtn) residualBtn.addEventListener('click', () => openResidualModal(r));
   const escalateBtn = document.getElementById('pEscalateBtn');
   if (escalateBtn) escalateBtn.addEventListener('click', () => {
     const comment = prompt('Комментарий к эскалации (необязательно):') || '';
@@ -3041,11 +3124,41 @@ document.getElementById('actionFormSubmit').addEventListener('click', () => {
 // ===================================================================
 // МАТРИЦА РИСКОВ — сетка 3×3 (не 5×5)
 // ===================================================================
+// Мини-матрица миграции риска — полая точка (свойственный, ip/ii) и
+// залитая точка (остаточный, rp/ri) на сетке 3×3 тех же зон, что и
+// основная матрица. Если обе точки попадают в одну ячейку — небольшое
+// смещение, чтобы обе оставались видимыми.
+function migrationMatrixHtml(ip, ii, rp, ri, size){
+  const S = size || 92;
+  let cells = '';
+  for (let i=3;i>=1;i--) for (let p=1;p<=3;p++){
+    const zone = zoneOf(p*i);
+    const bg = zone==='high'?'var(--red-50)':zone==='medium'?'var(--amber-50)':'var(--green-50)';
+    cells += `<div class="mm-cell" style="background:${bg}"></div>`;
+  }
+  const cell = S/3;
+  const pos = (p,i) => ({x:(p-0.5)*cell, y:(3-i+0.5)*cell});
+  const sameCell = ip && ii && rp && ri && ip===rp && ii===ri;
+  let dots = '';
+  if (ip && ii){
+    const {x,y} = pos(ip,ii);
+    dots += `<span class="migration-dot inherent" style="left:${sameCell?x-6:x}px;top:${sameCell?y-6:y}px;" title="Свойственный: P${ip}×I${ii}=${ip*ii}"></span>`;
+  }
+  if (rp && ri){
+    const {x,y} = pos(rp,ri);
+    dots += `<span class="migration-dot residual" style="left:${sameCell?x+6:x}px;top:${sameCell?y+6:y}px;" title="Остаточный: P${rp}×I${ri}=${rp*ri}"></span>`;
+  }
+  return `<div class="migration-matrix" style="width:${S}px;height:${S}px;">${cells}${dots}</div>`;
+}
 let matrixSelected = null;
-function renderMatrix(){
-  const risks = scopedRisks().filter(r => r.p && r.iLevel);
+// Режим матрицы: 'inherent' — текущий/свойственный риск (до мер реагирования,
+// как было раньше), 'residual' — остаточный (после мер), 'migration' — список
+// миграций свойственный→остаточный по каждому риску, у которого зафиксированы
+// обе оценки (переиспользует migrationMatrixHtml с паспорта риска).
+let matrixMode = 'inherent';
+function matrixGridHtml(risks, pKey, iKey){
   const cells = {};
-  for (let p=1;p<=3;p++) for (let i=1;i<=3;i++) cells[p+'_'+i] = risks.filter(r=>r.p===p && r.iLevel===i);
+  for (let p=1;p<=3;p++) for (let i=1;i<=3;i++) cells[p+'_'+i] = risks.filter(r=>r[pKey]===p && r[iKey]===i);
   let grid = `<div class="axis-y" style="grid-row:1/span 3;">Влияние (I)</div>`;
   for (let i=3;i>=1;i--){
     for (let p=1;p<=3;p++){
@@ -3056,27 +3169,59 @@ function renderMatrix(){
     }
   }
   grid += `<div></div>` + [1,2,3].map(p=>`<div class="axis-x">P${p}</div>`).join('');
-  const legend = `
-    <div class="matrix-legend">
-      <div class="matrix-legend-row"><span class="legend-sw" style="background:var(--green-50);border:1px solid var(--green-700)"></span>Low (RRA 1–2) — принять</div>
-      <div class="matrix-legend-row"><span class="legend-sw" style="background:var(--amber-50);border:1px solid var(--amber-700)"></span>Medium (RRA 3–4) — снизить</div>
-      <div class="matrix-legend-row"><span class="legend-sw" style="background:var(--red-50);border:1px solid var(--red-700)"></span>High (RRA 6–9) — управлять активно, возможна эскалация при I=3</div>
-      <div id="matrixPicked" class="matrix-picked" style="display:none;"></div>
-    </div>`;
-  document.getElementById('matrixMount').innerHTML = `<div class="matrix-shell"><div class="matrix3">${grid}</div>${legend}</div>
-    <p class="muted" style="font-size:12px;margin-top:10px;">${(() => { const n = scopedRisks().filter(r=>!r.p||!r.iLevel).length;
-      return n ? `<a href="#" id="matrixUnassessedLink">${n} риск(ов) без оценки P/I</a> не показаны на матрице.` : '0 рисков без оценки P/I.'; })()}</p>`;
-  const unassessedLink = document.getElementById('matrixUnassessedLink');
-  if (unassessedLink) unassessedLink.addEventListener('click', e => { e.preventDefault(); goToRegisterWithFilter('unassessed'); });
-  document.querySelectorAll('.m-cell').forEach(c => c.addEventListener('click', () => {
-    matrixSelected = c.dataset.cell;
-    const list = cells[matrixSelected];
-    const panel = document.getElementById('matrixPicked');
-    document.querySelectorAll('.m-cell').forEach(x=>x.classList.remove('selected'));
-    c.classList.add('selected');
-    panel.style.display = 'block';
-    panel.innerHTML = list.length ? list.map(r=>`<div class="pr" data-id="${r.id}">${esc(r.title.slice(0,54))}${r.title.length>54?'…':''}</div>`).join('') : '<div class="pr muted">Рисков в этой ячейке нет.</div>';
-    panel.querySelectorAll('[data-id]').forEach(p => p.addEventListener('click', () => openPassport(p.dataset.id)));
+  return {grid, cells};
+}
+function renderMatrix(){
+  const mount = document.getElementById('matrixMount');
+  const toolbar = `<div class="map-toolbar" id="matrixModeToolbar">
+    <button type="button" data-mode="inherent" class="${matrixMode==='inherent'?'active':''}">Текущий риск</button>
+    <button type="button" data-mode="residual" class="${matrixMode==='residual'?'active':''}">Остаточный риск</button>
+    <button type="button" data-mode="migration" class="${matrixMode==='migration'?'active':''}">Миграция</button>
+  </div>`;
+
+  if (matrixMode === 'migration'){
+    const risks = scopedRisks().filter(r => r.p && r.iLevel && r.residualP && r.residualI);
+    mount.innerHTML = `${toolbar}
+      <p class="muted" style="font-size:12.5px;margin-bottom:14px;">Риски, у которых зафиксирован и свойственный, и остаточный уровень — полая точка «было», заливка «стало».</p>
+      ${risks.length ? `<div class="migration-list">${risks.map(r => `
+        <div class="risk-card" data-open-risk="${r.id}" style="cursor:pointer;display:flex;gap:16px;align-items:center;">
+          ${migrationMatrixHtml(r.p, r.iLevel, r.residualP, r.residualI, 68)}
+          <div style="flex:1;min-width:0;">
+            <div class="risk-card-title" style="margin-bottom:4px;">${esc(r.title)}</div>
+            <div class="muted" style="font-size:12px;">P${r.p}×I${r.iLevel}=${r.p*r.iLevel} → P${r.residualP}×I${r.residualI}=${r.residualP*r.residualI}</div>
+          </div>
+        </div>`).join('')}</div>` : `<div class="empty-state">Пока нет рисков с зафиксированным и свойственным, и остаточным уровнем — примите остаточный риск в паспорте.</div>`}`;
+    document.querySelectorAll('#matrixMount [data-open-risk]').forEach(el => el.addEventListener('click', () => openPassport(el.dataset.openRisk)));
+  } else {
+    const pKey = matrixMode === 'residual' ? 'residualP' : 'p';
+    const iKey = matrixMode === 'residual' ? 'residualI' : 'iLevel';
+    const risks = scopedRisks().filter(r => r[pKey] && r[iKey]);
+    const {grid, cells} = matrixGridHtml(risks, pKey, iKey);
+    const legend = `
+      <div class="matrix-legend">
+        <div class="matrix-legend-row"><span class="legend-sw" style="background:var(--green-50);border:1px solid var(--green-700)"></span>Low (RRA 1–2) — принять</div>
+        <div class="matrix-legend-row"><span class="legend-sw" style="background:var(--amber-50);border:1px solid var(--amber-700)"></span>Medium (RRA 3–4) — снизить</div>
+        <div class="matrix-legend-row"><span class="legend-sw" style="background:var(--red-50);border:1px solid var(--red-700)"></span>High (RRA 6–9) — управлять активно, возможна эскалация при I=3</div>
+        <div id="matrixPicked" class="matrix-picked" style="display:none;"></div>
+      </div>`;
+    mount.innerHTML = `${toolbar}<div class="matrix-shell"><div class="matrix3">${grid}</div>${legend}</div>
+      <p class="muted" style="font-size:12px;margin-top:10px;">${(() => { const n = scopedRisks().filter(r=>!r[pKey]||!r[iKey]).length;
+        return n ? `${matrixMode==='residual'?`${n} риск(ов) без остаточной оценки`:`<a href="#" id="matrixUnassessedLink">${n} риск(ов) без оценки P/I</a> не показаны на матрице.`}` : matrixMode==='residual' ? '' : '0 рисков без оценки P/I.'; })()}</p>`;
+    const unassessedLink = document.getElementById('matrixUnassessedLink');
+    if (unassessedLink) unassessedLink.addEventListener('click', e => { e.preventDefault(); goToRegisterWithFilter('unassessed'); });
+    document.querySelectorAll('.m-cell').forEach(c => c.addEventListener('click', () => {
+      matrixSelected = c.dataset.cell;
+      const list = cells[matrixSelected];
+      const panel = document.getElementById('matrixPicked');
+      document.querySelectorAll('.m-cell').forEach(x=>x.classList.remove('selected'));
+      c.classList.add('selected');
+      panel.style.display = 'block';
+      panel.innerHTML = list.length ? list.map(r=>`<div class="pr" data-id="${r.id}">${esc(r.title.slice(0,54))}${r.title.length>54?'…':''}</div>`).join('') : '<div class="pr muted">Рисков в этой ячейке нет.</div>';
+      panel.querySelectorAll('[data-id]').forEach(p => p.addEventListener('click', () => openPassport(p.dataset.id)));
+    }));
+  }
+  document.querySelectorAll('#matrixModeToolbar button').forEach(b => b.addEventListener('click', () => {
+    matrixMode = b.dataset.mode; matrixSelected = null; renderMatrix();
   }));
 }
 
@@ -3093,7 +3238,7 @@ function renderLessons(){
       <div class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
         <input type="text" id="lesSearch" placeholder="Поиск по названию, описанию..."></div>
       <div class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2M20 14h2M9 13v2M15 13v2"/></svg>
-        <input type="text" id="lesAiAsk" placeholder="Спросить AI: например «риски по срокам поставки»"></div>
+        <input type="text" id="lesAiAsk" placeholder="Спросить AI..."></div>
       <button type="button" class="btn btn-secondary" id="btnTagPicker">Хештеги${lessonTagFilter.size?` (${lessonTagFilter.size})`:''}</button>
       <button type="button" class="filter-reset-btn" id="lesFilterReset" title="Сбросить все фильтры" aria-label="Сбросить все фильтры">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
@@ -3181,10 +3326,90 @@ function renderLessonsTable(){
   document.querySelectorAll('#lessonsBody [data-open-lesson]').forEach(el => el.addEventListener('click', (e) => { e.stopPropagation(); openLessonModal(el.dataset.openLesson); }));
   document.querySelectorAll('#lessonsBody [data-create-risk]').forEach(b => b.addEventListener('click', (e) => {
     e.stopPropagation();
-    const l = findLesson(b.dataset.createRisk);
-    openRiskCreateModal({title: 'На основе урока: ' + l.title, event: l.problemOrRiskEvent || l.description, consequence: l.impact || l.description,
-      category: CATEGORIES.includes(l.category) ? l.category : '', sourceLessonId: l.id, sourceQuote: l.description});
+    openLessonToRiskModal(findLesson(b.dataset.createRisk));
   }));
+}
+// AI-подсказка «Помочь с риском» — демо-эвристика (не реальный вызов LLM):
+// собирает формулировку риска из РЕАЛЬНОГО текста урока (описание +
+// рекомендация), переводя нарратив «что уже случилось» в формулировку
+// «риск повторения», а не выдумывает новый текст.
+function aiRephraseLessonForRisk(l){
+  const parts = [];
+  if (l.description) parts.push(l.description.trim());
+  if (l.recommendation) parts.push(`Без выполнения рекомендации «${l.recommendation.trim()}» есть риск повторения аналогичной проблемы.`);
+  else if (l.lessonLearned) parts.push(`Урок: ${l.lessonLearned.trim()}`);
+  return parts.join(' ') || l.title;
+}
+// Модальное окно «урок → риск», адаптированное под структуру карточки
+// риска проекта (описание/категория/стадия/владелец/стратегия/P/I), а не
+// общая форма создания риска.
+function openLessonToRiskModal(l){
+  const suggestedCategory = CATEGORIES.includes(l.category) ? l.category : '';
+  const suggestedStrategy = ['Снижение','Передача','Уклонение','Принятие'].includes(l.strategy) ? l.strategy : '';
+  const prefillDesc = l.problemOrRiskEvent || l.description || '';
+  const body = `
+    <div class="source-quote" style="margin-bottom:14px;">📘 Сформировано на основе урока <code class="mono">${esc(l.id)}</code> «${esc(l.title)}»</div>
+    <div class="field"><label>Описание риска</label><textarea id="l2rDesc" style="min-height:70px;">${esc(prefillDesc)}</textarea></div>
+    <div class="btn-row" style="margin-top:8px;"><button type="button" class="btn btn-secondary btn-sm" id="l2rAiBtn">✨ Помочь с риском (AI)</button></div>
+    <div class="row2" style="margin-top:10px;">
+      <div class="field"><label>Категория</label><select id="l2rCategory"></select></div>
+      <div class="field"><label>Стадия</label><input type="text" id="l2rPhase" value="${esc(l.phase||'')}" placeholder="Например, Фаза 2"></div>
+    </div>
+    <div class="row2" style="margin-top:10px;">
+      <div class="field"><label>Владелец</label><select id="l2rOwner"><option value="">Не назначен</option>${ALL_USERS.map(u=>`<option value="${esc(u)}">${esc(u)}</option>`).join('')}</select></div>
+      <div class="field"><label>Стратегия реагирования</label><select id="l2rStrategy"><option value="">Не выбрана</option>${['Снижение','Передача','Уклонение','Принятие'].map(s=>`<option value="${s}" ${s===suggestedStrategy?'selected':''}>${s}</option>`).join('')}</select></div>
+    </div>
+    <div class="row2" style="margin-top:10px;">
+      <div class="field"><label>Вероятность P (1–3)</label><select id="l2rP"><option value="">—</option>${[1,2,3].map(v=>`<option value="${v}">${v} — ${PLEVEL_LABEL[v]}</option>`).join('')}</select></div>
+      <div class="field"><label>Материальность I (1–3)</label><select id="l2rI"><option value="">—</option>${[1,2,3].map(v=>`<option value="${v}">${v} — ${PLEVEL_LABEL[v]}</option>`).join('')}</select></div>
+    </div>
+    ${aiInsightRow('Риск попадает в реестр как черновик и требует верификации риск-менеджером.')}
+    <div class="btn-row" style="margin-top:12px;">
+      <button type="button" class="btn btn-text" id="l2rCancelBtn">Отмена</button>
+      <button type="button" class="btn btn-primary" id="l2rSubmitBtn" style="flex:2;">Добавить в реестр</button>
+    </div>`;
+  openChartModal('Риск на основе урока', `Новый риск · проект СПП ${state.session.spp}`, body);
+  populateCategorySelect(document.getElementById('l2rCategory'));
+  document.getElementById('l2rCategory').value = suggestedCategory;
+  enhanceSelectAsAutocomplete(document.getElementById('l2rCategory'), 'Выберите категорию');
+  enhanceSelectAsAutocomplete(document.getElementById('l2rOwner'), 'Не назначен');
+  enhanceSelectAsAutocomplete(document.getElementById('l2rStrategy'));
+  enhanceSelectAsAutocomplete(document.getElementById('l2rP'));
+  enhanceSelectAsAutocomplete(document.getElementById('l2rI'));
+  syncAc('l2rCategory'); syncAc('l2rStrategy');
+  document.getElementById('l2rAiBtn').addEventListener('click', () => {
+    document.getElementById('l2rDesc').value = aiRephraseLessonForRisk(l);
+    toast('AI сформировал формулировку риска', {body:'Демо-эвристика на основе описания и рекомендации урока — проверьте и отредактируйте текст.', duration:4500});
+  });
+  document.getElementById('l2rCancelBtn').addEventListener('click', () => closeModal('chartModalOverlay'));
+  document.getElementById('l2rSubmitBtn').addEventListener('click', () => {
+    const desc = document.getElementById('l2rDesc').value.trim();
+    const category = document.getElementById('l2rCategory').value;
+    if (!desc || !category){ toast('Заполните описание риска и категорию'); return; }
+    const phase = document.getElementById('l2rPhase').value.trim();
+    const owner = document.getElementById('l2rOwner').value;
+    const strategy = document.getElementById('l2rStrategy').value;
+    const p = parseInt(document.getElementById('l2rP').value, 10) || null;
+    const iLevel = parseInt(document.getElementById('l2rI').value, 10) || null;
+    const num = Math.max(0, ...state.risks.map(x=>x.displayNumber||0)) + 1;
+    const risk = {
+      id: uid('12-1111-new'), displayNumber:num, projectSpp: state.session.spp, category,
+      title: 'На основе урока: ' + l.title, status:'Идентификация', authorName: sessionName(),
+      ownerNames: owner ? [owner] : [], cause:'', event: desc, consequence: l.impact || '',
+      pChecklist:null, p, iLevel, iJustification:null, committeeFlag: iLevel===3,
+      committeeDecision:null, committeeDecisionDate:null,
+      quantProbabilityPct:null, quantBudgetImpactMln:null, quantScheduleImpactMonths:null,
+      residualRra:null, residualP:null, residualI:null,
+      sourceLessonId: l.id, mergedIntoId:null, reviewFrequencyDays:null, nextReviewDate:null,
+      createdAt: nowStr(), actions:[], isNew:true, phase: phase || null,
+      strategyRationale: strategy ? `Стратегия реагирования (по уроку ${l.id}): ${strategy}` : '',
+    };
+    state.risks.push(risk);
+    pushAudit(risk.id, null, 'Идентификация', 'Риск создан на основе урока ' + l.id);
+    saveState(); closeModal('chartModalOverlay');
+    toast('Риск добавлен в реестр как черновик', {body:'Требует верификации риск-менеджером.', duration:4000});
+    renderAll(); openPassport(risk.id);
+  });
 }
 // Заголовок карточки — формулировка проблемы (description, реальный нарратив
 // инцидента), не короткое имя; рекомендация/вывод (title) — подстрокой ниже;
