@@ -347,11 +347,19 @@ function activateFonts(link){
   .btn:active{transform:scale(.96); filter:brightness(.94);}
   .btn-primary{background:var(--accent-600); border-color:var(--accent-600); color:#fff;}
   .btn-primary:hover{background:var(--accent-500); border-color:var(--accent-500); color:#fff;}
+  #sppSubmit:hover:not(:disabled){box-shadow:0 8px 20px -8px var(--accent-500); transform:translateY(-1px);}
   .btn-primary:active{background:var(--accent-600); border-color:var(--accent-600); color:#fff; transform:scale(.96); filter:brightness(.7);}
   .btn-primary:disabled{opacity:.45; cursor:not-allowed;}
   .btn-secondary{background:var(--accent-50); border-color:var(--accent-50); color:var(--accent-600);}
   .btn-secondary:hover{background:var(--accent-100); border-color:var(--accent-100); color:var(--accent-600);}
   .btn-secondary:active{background:var(--accent-100); border-color:var(--accent-100); color:var(--accent-600); transform:scale(.96); filter:brightness(.94);}
+  /* Кнопка «Поиск по тегам» — не должна выглядеть подсвеченной, пока
+     фильтр по тегам реально не выбран (в отличие от .btn-secondary,
+     который всегда с акцентным фоном); .active включается в JS, когда
+     lessonTagFilter.size > 0. */
+  #btnTagPicker{border-color:var(--line); color:var(--ink-700);}
+  #btnTagPicker.active{background:var(--accent-50); border-color:var(--accent-50); color:var(--accent-600);}
+  #btnTagPicker.active:hover{background:var(--accent-100); border-color:var(--accent-100);}
   .btn-danger{background:var(--red-700); border-color:var(--red-700); color:#fff;}
   .btn-danger:hover{background:var(--red-700); border-color:var(--red-700); color:#fff; filter:brightness(1.1);}
   .btn-danger:active{background:var(--red-700); border-color:var(--red-700); color:#fff; transform:scale(.96); filter:brightness(.85);}
@@ -415,9 +423,15 @@ function activateFonts(link){
   #passportModalOverlay .modal-card-scroll{flex:1;}
   .pp-nav{display:flex; gap:4px; padding:8px 22px; margin:0 -22px 12px;
     border-bottom:1px solid var(--line); overflow-x:auto; position:sticky; top:46px; z-index:2; background:var(--paper-0);}
-  .pp-nav-pill{font-size:12px; padding:5px 10px; border-radius:var(--radius-field);
-    color:var(--ink-600); white-space:nowrap; cursor:pointer; flex-shrink:0;}
-  .pp-nav-pill.active{background:var(--accent-50); color:var(--accent-600); font-weight:600;}
+  /* font-weight:600 всегда (не только у .active) и flex:1 с min-width:0 —
+     без этого при переключении вкладки активная пилюля становилась жирной
+     (менялась ширина текста), а остальные, идущие без flex:1, были просто
+     по content-width — вся строка вкладок «прыгала»/переносилась при каждом
+     клике. Теперь активность различается только цветом/фоном, ширина
+     каждой пилюли фиксированная. */
+  .pp-nav-pill{font-size:12px; font-weight:600; padding:5px 10px; border-radius:var(--radius-field);
+    color:var(--ink-600); white-space:nowrap; cursor:pointer; flex:1; min-width:0; text-align:center;}
+  .pp-nav-pill.active{background:var(--accent-50); color:var(--accent-600);}
   .pp-nav-count{opacity:.55;}
   /* Разделы паспорта — отдельные вкладки: видна только активная, переход
      между ними через pp-nav/степпер — переключение, а не скролл вниз. */
@@ -839,6 +853,10 @@ function activateFonts(link){
      (align-items:stretch) вместо фиксированного min-height. */
   #registerList.owner-grid .risk-card-cta{min-height:0; height:100%; box-sizing:border-box;}
   @media (max-width:860px){#registerList.owner-grid{grid-template-columns:1fr;}}
+  /* Уроки — та же сетка 2 колонки, что и у карточек риска в реестре владельца. */
+  #lessonsBody{display:grid; grid-template-columns:repeat(2,1fr); gap:14px; align-items:stretch;}
+  #lessonsBody .risk-card{margin-bottom:0;}
+  @media (max-width:860px){#lessonsBody{grid-template-columns:1fr;}}
   /* Компактная карточка риска — ID + бейдж уровня, название, владелец +
      статус срока. Полная детализация — в паспорте по клику. */
   .risk-card-mini{padding:14px 16px;}
@@ -1343,7 +1361,7 @@ function activateFonts(link){
         <span class="role-card-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L4 5v6c0 5.25 3.4 9.74 8 11 4.6-1.26 8-5.75 8-11V5l-8-3z"/></svg></span>
         <span class="role-card-body">
           <span class="role-card-title">Риск-менеджер</span>
-          <span class="role-card-desc">Доступ для риск-менеджеров</span>
+          <span class="role-card-desc">Жми, если ты риск-менеджер</span>
         </span>
       </div>
       <div class="role-card" data-value="riskowner">
@@ -1406,7 +1424,7 @@ function activateFonts(link){
     </form>
     <div class="btn-row">
       <button type="button" class="btn btn-secondary" id="sppCancel">Назад</button>
-      <button type="button" class="btn btn-primary" id="sppSubmit">Войти в систему</button>
+      <button type="button" class="btn btn-primary" id="sppSubmit">Войти</button>
     </div>
    </div>
   </div>
@@ -1489,11 +1507,11 @@ function activateFonts(link){
     <div id="riskSourceQuote"></div>
     <form id="riskForm" onsubmit="return false;" style="gap:12px;">
       <div class="field" data-field="rCategory"><label>Категория риска</label><select id="rCategory"></select></div>
-      <div class="field" data-field="rTitle"><label>Наименование риска</label><input type="text" id="rTitle" placeholder="Например, срыв поставки оборудования"></div>
-      <div class="field" data-field="rCause"><label>Причина <span class="field-optional">(необязательно)</span></label><textarea id="rCause" placeholder="Что вызывает риск — если уже известно на этом этапе"></textarea></div>
+      <div class="field" data-field="rTitle"><label>Наименование риска</label><input type="text" id="rTitle" placeholder="Например, срыв поставки оборудования" spellcheck="true" lang="ru"></div>
+      <div class="field" data-field="rCause"><label>Причина <span class="field-optional">(необязательно)</span></label><textarea id="rCause" placeholder="Что вызывает риск — если уже известно на этом этапе" spellcheck="true" lang="ru"></textarea></div>
       <div class="field" data-field="rEvent">
         <label>Риск-событие</label>
-        <textarea id="rEvent" placeholder="Что именно может произойти"></textarea>
+        <textarea id="rEvent" placeholder="Что именно может произойти" spellcheck="true" lang="ru"></textarea>
         <div class="ai-hint" id="dupHint">
           <span class="ai-hint-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></span>
           <span class="ai-hint-body">
@@ -1514,7 +1532,7 @@ function activateFonts(link){
           </span>
         </div>
       </div>
-      <div class="field" data-field="rConsequence"><label>Прямое следствие</label><textarea id="rConsequence" placeholder="К чему это приведёт для проекта"></textarea></div>
+      <div class="field" data-field="rConsequence"><label>Прямое следствие</label><textarea id="rConsequence" placeholder="К чему это приведёт для проекта" spellcheck="true" lang="ru"></textarea></div>
       <div class="field" data-field="rOwner"><label>Предполагаемый владелец(ы)</label>
         <div class="ds-ms" id="rOwnerMs">
           <div class="ds-ms-chips" id="rOwnerChips"></div>
@@ -1595,7 +1613,7 @@ function activateFonts(link){
       <button type="button" class="modal-close" data-close="actionModalOverlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
     <form onsubmit="return false;" style="gap:12px;">
-      <div class="field"><label>Мероприятие</label><textarea id="acText" placeholder="Что нужно сделать"></textarea></div>
+      <div class="field"><label>Мероприятие</label><textarea id="acText" placeholder="Что нужно сделать" spellcheck="true" lang="ru"></textarea></div>
       <div class="row2">
         <div class="field"><label>Стратегия</label><select id="acStrategy"><option>Снижение</option><option>Передача</option><option>Уклонение</option><option>Принятие</option></select></div>
         <div class="field"><label>Вид мероприятия</label><select id="acKind">
@@ -3584,8 +3602,7 @@ function renderRegister(){
 }
 let registerPaging = {page:1, pageSize:5};
 let registerAiQuery = '';
-function runRegisterAiAsk(){ registerAiQuery = document.getElementById('regAiAsk').value.trim(); registerPaging.page = 1; renderRegister(); }
-document.getElementById('regAiAsk').addEventListener('keydown', e => { if (e.key === 'Enter') runRegisterAiAsk(); });
+document.getElementById('regAiAsk').addEventListener('keydown', e => { if (e.key === 'Enter') toast('Спросить AI', {body:'Демо-прототип: раздел недоступен в этой версии.', duration:4000}); });
 ['regSearch'].forEach(id => document.getElementById(id).addEventListener('input', () => { registerPaging.page = 1; renderRegister(); }));
 document.getElementById('regFiltCat').addEventListener('change', () => { registerPaging.page = 1; renderRegister(); });
 document.getElementById('regFiltStatus').addEventListener('change', () => { registerPaging.page = 1; renderRegister(); });
@@ -4715,6 +4732,7 @@ function renderMatrix(){
 // ===================================================================
 let lessonTagFilter = new Set();
 let lessonAiQuery = '';
+let lessonPhaseFilter = '';
 function allTags(){ const s = new Set(); state.lessons.forEach(l => l.hashtags.forEach(t=>s.add(t))); return Array.from(s); }
 // Теги хранятся с «#» (обратная совместимость с исходным «Хештеги» —
 // jaccard/tokenize по ним не меняются), но в интерфейсе решётка перед
@@ -4729,26 +4747,31 @@ function renderLessons(){
       <div class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2M20 14h2M9 13v2M15 13v2"/></svg>
         <input type="text" id="lesAiAsk" placeholder="Спросить AI..."></div>
       <div class="ds-ms tag-ms" id="tagMs" style="width:230px;">
-        <button type="button" class="btn btn-secondary" id="btnTagPicker" style="width:100%;">Поиск по тегам${lessonTagFilter.size?` (${lessonTagFilter.size})`:''}</button>
+        <button type="button" class="btn${lessonTagFilter.size?' active':''}" id="btnTagPicker" style="width:100%;">Поиск по тегам${lessonTagFilter.size?` (${lessonTagFilter.size})`:''}</button>
         <div class="ds-ms-menu" id="tagMsMenu" hidden>
           <input type="text" id="tagMsSearch" class="tag-ms-search" placeholder="Поиск тега...">
           <div class="ds-ms-chips" id="tagMsChips"></div>
           <div id="tagMsList"></div>
         </div>
       </div>
+      <select id="lesPhaseFilter" style="width:160px;flex-shrink:0;"><option value="">Все фазы</option>${Array.from(new Set(state.lessons.map(l=>l.phase).filter(Boolean))).sort().map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('')}</select>
       <button type="button" class="filter-reset-btn" id="lesFilterReset" title="Сбросить все фильтры" aria-label="Сбросить все фильтры">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
       </button>
       <span class="result-count" id="lesCount"></span>
+      <button type="button" class="btn btn-secondary" id="btnImportLessons" title="Импортировать уроки" aria-label="Импортировать уроки"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 21h16"/></svg> Импортировать</button>
       <button type="button" class="btn btn-primary" id="btnAddLesson">+ Добавить урок</button>
     </div>
     <div id="lesQuickChip"></div>
     <div id="lessonsBody"></div>
     <div id="lessonsPaginationWrap"></div>`;
   document.getElementById('lesSearch').addEventListener('input', () => { lessonsPaging.page = 1; renderLessonsTable(); });
-  document.getElementById('lesAiAsk').addEventListener('keydown', e => { if (e.key === 'Enter') runLessonAiAsk(); });
+  document.getElementById('lesAiAsk').addEventListener('keydown', e => { if (e.key === 'Enter') toast('Спросить AI', {body:'Демо-прототип: раздел недоступен в этой версии.', duration:4000}); });
   document.getElementById('btnAddLesson').addEventListener('click', () => openLessonModal(null, true));
+  document.getElementById('btnImportLessons').addEventListener('click', () => toast('Импортировать уроки', {body:'Демо-прототип: раздел недоступен в этой версии.', duration:4000}));
   document.getElementById('btnTagPicker').addEventListener('click', (e) => { e.stopPropagation(); toggleTagMenu(document.getElementById('tagMsMenu').hidden); });
+  document.getElementById('lesPhaseFilter').value = lessonPhaseFilter;
+  document.getElementById('lesPhaseFilter').addEventListener('change', (e) => { lessonPhaseFilter = e.target.value; lessonsPaging.page = 1; renderLessonsTable(); });
   document.getElementById('tagMsSearch').addEventListener('input', (e) => { lessonTagSearch = e.target.value; renderTagMenuList(); });
   document.getElementById('lesFilterReset').addEventListener('click', () => {
     document.getElementById('lesSearch').value = '';
@@ -4756,9 +4779,11 @@ function renderLessons(){
     lessonAiQuery = '';
     lessonTagFilter.clear();
     lessonTagSearch = '';
+    lessonPhaseFilter = '';
+    document.getElementById('lesPhaseFilter').value = '';
     toggleTagMenu(false);
     const btn = document.getElementById('btnTagPicker');
-    if (btn) btn.textContent = 'Поиск по тегам';
+    if (btn) { btn.textContent = 'Поиск по тегам'; btn.classList.remove('active'); }
     lessonsPaging.page = 1;
     renderLessonsTable();
   });
@@ -4801,21 +4826,18 @@ function onTagFilterChange(){
   lessonsPaging.page = 1;
   renderLessonsTable();
   const btn = document.getElementById('btnTagPicker');
-  if (btn) btn.textContent = `Поиск по тегам${lessonTagFilter.size?` (${lessonTagFilter.size})`:''}`;
+  if (btn){
+    btn.textContent = `Поиск по тегам${lessonTagFilter.size?` (${lessonTagFilter.size})`:''}`;
+    btn.classList.toggle('active', lessonTagFilter.size > 0);
+  }
 }
 document.addEventListener('click', (e) => { if (!e.target.closest('#tagMs')) toggleTagMenu(false); });
-// «Спросить AI» — та же демо-эвристика (пересечение токенов), что и для
-// поиска дублей рисков; явно не реальный вызов LLM, помечено в подсказке чипа.
-function runLessonAiAsk(){
-  lessonAiQuery = document.getElementById('lesAiAsk').value.trim();
-  lessonsPaging.page = 1;
-  renderLessonsTable();
-}
 let lessonsPaging = {page:1, pageSize:5};
 function renderLessonsTable(){
   const q = (document.getElementById('lesSearch').value||'').toLowerCase();
   let list = state.lessons.slice();
   if (lessonTagFilter.size) list = list.filter(l => l.hashtags.some(t => lessonTagFilter.has(t)));
+  if (lessonPhaseFilter) list = list.filter(l => l.phase === lessonPhaseFilter);
   if (q) list = list.filter(l => (l.title+l.description+l.category).toLowerCase().includes(q));
   let aiNote = '';
   if (lessonAiQuery){
@@ -5213,8 +5235,7 @@ function renderCalendarMonth(){
         return `<div class="cal-note-pill" style="background:${t.bg};color:${t.color}" title="${esc(n.text)}"${isSession?` data-open-session="${y}-${m}-${d}"`:''}><span class="cal-pill-icon">${t.icon}</span><span>${esc(t.label)}</span><button type="button" class="cal-note-del-x" data-del-cal-note="${n.id}" data-del-cal-date="${y}-${m}-${d}" title="Удалить встречу" aria-label="Удалить встречу"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`;}).join('')}
     </div>`;
   }
-  document.getElementById('calBody').innerHTML = `<div class="cal-grid">${grid}</div>
-    <p class="field-hint" style="margin-top:8px;flex-shrink:0;">Кликните день, чтобы добавить заметку (индивидуальная работа, риск-сессия, семинар, Pre-mortem сессия).</p>`;
+  document.getElementById('calBody').innerHTML = `<div class="cal-grid">${grid}</div>`;
   document.querySelectorAll('.cal-ev').forEach(e => e.addEventListener('click', ev => { ev.stopPropagation(); openPassport(e.dataset.risk); }));
   document.querySelectorAll('[data-open-session]').forEach(el => el.addEventListener('click', ev => {
     ev.stopPropagation();
