@@ -1954,6 +1954,7 @@ function freshState(){
     baseline: computeKpiSnapshot(risks),
     dayNotes: {},
     premortemSessions: [],
+    ownerBaseline: {},
   };
 }
 function loadState(){
@@ -1976,6 +1977,7 @@ state = loadState();
 if (!state.baseline) state.baseline = computeKpiSnapshot(state.risks); // апгрейд старого localStorage без baseline
 if (!state.dayNotes) state.dayNotes = {};
 if (!state.premortemSessions) state.premortemSessions = []; // апгрейд старого localStorage без PreMortem
+if (!state.ownerBaseline) state.ownerBaseline = {}; // апгрейд старого localStorage без базовой точки тренда «Мои риски»
 
 function findRisk(id){ return state.risks.find(r => r.id === id); }
 function findLesson(id){ return state.lessons.find(l => l.id === id); }
@@ -2965,15 +2967,31 @@ const QUICK_FILTERS = {
 // Счётчики персональной сводки владельца риска ("Мои риски") — те же критерии,
 // что и остальные быстрые фильтры реестра, просто с другой подачей (карточки-счётчики).
 const OWNER_COUNTERS = [
-  {key:'ownerNew',      label:'Новые',          test:r => r.status === 'Идентификация',
+  {key:'ownerNew',      label:'Новые',          test:r => r.status === 'Идентификация', goodIsUp:false,
     icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.8 5.6L19 9l-5.2 1.4L12 16l-1.8-5.6L5 9l5.2-1.4L12 2z"/></svg>', bg:'var(--accent-50)', fg:'var(--accent-600)'},
-  {key:'ownerReview',   label:'На пересмотре',  test:r => r.committeeFlag || r.status === 'Анализ и оценка',
+  {key:'ownerReview',   label:'На пересмотре',  test:r => r.committeeFlag || r.status === 'Анализ и оценка', goodIsUp:false,
     icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>', bg:'var(--amber-50)', fg:'var(--amber-700)'},
-  {key:'ownerOverdue',  label:'Просроченные',   test:r => QUICK_FILTERS.overdue.test(r),
+  {key:'ownerOverdue',  label:'Просроченные',   test:r => QUICK_FILTERS.overdue.test(r), goodIsUp:false,
     icon:KPI_ICONS.overdue, bg:'var(--red-50)', fg:'var(--red-700)'},
-  {key:'ownerAccepted', label:'Остаточный риск принят', test:r => !!r.residualAcceptedBy,
+  {key:'ownerAccepted', label:'Остаточный риск принят', test:r => !!r.residualAcceptedBy, goodIsUp:true,
     icon:KPI_ICONS.done, bg:'var(--green-50)', fg:'var(--green-700)'},
 ];
+// Базовая точка для тренда счётчиков «Мои риски» — снимок на момент первого
+// захода ЭТОГО владельца в сессии (тот же принцип, что и state.baseline на
+// Дэшборде: реальная разница с началом сессии, не выдуманный процент).
+// Ключ — имя пользователя, т.к. в одной демо-сессии браузера могут заходить
+// разные владельцы (Выйти → другая роль).
+function getOwnerCounterBaseline(scope){
+  const key = sessionName();
+  if (!state.ownerBaseline) state.ownerBaseline = {};
+  if (!state.ownerBaseline[key]){
+    const snap = {};
+    OWNER_COUNTERS.forEach(c => { snap[c.key] = scope.filter(c.test).length; });
+    state.ownerBaseline[key] = snap;
+    saveState();
+  }
+  return state.ownerBaseline[key];
+}
 QUICK_FILTERS.ownerNew = {label:'Новые (Идентификация)', test: OWNER_COUNTERS[0].test};
 QUICK_FILTERS.ownerReview = {label:'На пересмотре', test: OWNER_COUNTERS[1].test};
 QUICK_FILTERS.ownerOverdue = QUICK_FILTERS.overdue;
@@ -3029,10 +3047,11 @@ function renderRegister(){
   const counterMount = document.getElementById('regOwnerCounters');
   if (ownerLocked){
     const scope = state.risks.filter(r => r.status !== 'Архивирован').filter(isMineOrInitiated);
+    const baseline = getOwnerCounterBaseline(scope);
     counterMount.innerHTML = `<div class="owner-counters">${OWNER_COUNTERS.map(c => {
       const n = scope.filter(c.test).length;
       return `<div class="owner-counter ${registerQuickFilter===c.key?'active':''}" data-owner-counter="${c.key}">
-        <span class="owner-counter-icon" style="background:${c.bg};color:${c.fg};">${c.icon}</span>
+        <div class="kpi-top-row"><span class="owner-counter-icon" style="background:${c.bg};color:${c.fg};">${c.icon}</span>${trendBadge(n, baseline[c.key], c.goodIsUp)}</div>
         <div class="n">${n}</div><div class="l">${c.label}</div></div>`;
     }).join('')}</div>`;
     counterMount.querySelectorAll('[data-owner-counter]').forEach(el => el.addEventListener('click', () => {
