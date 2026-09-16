@@ -1169,6 +1169,7 @@ function activateFonts(link){
   .audit-timeline-icon.status{background:var(--canvas); color:var(--ink-600);}
   .audit-timeline-icon.escalated{background:var(--red-50); color:var(--red-700);}
   .audit-timeline-icon.review{background:var(--amber-50); color:var(--amber-700);}
+  .audit-timeline-icon.comment{background:var(--purple-50); color:var(--purple-700);}
   .audit-timeline-body{font-size:12.5px; padding-top:1px;}
   .audit-timeline-body .actor{font-weight:700; color:var(--ink-900);}
   .audit-timeline-body .desc{color:var(--ink-700);}
@@ -3950,10 +3951,13 @@ function renderPassport(){
       ${canAcceptResidual ? `<div class="btn-row" style="margin-top:8px;"><button class="btn btn-secondary btn-sm" id="pResidualBtn">${r.residualAcceptedBy?'Обновить остаточный риск':'Принять остаточный риск'}</button></div>` : ''}
     </div>
 
-    <h3 class="pp-h">КОНТРОЛИ (существующие процедуры)</h3>
+    <div class="pp-h-row"><h3 class="pp-h">КОНТРОЛИ (существующие процедуры)</h3>${editable ? `<button type="button" class="btn btn-secondary btn-sm" id="pAddControlBtn">+ Контроль</button>` : ''}</div>
+    <p class="muted" style="font-size:11.5px;margin:-4px 0 8px;">Меры защиты, которые уже действовали ещё до того, как риск идентифицировали (регламенты, существующие процедуры контроля) — в отличие от новых мероприятий реагирования ниже, которые только планируются.</p>
     ${controls.length ? `<div class="actions-table-wrap" style="margin-bottom:12px;"><table class="data-table"><thead><tr><th>Контроль</th><th>Эффективность</th><th>Ответственный оператор</th>${editable?'<th></th>':''}</tr></thead><tbody>
       ${controls.map(a => `<tr><td>${esc(a.title)}</td><td>${CONTROL_EFFECT[a.status]}</td><td>${assigneeCellHtml(a, editable)}</td>${editable?`<td><button class="btn-sm" data-edit-action="${a.id}">✎</button></td>`:''}</tr>`).join('')}
-    </tbody></table></div>` : `<div class="empty-state" style="margin-bottom:12px;">Существующих процедур контроля пока не привязано.</div>`}
+    </tbody></table></div>` : (editable
+      ? `<div class="risk-card-cta" id="pAddControlEmptyCta" style="min-height:64px;margin-bottom:12px;"><div class="risk-card-cta-inner" style="flex-direction:row;gap:8px;"><span class="risk-card-cta-icon" style="width:22px;height:22px;font-size:14px;">+</span><span class="risk-card-cta-lbl">Добавить контроль</span></div></div>`
+      : `<div class="empty-state" style="margin-bottom:12px;">Существующих процедур контроля пока не привязано.</div>`)}
 
     <div class="btn-row" style="margin-bottom:12px;">
       ${editable ? `<button class="btn btn-secondary btn-sm" id="pEditBtn">Редактировать карточку</button>` : ''}
@@ -3978,8 +3982,15 @@ function renderPassport(){
         ${editable && !r.committeeFlag ? `<button class="btn btn-secondary btn-sm" id="pEscalateBtn">Эскалировать риск-менеджеру / комитету</button>` : ''}
         ${editable && r.ownerNames.length > 1 ? `<span class="badge-pill" style="background:var(--amber-50);color:var(--amber-700);">Кросс-функциональный риск — требуется согласование ${r.ownerNames.length} совладельцев</span>` : ''}
       </div>
-      <div class="k">Лог комментариев и решений</div>
+      <div class="pp-h-row" style="margin:0 0 4px;padding-top:0;border-top:none;">
+        <div class="k" style="margin:0;">Лог комментариев и решений</div>
+        ${editable ? `<button type="button" class="btn btn-secondary btn-sm" id="pAddCommentBtn">+ Комментарий</button>` : ''}
+      </div>
       <div class="v">${renderCommentLog(r.id)}</div>
+      ${editable ? `<div id="pCommentFormWrap" hidden style="margin-top:10px;">
+        <textarea id="pCommentText" placeholder="Комментарий или решение по риску..." style="width:100%;min-height:60px;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 12px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>
+        <div class="btn-row" style="margin-top:8px;"><button type="button" class="btn btn-text btn-sm" id="pCommentCancelBtn">Отмена</button><button type="button" class="btn btn-primary btn-sm" id="pCommentSaveBtn" style="flex:1;">Сохранить</button></div>
+      </div>` : ''}
     </div>
 
     <h3 class="pp-h">AUDIT TRAIL — кто, когда и что менял</h3>
@@ -4001,6 +4012,32 @@ function renderPassport(){
   if (addActBtn) addActBtn.addEventListener('click', () => openActionModal(r, null));
   const addActEmptyCta = document.getElementById('pAddActionEmptyCta');
   if (addActEmptyCta) addActEmptyCta.addEventListener('click', () => openActionModal(r, null));
+  const addControlBtn = document.getElementById('pAddControlBtn');
+  if (addControlBtn) addControlBtn.addEventListener('click', () => openControlModal(r));
+  const addControlEmptyCta = document.getElementById('pAddControlEmptyCta');
+  if (addControlEmptyCta) addControlEmptyCta.addEventListener('click', () => openControlModal(r));
+  const addCommentBtn = document.getElementById('pAddCommentBtn');
+  const commentFormWrap = document.getElementById('pCommentFormWrap');
+  if (addCommentBtn) addCommentBtn.addEventListener('click', () => {
+    commentFormWrap.hidden = false;
+    addCommentBtn.hidden = true;
+    document.getElementById('pCommentText').focus();
+  });
+  const commentCancelBtn = document.getElementById('pCommentCancelBtn');
+  if (commentCancelBtn) commentCancelBtn.addEventListener('click', () => {
+    commentFormWrap.hidden = true;
+    addCommentBtn.hidden = false;
+    document.getElementById('pCommentText').value = '';
+  });
+  const commentSaveBtn = document.getElementById('pCommentSaveBtn');
+  if (commentSaveBtn) commentSaveBtn.addEventListener('click', () => {
+    const text = document.getElementById('pCommentText').value.trim();
+    if (!text){ toast('Введите текст комментария', {tone:'warning'}); return; }
+    pushAudit(r.id, r.status, r.status, text);
+    saveState();
+    toast('Комментарий добавлен');
+    renderPassport();
+  });
   const advBtn = document.getElementById('pAdvanceBtn');
   if (advBtn) advBtn.addEventListener('click', () => advanceStatus(r));
   const mergeBtn = document.getElementById('pMergeBtn');
@@ -4054,8 +4091,13 @@ const ICON_AUDIT_CREATE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentC
 const ICON_AUDIT_STATUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 12h6m-2.5-2.5L15 12l-2.5 2.5"/></svg>';
 const ICON_AUDIT_ESCALATE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.6 18a1.5 1.5 0 0 0 1.3 2.2h16.2a1.5 1.5 0 0 0 1.3-2.2L13.7 3.9a1.5 1.5 0 0 0-2.6 0z"/></svg>';
 const ICON_AUDIT_REVIEW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>';
+const ICON_AUDIT_COMMENT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-4-1L3 20l1-5.5A8.38 8.38 0 0 1 3.5 11 8.5 8.5 0 0 1 12 3a8.38 8.38 0 0 1 9 8.5z"/></svg>';
+// «Просто комментарий» (+ Комментарий в паспорте) — та же запись AuditLog,
+// что и переход статуса, но fromStatus===toStatus (статус не менялся) —
+// отдельный тип события в таймлайне вместо бессмысленного «X → X».
 function auditEventMeta(a){
   if (!a.fromStatus) return {icon:ICON_AUDIT_CREATE, cls:'created'};
+  if (a.fromStatus === a.toStatus) return {icon:ICON_AUDIT_COMMENT, cls:'comment'};
   if (a.comment && /комитет|эскалац/i.test(a.comment)) return {icon:ICON_AUDIT_ESCALATE, cls:'escalated'};
   if (a.comment && /остаточ/i.test(a.comment)) return {icon:ICON_AUDIT_REVIEW, cls:'review'};
   return {icon:ICON_AUDIT_STATUS, cls:'status'};
@@ -4064,9 +4106,11 @@ function auditTimelineHtml(rows, withRiskLink){
   return `<div class="audit-timeline">${rows.map(a => {
     const m = auditEventMeta(a);
     const riskLink = withRiskLink ? ` · <a href="#" data-open-risk="${a.riskId}"><code class="mono">${a.riskId}</code></a>` : '';
-    const desc = a.fromStatus
-      ? `перевёл(а) статус: ${esc(a.fromStatus)} → <b>${esc(a.toStatus)}</b>`
-      : `создал(а) риск — статус «${esc(a.toStatus)}»`;
+    const desc = !a.fromStatus
+      ? `создал(а) риск — статус «${esc(a.toStatus)}»`
+      : a.fromStatus === a.toStatus
+        ? `добавил(а) комментарий`
+        : `перевёл(а) статус: ${esc(a.fromStatus)} → <b>${esc(a.toStatus)}</b>`;
     return `<div class="audit-timeline-row"><span class="audit-timeline-icon ${m.cls}">${m.icon}</span>
       <div class="audit-timeline-body"><span class="actor">${esc(a.actorName)}</span>${riskLink} <span class="desc">${desc}${a.comment?' — '+esc(a.comment):''}</span><span class="t">${esc(a.timestamp)}</span></div>
     </div>`;
@@ -4248,6 +4292,17 @@ function openActionModal(r, action){
   enhanceSelectAsAutocomplete(document.getElementById('acKind'));
   enhanceSelectAsAutocomplete(document.getElementById('acStatus'));
   openModal('actionModalOverlay');
+}
+// «+ Контроль» в разделе КОНТРОЛИ — та же модалка мероприятия, что и
+// «+ Мероприятие», просто открывается сразу с видом «Существующая
+// процедура» (acKind=existing → сохранится как kind:'existing_procedure',
+// см. actionFormSubmit) — контроли и мероприятия физически одна и та же
+// сущность Action, различаются только этим полем.
+function openControlModal(r){
+  openActionModal(r, null);
+  const kindSel = document.getElementById('acKind');
+  kindSel.value = 'existing';
+  syncAc('acKind');
 }
 document.getElementById('actionFormSubmit').addEventListener('click', () => {
   const r = findRisk(actionCtx.riskId); if (!r) return;
