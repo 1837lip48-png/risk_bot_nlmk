@@ -4848,7 +4848,10 @@ function openSessionSummaryModal(y, m, d){
     </div>`;
 
   document.getElementById('sessionModalFoot').innerHTML = `
-    <button type="button" class="btn btn-text" id="sessionModalCloseBtn">Закрыть</button>
+    <span style="display:flex; gap:8px;">
+      <button type="button" class="btn btn-text" id="sessionModalCloseBtn">Закрыть</button>
+      <button type="button" class="btn btn-secondary" id="sessionDayNotesBtn">+ Заметка дня</button>
+    </span>
     <span style="display:flex; gap:8px;">
       ${risks.length === 1 ? `<button type="button" class="btn btn-secondary" id="sessionOpenRiskBtn">Открыть риск</button>` : ''}
       <button type="button" class="btn btn-primary" id="sessionFullDetailsBtn">Подробнее →</button>
@@ -4856,6 +4859,14 @@ function openSessionSummaryModal(y, m, d){
 
   document.getElementById('sessionModalCloseX').addEventListener('click', () => closeModal('sessionModalOverlay'));
   document.getElementById('sessionModalCloseBtn').addEventListener('click', () => closeModal('sessionModalOverlay'));
+  // Клик по дню с риск-сессией всегда открывает сводку этой сессии (а не
+  // «Заметки дня»), поэтому без этой кнопки на такой день нельзя было
+  // добавить вторую активность (семинар, индивидуальную работу и т.п.) —
+  // путь к общей форме заметок дня был только у «пустых» дней.
+  document.getElementById('sessionDayNotesBtn').addEventListener('click', () => {
+    closeModal('sessionModalOverlay');
+    openDayNotesModal(y, m, d);
+  });
   if (risks.length === 1){
     document.getElementById('sessionOpenRiskBtn').addEventListener('click', () => {
       closeModal('sessionModalOverlay');
