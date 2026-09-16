@@ -415,11 +415,18 @@ function activateFonts(link){
   .modal-card--xwide{max-width:820px;}
   .modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; gap:12px;}
   .modal-head span{font-family:var(--font-display); font-size:var(--fs-sub3); line-height:var(--lh-sub3); font-weight:700;}
-  /* Заголовок паспорта риска обновляется динамически (ID/уровень/название
-     риска — см. renderPassport()) и остаётся видимым при скролле длинной
-     модалки, как и панель-навигация .pp-nav сразу под ним. */
-  #passportModalOverlay .modal-head{position:sticky; top:-22px; z-index:3; background:var(--paper-0);
-    margin:-22px -22px 16px; padding:22px 22px 0;}
+  /* Заголовок паспорта риска (ID/уровень/название — см. renderPassport())
+     и панель-навигация .pp-nav сразу под ним раньше были ДВУМЯ отдельными
+     sticky-элементами с захардкоженным top:46px у .pp-nav (расчёт «на
+     глаз» высоты заголовка). Когда заголовок становился выше этой
+     оценки (длинный ID/перенос строки в бейдже статуса — напр. у только
+     что созданного риска), .pp-nav прилипал на неверной высоте и
+     наезжал на заголовок. Теперь это ОДИН sticky-контейнер на двоих —
+     они всегда двигаются вместе, независимо от фактической высоты
+     заголовка. */
+  .pp-sticky-head{position:sticky; top:-22px; z-index:3; background:var(--paper-0);
+    margin:-22px -22px 0; padding:22px 22px 12px;}
+  #passportModalOverlay .modal-head{margin-bottom:8px;}
   /* Вкладки паспорта сильно различаются по высоте контента (напр. короткая
      «Оценка» vs длинная таблица «Мероприятия»/список «История») — с обычным
      content-driven max-height модалка при каждом переключении вкладки
@@ -432,8 +439,8 @@ function activateFonts(link){
      не растут, а сжимаются под контент). */
   #passportModalOverlay .modal-card{height:min(700px, 82vh); max-height:82vh;}
   #passportModalOverlay .modal-card-scroll{flex:1;}
-  .pp-nav{display:flex; gap:4px; padding:8px 22px; margin:0 -22px 12px;
-    border-bottom:1px solid var(--line); overflow-x:auto; position:sticky; top:46px; z-index:2; background:var(--paper-0);}
+  .pp-nav{display:flex; gap:4px; padding:8px 22px; margin:0 -22px;
+    border-bottom:1px solid var(--line); overflow-x:auto;}
   /* font-weight:600 всегда (не только у .active) и flex:1 с min-width:0 —
      без этого при переключении вкладки активная пилюля становилась жирной
      (менялась ширина текста), а остальные, идущие без flex:1, были просто
@@ -1666,8 +1673,11 @@ function activateFonts(link){
 <div class="modal-overlay" id="passportModalOverlay">
   <div class="modal-card modal-card--xwide" role="dialog" aria-modal="true">
    <div class="modal-card-scroll">
-    <div class="modal-head"><span>Паспорт риска</span>
+    <div class="pp-sticky-head">
+     <div class="modal-head"><span>Паспорт риска</span>
       <button type="button" class="modal-close" data-close="passportModalOverlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+     </div>
+     <div id="passportNavMount"></div>
     </div>
     <div id="passportMount"></div>
    </div>
@@ -4112,9 +4122,9 @@ function renderPassport(){
   const similarLesson = findBestLessonForRisk(r);
 
   const ppActive = id => currentPassportTab === id ? ' active' : '';
+  document.getElementById('passportNavMount').innerHTML = ppNavHtml(r);
   mount.innerHTML = `
     ${r.committeeFlag ? `<div class="rcm-committee-banner" style="margin:-22px -22px 12px;">${ICON_ATTENTION}Требует решения комитета${r.committeeDecision ? ` · решение: ${esc(r.committeeDecision)}` : ''}</div>` : ''}
-    ${ppNavHtml(r)}
 
     <div class="pp-tab-panel${ppActive('pp-sec-ident')}" id="pp-sec-ident">
       <div class="btn-row" style="margin-bottom:12px;">
@@ -4174,7 +4184,7 @@ function renderPassport(){
       <h3 class="pp-h">ОЦЕНКА</h3>
       <div class="pp-assess-row">
         <div class="pp-assess-matrix">
-          ${migrationMatrixHtml(r.p, r.iLevel, null, null, 148)}
+          ${migrationMatrixHtml(r.p, r.iLevel, null, null, 220)}
           <div class="muted" style="font-size:10.5px;margin-top:6px;text-align:center;">P (вероятность, ось Y, снизу вверх) × I (влияние, ось X)</div>
           ${(!r.p || !r.iLevel) ? (editable ? `<button type="button" class="btn btn-primary btn-sm" id="pAssessCtaBtn" style="margin-top:8px;width:100%;">Оценить P/I</button>`
             : `<div class="muted" style="font-size:11.5px;margin-top:8px;text-align:center;">Оценка P/I ещё не проведена</div>`) : ''}
