@@ -615,12 +615,10 @@
     box-shadow:0 1px 2px rgba(17,37,66,.05), 0 1px 4px rgba(17,37,66,.04);
     transition:background-color .15s ease, box-shadow .18s ease, transform .18s ease;}
   .kpi-card.clickable{cursor:pointer;}
-  .kpi-card.clickable:hover{background:var(--canvas); box-shadow:0 8px 20px -8px rgba(17,37,66,.22); transform:translateY(-2px);}
+  .kpi-card:hover{background:var(--canvas); box-shadow:0 8px 20px -8px rgba(17,37,66,.22); transform:translateY(-2px);}
   .kpi-top-row{display:flex; align-items:center; justify-content:space-between;}
-  .kpi-icon{width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
-    transition:box-shadow .15s ease, transform .15s ease;}
+  .kpi-icon{width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
   .kpi-icon svg{width:17px; height:17px;}
-  .kpi-card:hover .kpi-icon{box-shadow:0 4px 10px -3px rgba(17,37,66,.3); transform:translateY(-1px);}
   .kpi-trend{font-size:12px; font-weight:700; display:inline-flex; align-items:center; gap:2px;}
   .kpi-trend svg{width:12px; height:12px;}
   .kpi-trend.up{color:var(--green-700);} .kpi-trend.down{color:var(--red-700);} .kpi-trend.flat{color:var(--ink-400);}
