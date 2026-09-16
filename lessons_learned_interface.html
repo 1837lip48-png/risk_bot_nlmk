@@ -352,6 +352,9 @@ function activateFonts(link){
      заметно, но некритично — просто сигнал интерактивности, без смены
      самого градиента на другой цвет (Назад так и остаётся отдельным,
      светлеющим, случаем — тут нужнее было именно потемнение). */
+  /* Убираем нативный контур фокуса браузера у кнопки — на тёмном градиенте
+     он читался как чёрная обводка вокруг кнопки. */
+  #sppSubmit{outline:none;}
   #sppSubmit.spp-submit-riskmanager{background:linear-gradient(135deg,var(--role-manager-1),var(--role-manager-2)); border-color:transparent;}
   #sppSubmit.spp-submit-riskowner{background:linear-gradient(135deg,var(--role-owner-1),var(--role-owner-2)); border-color:transparent;}
   #sppSubmit.spp-submit-initiator{background:linear-gradient(135deg,var(--role-initiator-1),var(--role-initiator-2)); border-color:transparent;}
