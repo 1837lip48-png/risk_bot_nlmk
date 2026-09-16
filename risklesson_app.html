@@ -2925,7 +2925,7 @@ function riskCardHtml(r){
       </div>
       <div class="rc-head-actions">
         ${editable ? `<button class="btn btn-secondary btn-sm" data-edit-risk="${r.id}">Изменить</button>` : ''}
-        ${state.session.role === 'riskmanager' ? `<button class="btn btn-sm" style="color:var(--red-700);" data-del-risk="${r.id}" title="Удалить риск из реестра">Удалить</button>` : ''}
+        ${editable ? `<button class="btn btn-sm" style="color:var(--red-700);" data-del-risk="${r.id}" title="Удалить риск из реестра">Удалить</button>` : ''}
         <button class="btn btn-sm" data-open-risk="${r.id}">Детали</button>
       </div>
     </div>
@@ -3271,10 +3271,12 @@ function submitNewRisk(){
     openPassport(risk.id);
   }
 }
-// Удаление риска из реестра — доступно только риск-менеджеру (портфель
-// компании целиком), с подтверждением, чтобы не удалить риск случайным
-// кликом. Заодно чистим связи (RiskDependency), чтобы Карта взаимосвязей
-// не осталась со ссылкой на несуществующий риск.
+// Удаление риска из реестра — риск-менеджеру доступно для любого риска
+// (портфель компании целиком), владельцу риска — только для рисков, где он
+// сам указан владельцем (тот же гейт editable/canManage, что и у «Изменить»,
+// не просто инициированных им), с подтверждением, чтобы не удалить риск
+// случайным кликом. Заодно чистим связи (RiskDependency), чтобы Карта
+// взаимосвязей не осталась со ссылкой на несуществующий риск.
 function deleteRisk(id){
   const r = findRisk(id);
   if (!r) return;
