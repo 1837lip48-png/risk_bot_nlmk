@@ -1071,6 +1071,13 @@ function activateFonts(link){
   .cal-cell .dnum{font-size:11px; font-weight:700; color:var(--ink-600); margin-bottom:4px; display:inline-flex; align-items:center; justify-content:center;}
   .cal-cell.today{border-color:var(--accent-600); background:var(--accent-50);}
   .cal-cell.today .dnum{background:var(--accent-600); color:#fff; width:19px; height:19px; border-radius:50%;}
+  /* Прошедшие дни — прозрачные и недоступны для добавления заметок
+     (клик по фону ячейки отключён в JS), тот же принцип, что и у
+     .calw-daycol.is-past в недельном виде; уже существующие пилюли
+     событий/сессий внутри по-прежнему кликабельны (см. stopPropagation
+     у их обработчиков). */
+  .cal-cell.is-past{opacity:.5; cursor:default;}
+  .cal-cell.is-past:hover{border-color:var(--line);}
   /* Компактная версия .cal-grid/.cal-cell (тот же визуальный язык, что и
      основной календарь) — для выбора даты внутри модалок, например
      повестки риск-сессии, вместо нативного input[type=date]. */
@@ -5372,9 +5379,10 @@ function renderCalendarMonth(){
   for (let i=0;i<startDow;i++) grid += '<div class="cal-cell empty"></div>';
   for (let d=1; d<=daysInMonth; d++){
     const isToday = y===TODAY.getFullYear() && m===TODAY.getMonth() && d===TODAY.getDate();
+    const isPastDay = new Date(y,m,d) < TODAY && !isToday;
     const evs = events.filter(e=>e.day===d);
     const notes = notesFor(y,m,d).filter(n => !calHiddenFilters.has(n.type));
-    grid += `<div class="cal-cell${isToday?' today':''}" data-day="${d}">
+    grid += `<div class="cal-cell${isToday?' today':''}${isPastDay?' is-past':''}" data-day="${d}">
       <div class="dnum">${d}</div>
       ${evs.map(e=>`<div class="cal-ev" style="background:${e.bg};color:${e.color}" data-risk="${e.riskId}" title="${esc(e.fullText)}"><span class="cal-pill-icon">${e.overdue?CAL_EV_OVERDUE_ICON:CAL_EV_ICON}</span><span>${esc(e.text)}</span></div>`).join('')}
       ${notes.map(n=>{const t=noteType(n.type); const isSession = n.type==='session' && n.riskId;
@@ -5401,6 +5409,7 @@ function renderCalendarMonth(){
   // (data-open-session, см. ниже, со своим stopPropagation) и кнопкой
   // «Открыть сводку риск-сессии» внутри формы заметок дня.
   document.querySelectorAll('.cal-cell[data-day]').forEach(c => c.addEventListener('click', () => {
+    if (c.classList.contains('is-past')) return;
     const dd = parseInt(c.dataset.day,10);
     openDayNotesModal(y,m,dd);
   }));
@@ -5620,7 +5629,6 @@ function dayNotesBodyHtml(y,m,d){
     <div class="field" style="margin-bottom:8px;" id="dnRisksField" hidden><label>Обсуждаемые риски</label>
       <div class="ds-ms-chips" id="dnRisksChips" style="margin-bottom:8px;"></div>
       <button type="button" class="ds-ms-addbtn" id="dnRisksAddBtn" style="width:100%;">+ Выбрать риски…</button>
-      <div class="field-hint">Список — как в «Мои риски»: только те риски, что видны вам по роли. Открывает сводку сессии («Sprint Planning») после сохранения — без риска карточка не откроется.</div>
     </div>
     <div class="field" style="margin-bottom:8px;"><label>Время сессии</label>
       <div class="btn-row dn-time-row" style="gap:8px;">
