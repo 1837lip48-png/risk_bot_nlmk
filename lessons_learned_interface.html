@@ -2904,10 +2904,11 @@ function computeActionsByMonth(actions){
   });
   return Array.from(map.values()).sort((a,b) => a.key.localeCompare(b.key));
 }
-function openChartModal(title, sub, bodyHtml){
+function openChartModal(title, sub, bodyHtml, opts){
   document.getElementById('chartModalTitle').textContent = title;
   document.getElementById('chartModalSub').textContent = sub || '';
   document.getElementById('chartModalMount').innerHTML = bodyHtml;
+  document.querySelector('#chartModalOverlay .modal-card').style.maxWidth = (opts && opts.maxWidth) || '';
   openModal('chartModalOverlay');
 }
 function aiInsightRow(text){
@@ -3804,7 +3805,7 @@ function openAddToAgendaModal(r){
       </select>
     </div>
     <div class="btn-row" style="margin-top:10px;"><button type="button" class="btn btn-primary" id="agendaSubmitBtn" style="flex:1;">Добавить в повестку</button></div>`;
-  openChartModal('Добавить в повестку риск-сессии', `Риск: «${r.title}»`, body);
+  openChartModal('Добавить в повестку риск-сессии', `Риск: «${r.title}»`, body, {maxWidth:'400px'});
   document.getElementById('agendaDtValueText').textContent = agendaDtFormatted();
   document.getElementById('agendaDtTrigger').addEventListener('click', (e) => { e.stopPropagation(); toggleAgendaDtPanel(document.getElementById('agendaDtPanel').hidden); });
   document.getElementById('agendaDtPanel').addEventListener('click', (e) => e.stopPropagation());
