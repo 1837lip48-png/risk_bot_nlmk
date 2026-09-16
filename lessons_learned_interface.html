@@ -786,8 +786,12 @@ function activateFonts(link){
   .risk-card[data-zone="unrated"]:hover{opacity:1;}
   /* Сетка карточек 2 колонки (адаптивно) — единый формат реестра рисков
      и у риск-менеджера, и у владельца риска. */
-  #registerList.owner-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px; align-items:start;}
+  #registerList.owner-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px; align-items:stretch;}
   #registerList.owner-grid .risk-card{margin-bottom:0;}
+  /* CTA «+ Добавить/Предложить риск» должна быть той же высоты, что и
+     соседняя карточка риска в строке — растягиваем под высоту грид-ряда
+     (align-items:stretch) вместо фиксированного min-height. */
+  #registerList.owner-grid .risk-card-cta{min-height:0; height:100%; box-sizing:border-box;}
   @media (max-width:860px){#registerList.owner-grid{grid-template-columns:1fr;}}
   /* Компактная карточка риска — ID + бейдж уровня, название, владелец +
      статус срока. Полная детализация — в паспорте по клику. */
