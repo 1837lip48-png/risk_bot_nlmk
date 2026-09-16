@@ -3934,16 +3934,20 @@ function renderPassport(){
         </div>
         ${trendBoxHtml(r)}
         ${r.committeeFlag ? `<div class="esc-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9L2.6 18a1.5 1.5 0 0 0 1.3 2.2h16.2a1.5 1.5 0 0 0 1.3-2.2L13.7 3.9a1.5 1.5 0 0 0-2.6 0z"/></svg><span>Требует решения комитета (I=3)${r.committeeDecision?'<br>Решение: '+esc(r.committeeDecision):''}</span></div>` : ''}
-        <div><div class="k">Плановая периодичность пересмотра</div><div class="v">раз в ${r.reviewFrequencyDays||30} дн.</div></div>
-        ${el!=null ? `<div class="rra-preview"><span class="lbl">EL</span><span class="val">${el.toFixed(1)} млн ₽</span></div>` : ''}
+        <div style="display:flex; gap:8px; align-items:stretch;">
+          <div style="flex:1;"><div class="k">Периодичность пересмотра</div><div class="v">раз в ${r.reviewFrequencyDays||30} дн.</div></div>
+          ${el!=null ? `<div class="rra-preview" style="flex:1;"><span class="lbl">EL</span><span class="val">${el.toFixed(1)} млн ₽</span></div>` : ''}
+        </div>
       </div>
     </div>
 
     <h3 class="pp-h">ОБРАБОТКА</h3>
     <div class="passport-block" style="margin-bottom:12px;">
-      <div class="k">Стратегия(и) по мероприятиям</div><div class="v">${strategies.length?esc(strategies.join(', ')):'<span class="muted">пока не выбрана — появится вместе с первым мероприятием</span>'}</div>
-      <div class="k" style="margin-top:8px;">Обоснование выбора</div><div class="v">${esc(r.strategyRationale)||'<span class="muted">не заполнено</span>'}</div>
-      <div class="k" style="margin-top:8px;">Дата решения о переходе в «Управление»</div><div class="v mono">${decisionDate||'—'}</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px 20px;">
+        <div><div class="k">Стратегия(и) по мероприятиям</div><div class="v">${strategies.length?esc(strategies.join(', ')):'<span class="muted">пока не выбрана — появится вместе с первым мероприятием</span>'}</div></div>
+        <div><div class="k">Дата решения о переходе в «Управление»</div><div class="v mono">${decisionDate||'—'}</div></div>
+      </div>
+      <div style="margin-top:8px;"><div class="k">Обоснование выбора</div><div class="v">${esc(r.strategyRationale)||'<span class="muted">не заполнено</span>'}</div></div>
     </div>
 
     <h3 class="pp-h">ОСТАТОЧНЫЙ РИСК</h3>
