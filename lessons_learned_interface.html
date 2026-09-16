@@ -4168,7 +4168,7 @@ function renderPassport(){
         <div class="passport-block">
           <div class="k">ID / № паспорта</div><div class="v">${r.id}<br>№ ${r.displayNumber||'—'}</div>
           <div class="k" style="margin-top:8px;">Категория</div><div class="v">${esc(r.category)}</div>
-          ${r.phase ? `<div class="k" style="margin-top:8px;">Стадия</div><div class="v">${esc(r.phase)}</div>` : ''}
+          <div class="k" style="margin-top:8px;">Фаза проекта</div><div class="v">${r.phase ? esc(r.phase) : '<span class="muted">не указана — задаётся при редактировании карточки</span>'}</div>
           <div class="k" style="margin-top:8px;">Владелец(ы)</div><div class="v">${esc(r.ownerNames.join(', ')||'—')}</div>
           <div class="k" style="margin-top:8px;">Светофор</div><div class="v"><span class="status-dot" style="background:${tl.color}"></span> ${tl.label}</div>
           <div class="k" style="margin-top:8px;">Связанные риски</div><div class="v">${relatedRisksHtml(r.id)}</div>
@@ -5366,13 +5366,16 @@ function renderCalendarMonth(){
     const [yy,mm,dd] = btn.dataset.delCalDate.split('-').map(Number);
     deleteCalNote(yy, mm, dd, btn.dataset.delCalNote);
   }));
-  // Клик по дню с запланированной/проведённой риск-сессией — сразу сводка
-  // встречи (шапка/участники/AI-сводка/решения/пункты действий); по обычному
-  // дню — как раньше, форма заметок (добавить встречу/просмотр/согласование).
+  // Клик по дню (фону ячейки) — всегда форма заметок дня, даже если на
+  // этот день уже есть риск-сессия: иначе нельзя было добавить встречу
+  // другого формата (семинар, ещё одну сессию и т.д.) в тот же день —
+  // клик неизбежно уводил на сводку уже существующей. Сама сводка
+  // по-прежнему доступна прямым кликом по пилюле риск-сессии
+  // (data-open-session, см. ниже, со своим stopPropagation) и кнопкой
+  // «Открыть сводку риск-сессии» внутри формы заметок дня.
   document.querySelectorAll('.cal-cell[data-day]').forEach(c => c.addEventListener('click', () => {
     const dd = parseInt(c.dataset.day,10);
-    const hasSession = notesFor(y,m,dd).some(n => n.type === 'session' && n.riskId);
-    hasSession ? openSessionSummaryModal(y,m,dd) : openDayNotesModal(y,m,dd);
+    openDayNotesModal(y,m,dd);
   }));
   fitCalendarMonthHeight();
 }
