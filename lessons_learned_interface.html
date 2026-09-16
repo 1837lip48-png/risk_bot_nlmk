@@ -3238,7 +3238,7 @@ function maybeAdvanceOnActionChange(r){
 // черновик-заглушка с призывом заполнить и отправить его через ту же
 // форму «+ Предложить риск».
 function ownerTemplateCardHtml(){
-  return `<div class="risk-card risk-card-mini" style="border-style:dashed; cursor:pointer; grid-column:1/-1;" data-open-template>
+  return `<div class="risk-card risk-card-mini" style="cursor:pointer; grid-column:1/-1;" data-open-template>
     <div class="rcm-top">
       <span class="rcm-id mono" style="color:var(--ink-400);">Новый риск</span>
       <span class="badge-pill" style="background:var(--canvas);color:var(--ink-400);border:1px dashed var(--line);">Шаблон</span>
@@ -3959,7 +3959,9 @@ function renderPassport(){
         <td class="mono">${esc(a.plannedDate||'—')}${a.plannedDate && a.status!=='done' && a.status!=='rejected' && parseRuShortDate(a.plannedDate) && parseRuShortDate(a.plannedDate) < TODAY ? ' <span style="color:var(--red-700);">⚠ просрочено</span>' : ''}</td><td class="mono">${esc(a.forecastActualDate||'—')}</td><td class="mono">${esc(a.cost||'—')}</td>
         <td><span class="status-dot-row"><i class="status-dot" style="background:${ACTION_STATUS_COLOR[a.status]}"></i>${ACTION_STATUS_LABEL[a.status]}</span></td>
         ${editable?`<td><button class="btn-sm" data-edit-action="${a.id}">✎</button></td>`:''}</tr>`).join('')}
-    </tbody></table></div>` : `<div class="empty-state">Мероприятий пока нет — светофор красный, пока не появится хотя бы одно.</div>`}
+    </tbody></table></div>` : (editable
+      ? `<div class="risk-card-cta" id="pAddActionEmptyCta" style="min-height:72px;"><div class="risk-card-cta-inner" style="flex-direction:row;gap:8px;"><span class="risk-card-cta-icon" style="width:24px;height:24px;font-size:15px;">+</span><span class="risk-card-cta-lbl">Добавить мероприятие</span></div></div>`
+      : `<div class="empty-state">Мероприятий пока нет — светофор красный, пока не появится хотя бы одно.</div>`)}
 
     <h3 class="pp-h">ЭСКАЛАЦИЯ И КОММУНИКАЦИЯ</h3>
     <div class="passport-block" style="margin-bottom:12px;">
@@ -3988,6 +3990,8 @@ function renderPassport(){
   if (assessCtaBtn) assessCtaBtn.addEventListener('click', () => openAssessModal(r));
   const addActBtn = document.getElementById('pAddActionBtn');
   if (addActBtn) addActBtn.addEventListener('click', () => openActionModal(r, null));
+  const addActEmptyCta = document.getElementById('pAddActionEmptyCta');
+  if (addActEmptyCta) addActEmptyCta.addEventListener('click', () => openActionModal(r, null));
   const advBtn = document.getElementById('pAdvanceBtn');
   if (advBtn) advBtn.addEventListener('click', () => advanceStatus(r));
   const mergeBtn = document.getElementById('pMergeBtn');
