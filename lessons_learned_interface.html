@@ -1494,6 +1494,7 @@ function activateFonts(link){
           <input type="text" id="regAiAsk" placeholder="Спросить AI..."></div>
         <select id="regFiltCat"><option value="">Все категории</option></select>
         <select id="regFiltStatus"><option value="">Все статусы</option></select>
+        <select id="regFiltPhase"><option value="">Все фазы</option></select>
         <button type="button" class="filter-reset-btn" id="regFilterReset" title="Сбросить все фильтры" aria-label="Сбросить все фильтры">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
         </button>
@@ -2755,6 +2756,12 @@ function enterWorkspace(){
   enhanceSelectAsAutocomplete(document.getElementById('rCategory'), 'Выберите категорию');
   enhanceSelectAsAutocomplete(document.getElementById('regFiltCat'));
   enhanceSelectAsAutocomplete(document.getElementById('regFiltStatus'));
+  // Фаза — не фиксированный список (в отличие от категорий/статусов):
+  // заполняется в renderRegister() из реально встречающихся у рисков
+  // значений phase (оно есть не у всех — только у рисков из уроков/
+  // PreMortem/предложений инициатора), поэтому здесь только подключаем
+  // автокомплит-обёртку к уже существующему <select>.
+  enhanceSelectAsAutocomplete(document.getElementById('regFiltPhase'));
 
   const sidebar = document.getElementById('wsSidebar');
   sidebar.addEventListener('mouseenter', () => sidebar.classList.add('expanded'));
@@ -3518,8 +3525,20 @@ function renderRegister(){
   // «У владельца пока нет ни одного риска» — отдельная демо-ситуация: показываем
   // один пустой шаблон вместо реальных данных, а не подставляем чужие риски.
   const ownerHasNoRisks = ownerLocked && list.length === 0;
+  // Фаза — не фиксированный enum, как категория/статус: список вариантов
+  // собираем из того, что реально встречается в текущей области видимости
+  // (до применения самих фильтров катF/статусF/фазаF), иначе выбранный
+  // вариант мог бы пропасть из списка после сужения другим фильтром.
+  const phaseSel = document.getElementById('regFiltPhase');
+  const prevPhase = phaseSel.value;
+  const phases = Array.from(new Set(list.map(r => r.phase).filter(Boolean))).sort();
+  phaseSel.innerHTML = '<option value="">Все фазы</option>' + phases.map(p => `<option value="${esc(p)}">${esc(p)}</option>`).join('');
+  phaseSel.value = phases.includes(prevPhase) ? prevPhase : '';
+  syncAc('regFiltPhase');
+  const phaseF = phaseSel.value;
   if (catF) list = list.filter(r => r.category === catF);
   if (statusF) list = list.filter(r => r.status === statusF);
+  if (phaseF) list = list.filter(r => r.phase === phaseF);
   if (search) list = list.filter(r => (r.title+r.event+r.consequence+r.ownerNames.join(' ')+r.id).toLowerCase().includes(search));
   if (registerQuickFilter && QUICK_FILTERS[registerQuickFilter]) list = list.filter(QUICK_FILTERS[registerQuickFilter].test);
 
@@ -3628,11 +3647,13 @@ document.getElementById('regAiAsk').addEventListener('keydown', e => { if (e.key
 ['regSearch'].forEach(id => document.getElementById(id).addEventListener('input', () => { registerPaging.page = 1; renderRegister(); }));
 document.getElementById('regFiltCat').addEventListener('change', () => { registerPaging.page = 1; renderRegister(); });
 document.getElementById('regFiltStatus').addEventListener('change', () => { registerPaging.page = 1; renderRegister(); });
+document.getElementById('regFiltPhase').addEventListener('change', () => { registerPaging.page = 1; renderRegister(); });
 document.getElementById('regFilterReset').addEventListener('click', () => {
   document.getElementById('regSearch').value = '';
   document.getElementById('regAiAsk').value = ''; registerAiQuery = '';
   document.getElementById('regFiltCat').value = ''; syncAc('regFiltCat');
   document.getElementById('regFiltStatus').value = ''; syncAc('regFiltStatus');
+  document.getElementById('regFiltPhase').value = ''; syncAc('regFiltPhase');
   registerQuickFilter = null;
   registerPaging.page = 1;
   renderRegister();
