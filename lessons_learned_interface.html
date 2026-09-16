@@ -5562,6 +5562,7 @@ function agendaRowHtml(n){
 function openDayNotesModal(y, m, d){
   const title = `${d} ${CAL_MONTH_NAMES[m].toLowerCase()} ${y}`;
   dnAttendeeSelection = [];
+  dnRiskSelection = [];
   dnHour = 10; dnMin = 0;
   openChartModal('Заметки дня — ' + title, '', dayNotesBodyHtml(y,m,d), {maxWidth:'380px'});
   wireDayNotesForm(y,m,d);
@@ -5585,6 +5586,14 @@ function dayNotesBodyHtml(y,m,d){
     </div>
     <div class="btn-row" style="margin-bottom:8px;gap:8px;">
       <select id="dnType" style="flex:1;">${NOTE_TYPES.map(t=>`<option value="${t.key}">${t.label}</option>`).join('')}</select>
+    </div>
+    <div class="field" style="margin-bottom:8px;" id="dnRisksField" hidden><label>Обсуждаемые риски</label>
+      <div class="ds-ms" id="dnRisksMs">
+        <div class="ds-ms-chips" id="dnRisksChips"></div>
+        <button type="button" class="ds-ms-addbtn" id="dnRisksAddBtn">+ Добавить риск</button>
+        <div class="ds-ms-menu" id="dnRisksMenu" hidden></div>
+      </div>
+      <div class="field-hint">Открывает сводку сессии (карточка «Sprint Planning») после сохранения — без риска карточка не откроется.</div>
     </div>
     <div class="field" style="margin-bottom:8px;"><label>Время сессии</label>
       <div class="btn-row dn-time-row" style="gap:8px;">
@@ -5643,6 +5652,40 @@ function dnToggleAttendeeMenu(show){
 }
 document.addEventListener('click', (e) => { if (!e.target.closest('#dnAttendeeMs')) dnToggleAttendeeMenu(false); });
 let dnAttendeeSelection = [];
+// Риски, обсуждаемые на сессии (только для типа «Риск-сессия») — без
+// привязанного риска computeSessionData() не находит данных и карточка
+// сводки («Sprint Planning») не открывается (see openSessionSummaryModal).
+// При сохранении на каждый выбранный риск создаётся своя запись в
+// dayNotes — тот же механизм, что и у «Добавить в повестку риск-сессии»
+// из карточки риска, где computeSessionData() уже умеет объединять
+// несколько session-заметок одного дня в одну общую сводку.
+let dnRiskSelection = [];
+function dnRenderRiskChips(){
+  const chipsEl = document.getElementById('dnRisksChips');
+  if (!chipsEl) return;
+  chipsEl.innerHTML = dnRiskSelection.map(id => { const r = findRisk(id); return r ?
+    `<span class="ds-chip">${esc(r.title)}<button type="button" data-dn-remove-risk="${esc(id)}" aria-label="Убрать">×</button></span>` : ''; }).join('');
+  chipsEl.querySelectorAll('[data-dn-remove-risk]').forEach(b => b.addEventListener('click', () => {
+    dnRiskSelection = dnRiskSelection.filter(id => id !== b.dataset.dnRemoveRisk);
+    dnRenderRiskChips();
+  }));
+}
+function dnToggleRisksMenu(show){
+  const menu = document.getElementById('dnRisksMenu');
+  if (!menu) return;
+  if (show){
+    const rest = state.risks.filter(r => r.status !== 'Архивирован' && !dnRiskSelection.includes(r.id));
+    menu.innerHTML = rest.length ? rest.map(r => `<div class="ds-ms-item" data-dn-add-risk="${esc(r.id)}">${esc(r.id)} — ${esc(r.title)}</div>`).join('')
+      : '<div class="ds-ms-empty">Все активные риски уже добавлены</div>';
+    menu.querySelectorAll('[data-dn-add-risk]').forEach(el => el.addEventListener('click', () => {
+      dnRiskSelection.push(el.dataset.dnAddRisk);
+      dnRenderRiskChips();
+      dnToggleRisksMenu(false);
+    }));
+  }
+  menu.hidden = !show;
+}
+document.addEventListener('click', (e) => { if (!e.target.closest('#dnRisksMs')) dnToggleRisksMenu(false); });
 let dnHour = 10, dnMin = 0;
 // Простые выпадающие списки (обычные <select>) вместо прокручиваемых
 // колонок — тот же принцип, что и у «Длительности» рядом, компактнее и
@@ -5666,6 +5709,12 @@ function wireDayNotesForm(y,m,d){
   dnRenderTimePicker();
   dnRenderAttendeeChips();
   document.getElementById('dnAttendeeAddBtn').addEventListener('click', (e) => { e.stopPropagation(); dnToggleAttendeeMenu(document.getElementById('dnAttendeeMenu').hidden); });
+  dnRenderRiskChips();
+  document.getElementById('dnRisksAddBtn').addEventListener('click', (e) => { e.stopPropagation(); dnToggleRisksMenu(document.getElementById('dnRisksMenu').hidden); });
+  const dnTypeSel = document.getElementById('dnType');
+  const syncDnRisksVisibility = () => { document.getElementById('dnRisksField').hidden = dnTypeSel.value !== 'session'; };
+  syncDnRisksVisibility();
+  dnTypeSel.addEventListener('change', syncDnRisksVisibility);
   const summaryBtn = document.getElementById('dnOpenSessionSummary');
   if (summaryBtn) summaryBtn.addEventListener('click', () => openSessionSummaryModal(y,m,d));
   document.querySelectorAll('[data-open-risk-from-note]').forEach(a => a.addEventListener('click', (e) => {
@@ -5683,16 +5732,26 @@ function wireDayNotesForm(y,m,d){
   document.getElementById('dnAdd').addEventListener('click', () => {
     const text = document.getElementById('dnText').value.trim();
     if (!text){ toast('Опишите повестку сессии', {tone:'warning'}); return; }
+    const type = document.getElementById('dnType').value;
+    // «Риск-сессия» без привязанного риска не находится computeSessionData()
+    // и карточка сводки («Sprint Planning») не открывается по клику — поэтому
+    // хотя бы один риск обязателен именно для этого типа заметки.
+    if (type === 'session' && !dnRiskSelection.length){ toast('Выберите хотя бы один обсуждаемый риск', {tone:'warning'}); return; }
     const pad = n => String(n).padStart(2,'0');
     const time = `${pad(dnHour)}:${pad(dnMin)}`;
     const durationMin = parseInt(document.getElementById('dnDuration').value, 10) || 60;
     const key = dayKey(y,m,d);
-    (state.dayNotes[key] = state.dayNotes[key]||[]).push({id:uid('note'), type:document.getElementById('dnType').value, text,
-      time, durationMin,
-      attendees: dnAttendeeSelection.slice(), author:sessionName(), createdAt:nowStr()});
+    const base = {type, text, time, durationMin, attendees: dnAttendeeSelection.slice(), author:sessionName(), createdAt:nowStr()};
+    const list = (state.dayNotes[key] = state.dayNotes[key]||[]);
+    // Один риск — одна заметка dayNotes (та же модель, что и у «Добавить в
+    // повестку риск-сессии» из карточки риска); computeSessionData() сама
+    // объединяет все session-заметки одного дня в одну общую сводку.
+    if (type === 'session') dnRiskSelection.forEach(riskId => list.push({...base, id:uid('note'), riskId}));
+    else list.push({...base, id:uid('note')});
     saveState();
     toast('Приглашение на сессию направлено', {body: dnAttendeeSelection.length ? 'Участники: '+dnAttendeeSelection.join(', ') : undefined});
     dnAttendeeSelection = [];
+    dnRiskSelection = [];
     closeModal('chartModalOverlay');
     renderCalendar();
   });
