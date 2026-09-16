@@ -735,7 +735,37 @@ function activateFonts(link){
   .owner-counter-icon svg{width:16px; height:16px;}
   @media (max-width:760px){ .owner-counters{grid-template-columns:repeat(2,1fr);} }
 
-  .risk-card{background:var(--paper-0); border:1px solid var(--line); border-radius:var(--radius-field); padding:16px 18px; margin-bottom:10px;}
+  .risk-card{background:var(--paper-0); border:1px solid var(--line); border-left-width:4px; border-radius:var(--radius-field); padding:16px 18px; margin-bottom:10px;
+    transition:opacity .15s ease, border-color .15s ease, box-shadow .15s ease, transform .15s ease;}
+  .risk-card:hover{box-shadow:0 6px 16px -8px rgba(17,37,66,.25); transform:translateY(-1px);}
+  /* Цветная левая граница = уровень критичности — быстрый скан списком,
+     та же семантика (зелёный/жёлтый/красный/серый), что и в степпере,
+     матрице P×I и легенде ниже (правило 5). */
+  .risk-card[data-zone="high"]{border-left-color:var(--red-700);}
+  .risk-card[data-zone="medium"]{border-left-color:var(--amber-700);}
+  .risk-card[data-zone="low"]{border-left-color:var(--green-700);}
+  .risk-card[data-zone="unrated"]{border-left-color:var(--ink-400); opacity:.75;}
+  .risk-card[data-zone="unrated"]:hover{opacity:1;}
+  /* Сетка карточек 2 колонки — только для «Мои риски» владельца
+     (#registerList.owner-grid); у риск-менеджера реестр — тот же список
+     карточек одной колонкой, как и раньше (много рисков + пагинация). */
+  #registerList.owner-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px; align-items:start;}
+  #registerList.owner-grid .risk-card{margin-bottom:0;}
+  @media (max-width:860px){#registerList.owner-grid{grid-template-columns:1fr;}}
+  .risk-card-cta{display:flex; align-items:center; justify-content:center; min-height:140px; cursor:pointer;
+    border:1.5px dashed var(--line); border-radius:var(--radius-field); background:transparent;
+    transition:border-color .15s ease, background-color .15s ease;}
+  .risk-card-cta:hover{border-color:var(--accent-600); background:var(--accent-50);}
+  .risk-card-cta-inner{display:flex; flex-direction:column; align-items:center; gap:7px; color:var(--ink-600);}
+  .risk-card-cta:hover .risk-card-cta-inner{color:var(--accent-600);}
+  .risk-card-cta-icon{width:34px; height:34px; border-radius:50%; background:var(--canvas); display:flex;
+    align-items:center; justify-content:center; font-size:19px; font-weight:700; line-height:1;}
+  .risk-card-cta:hover .risk-card-cta-icon{background:var(--accent-100);}
+  .risk-card-cta-lbl{font-size:12.5px; font-weight:700;}
+  .risk-level-legend{display:flex; gap:18px; flex-wrap:wrap; font-size:12px; color:var(--ink-600);
+    margin-top:14px; padding-top:12px; border-top:1px solid var(--line);}
+  .risk-level-legend span{display:flex; align-items:center; gap:6px;}
+  .risk-level-legend i{width:9px; height:9px; border-radius:50%; display:inline-block; flex-shrink:0;}
   .risk-card-top{display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-bottom:4px; cursor:pointer;}
   .tl-dot{width:9px; height:9px; border-radius:50%; flex-shrink:0;}
   .risk-card-title{font-family:var(--font-display); font-size:14.5px; font-weight:700; flex:1; min-width:180px;}
@@ -1058,19 +1088,62 @@ function activateFonts(link){
   .passport-block .v{font-size:13px; line-height:1.4;}
   .severity-box{border-radius:var(--radius-field); padding:14px; text-align:center;}
   .severity-box .lvl{font-family:var(--font-display); font-weight:800; font-size:20px;}
+
+  /* ===== Паспорт риска: матрица P×I + метрик-блоки (раздел «ОЦЕНКА») ===== */
+  .pp-assess-row{display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start; margin-bottom:16px;}
+  .pp-assess-matrix{flex-shrink:0;}
+  .pp-assess-metrics{flex:1; min-width:220px; display:flex; flex-direction:column; gap:10px;}
+  .pp-trend-box{display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:var(--radius-field); background:var(--canvas);}
+  .pp-trend-box .arrow{width:28px; height:28px; border-radius:7px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .pp-trend-box .arrow svg{width:14px; height:14px;}
+  .pp-trend-box .arrow.good{background:var(--green-50); color:var(--green-700);}
+  .pp-trend-box .arrow.bad{background:var(--red-50); color:var(--red-700);}
+  .pp-trend-box .arrow.flat{background:var(--paper-0); color:var(--ink-400); box-shadow:inset 0 0 0 1px var(--line);}
+  .pp-trend-box .txt{display:flex; flex-direction:column; gap:1px; min-width:0;}
+  .pp-trend-box .txt .lbl{font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.2px; color:var(--ink-400);}
+  .pp-trend-box .txt .val{font-size:12.5px; font-weight:600; color:var(--ink-900);}
+  .pp-trend-box .txt .date{font-size:11px; color:var(--ink-400);}
+
+  /* ===== Audit Trail — вертикальная таймлайн-лента ===== */
+  .audit-timeline{position:relative; padding-left:30px; max-height:260px; overflow-y:auto;}
+  .audit-timeline::before{content:''; position:absolute; left:11px; top:2px; bottom:2px; width:2px; background:var(--line);}
+  .audit-timeline-row{position:relative; padding-bottom:16px;}
+  .audit-timeline-row:last-child{padding-bottom:2px;}
+  .audit-timeline-icon{position:absolute; left:-30px; top:0; width:24px; height:24px; border-radius:50%; display:flex;
+    align-items:center; justify-content:center; box-shadow:0 0 0 3px var(--paper-0);}
+  .audit-timeline-icon svg{width:12px; height:12px;}
+  .audit-timeline-icon.created{background:var(--accent-50); color:var(--accent-600);}
+  .audit-timeline-icon.status{background:var(--canvas); color:var(--ink-600);}
+  .audit-timeline-icon.escalated{background:var(--red-50); color:var(--red-700);}
+  .audit-timeline-icon.review{background:var(--amber-50); color:var(--amber-700);}
+  .audit-timeline-body{font-size:12.5px; padding-top:1px;}
+  .audit-timeline-body .actor{font-weight:700; color:var(--ink-900);}
+  .audit-timeline-body .desc{color:var(--ink-700);}
+  .audit-timeline-body .t{display:block; font-size:11px; color:var(--ink-400); font-family:var(--font-mono); margin-top:2px;}
   .pp-h{font-family:var(--font-display); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px;
     color:var(--accent-600); margin:20px 0 8px; padding-top:14px; border-top:1px solid var(--line);}
   .pp-h:first-of-type{margin-top:14px; border-top:none; padding-top:0;}
   .stepper{display:flex; align-items:center; margin-bottom:16px; overflow-x:auto;}
-  .stepper .step{display:flex; align-items:center; gap:6px; flex-shrink:0;}
-  .stepper .dot{width:22px; height:22px; border-radius:50%; background:var(--line); color:var(--ink-400); font-size:10px;
-    font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
-  .stepper .step.filled .dot{background:var(--accent-600); color:#fff;}
-  .stepper .step.current .dot{background:var(--navy-900); color:#fff;}
-  .stepper .lbl{font-size:10.5px; color:var(--ink-600); white-space:nowrap;}
-  .stepper .step.filled .lbl, .stepper .step.current .lbl{color:var(--ink-900); font-weight:600;}
+  .stepper .step{display:flex; align-items:center; gap:6px; flex-shrink:0; cursor:pointer; border-radius:6px; padding:2px 4px; margin:-2px -4px; transition:background-color .15s ease;}
+  .stepper .step:hover{background:var(--canvas);}
+  .stepper .step:hover .dot{transform:scale(1.08);}
+  .stepper .dot{width:22px; height:22px; border-radius:50%; background:var(--paper-0); color:var(--ink-400); font-size:10px;
+    font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-sizing:border-box;
+    border:2px solid var(--line); transition:transform .15s ease;}
+  .stepper .dot svg{width:11px; height:11px;}
+  /* Пройденный шаг — закрашен зелёным (правило 5: зелёный = «шаг пройден»,
+     та же семантика, что и «низкий риск»), с иконкой check вместо номера. */
+  .stepper .step.filled .dot{background:var(--green-700); border-color:var(--green-700); color:#fff;}
+  /* Текущий шаг — обводка цветом уровня риска (передаётся из JS через
+     --stepper-current: severityColor(zone).fg, либо нейтральный navy, пока
+     риск не оценён), номер шага внутри. */
+  .stepper .step.current .dot{background:#fff; border-color:var(--stepper-current, var(--navy-900));
+    color:var(--stepper-current, var(--navy-900)); border-width:2.5px;}
+  .stepper .lbl{font-size:10.5px; color:var(--ink-400); white-space:nowrap;}
+  .stepper .step.filled .lbl{color:var(--ink-700);}
+  .stepper .step.current .lbl{color:var(--ink-900); font-weight:700;}
   .stepper .bar{width:26px; height:2px; background:var(--line); margin:0 4px; flex-shrink:0;}
-  .stepper .step.filled + .bar{background:var(--accent-600);}
+  .stepper .step.filled + .bar{background:var(--green-700);}
 
   .audit-list{display:flex; flex-direction:column; gap:8px; max-height:180px; overflow-y:auto;}
   .audit-row{display:flex; gap:10px; font-size:12px; padding:7px 0; border-bottom:1px solid var(--line);}
@@ -1258,6 +1331,7 @@ function activateFonts(link){
       <div id="regQuickChip"></div>
       <div id="regAiChip"></div>
       <div id="registerList"></div>
+      <div id="regLevelLegend"></div>
       <div id="registerPaginationWrap"></div>
     </div>
 
@@ -2923,7 +2997,7 @@ function renderDashboard(){
     </div>
 
     <div class="panel"><h3>Audit Log — последние переходы статусов</h3>
-      ${recentAudit.length ? `<div class="audit-list">${recentAudit.map(a=>`<div class="audit-row"><span class="t">${a.timestamp}</span><span class="desc">${esc(a.actorName)} · <a href="#" data-open-risk="${a.riskId}"><code class="mono">${a.riskId}</code></a>: ${esc(a.fromStatus||'—')} → <b>${esc(a.toStatus)}</b>${a.comment?' — '+esc(a.comment):''}</span></div>`).join('')}</div>` : '<p class="muted" style="margin:0;">Пока не было ни одного перехода статуса в этой демо-сессии.</p>'}
+      ${recentAudit.length ? auditTimelineHtml(recentAudit, true) : '<p class="muted" style="margin:0;">Пока не было ни одного перехода статуса в этой демо-сессии.</p>'}
     </div>
     <div style="text-align:right;"><button class="btn btn-text btn-sm" id="btnResetDemo">Сбросить демо-данные к исходным 15/10</button></div>`;
 
@@ -3036,14 +3110,14 @@ function riskCardHtml(r){
   const editable = canManage(r);
   const nearestAction = r.actions.filter(a => a.status!=='done' && a.status!=='rejected')
     .map(a => ({a, d: parseRuShortDate(a.plannedDate)})).sort((x,y) => (x.d||9e15)-(y.d||9e15))[0];
-  return `<div class="risk-card" data-risk-id="${r.id}" style="cursor:pointer;">
+  return `<div class="risk-card" data-risk-id="${r.id}" data-zone="${zone||'unrated'}" style="cursor:pointer;">
     <div class="rc-head">
       <div class="rc-head-left">
         <div class="risk-card-top" style="margin-bottom:6px;">
           ${r.isNew ? `<span class="badge-pill badge-new">NEW</span>` : ''}
           <span class="risk-card-title">${esc(r.title)}</span>
           ${state.session.role === 'riskowner' && isMyInitiated(r) && !isMyRisk(r) ? `<span class="badge-pill badge-initiator" title="Вы предложили этот риск — владелец назначается риск-менеджером">Я инициатор</span>` : ''}
-          ${zone ? `<span class="badge-pill ${ZONE_BADGE[zone]}">${ZONE_LABEL[zone]}</span>` : `<span class="badge-pill" style="background:var(--canvas);color:var(--ink-400);">Не оценён</span>`}
+          ${zone ? `<span class="badge-pill ${ZONE_BADGE[zone]}">${ZONE_LABEL[zone]}</span>` : `<span class="badge-pill" style="background:var(--canvas);color:var(--ink-400);" title="Требует внимания — нужна оценка P/I">${ICON_ATTENTION}Не оценён</span>`}
           ${r.committeeFlag ? `<span class="badge-pill badge-esc">Эскалация комитету</span>` : ''}
           <span class="badge-pill ${r.status==='Закрыт'?'badge-status-closed':(r.status==='Идентификация'?'badge-status-ident':(r.status==='Архивирован'?'badge-status-archived':'badge-status-progress'))}">${esc(r.status)}</span>
         </div>
@@ -3075,6 +3149,10 @@ function riskCardHtml(r){
   </div>`;
 }
 const PLEVEL_LABEL = {1:'Низкая',2:'Средняя',3:'Высокая'};
+// Ширина/высота — атрибутами прямо на svg (не через CSS-класс родителя),
+// чтобы значок не мог отрисоваться «голым» на весь экран независимо от
+// того, в какой разметке он окажется (см. баг с ICON_SD_CLOCK без размера).
+const ICON_ATTENTION = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:3px;flex-shrink:0;"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>';
 const ICON_OWNER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" style="vertical-align:-2px;margin-right:4px;"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>';
 const ICON_CALENDAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" style="vertical-align:-2px;margin-right:4px;"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>';
 const ICON_STATUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" style="vertical-align:-2px;margin-right:4px;"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>';
@@ -3202,9 +3280,14 @@ function renderRegister(){
 
   document.getElementById('regCount').textContent = `${list.length} из ${state.risks.filter(r=>r.status!=='Архивирован').length}`;
 
+  const registerListEl = document.getElementById('registerList');
+  registerListEl.classList.toggle('owner-grid', ownerLocked);
+  const legendMount = document.getElementById('regLevelLegend');
+
   if (ownerHasNoRisks){
-    document.getElementById('registerList').innerHTML = ownerTemplateCardHtml();
+    registerListEl.innerHTML = ownerTemplateCardHtml();
     document.getElementById('registerPaginationWrap').innerHTML = '';
+    if (legendMount) legendMount.innerHTML = '';
     document.querySelectorAll('#registerList [data-open-template]').forEach(b => {
       b.addEventListener('click', (e) => { e.stopPropagation(); openRiskCreateModal(); });
     });
@@ -3213,7 +3296,11 @@ function renderRegister(){
     const pageCount = Math.max(1, Math.ceil(total / registerPaging.pageSize));
     registerPaging.page = Math.min(Math.max(1, registerPaging.page), pageCount);
     const pageList = list.slice((registerPaging.page-1)*registerPaging.pageSize, registerPaging.page*registerPaging.pageSize);
-    document.getElementById('registerList').innerHTML = pageList.length ? pageList.map(riskCardHtml).join('') : `<div class="empty-state">Ничего не найдено по заданным фильтрам.</div>`;
+    const cardsHtml = pageList.length ? pageList.map(riskCardHtml).join('') : `<div class="empty-state">Ничего не найдено по заданным фильтрам.</div>`;
+    // CTA-карточка «+ Добавить риск» последним элементом сетки — только в
+    // сетчатом виде владельца (в списке риск-менеджера это отдельная
+    // кнопка над таблицей, там она была бы лишней среди десятков карточек).
+    registerListEl.innerHTML = cardsHtml + (ownerLocked && pageList.length ? `<div class="risk-card-cta" data-open-template><div class="risk-card-cta-inner"><span class="risk-card-cta-icon">+</span><span class="risk-card-cta-lbl">Добавить риск</span></div></div>` : '');
     renderPagination('registerPaginationWrap', registerPaging, total, renderRegister, 'риск(ов)');
     document.querySelectorAll('#registerList .risk-card, #registerList [data-open-risk]').forEach(c => {
       c.addEventListener('click', (e) => { e.stopPropagation(); openPassport(c.dataset.riskId || c.dataset.openRisk); });
@@ -3224,6 +3311,25 @@ function renderRegister(){
     document.querySelectorAll('#registerList [data-del-risk]').forEach(b => {
       b.addEventListener('click', (e) => { e.stopPropagation(); deleteRisk(b.dataset.delRisk); });
     });
+    document.querySelectorAll('#registerList [data-open-template]').forEach(b => {
+      b.addEventListener('click', (e) => { e.stopPropagation(); openRiskCreateModal(); });
+    });
+    // Легенда — сводка по всему отфильтрованному списку (list), не только
+    // по текущей странице, чтобы отражать портфель владельца целиком.
+    if (legendMount){
+      if (ownerLocked){
+        const counts = {high:0, medium:0, low:0, unrated:0};
+        list.forEach(r => { const z = zoneOf(rraOf(r.p, r.iLevel)); counts[z||'unrated']++; });
+        legendMount.innerHTML = `<div class="risk-level-legend">
+          <span><i style="background:var(--red-700)"></i>Высокий — ${counts.high}</span>
+          <span><i style="background:var(--amber-700)"></i>Средний — ${counts.medium}</span>
+          <span><i style="background:var(--green-700)"></i>Низкий — ${counts.low}</span>
+          <span><i style="background:var(--ink-400)"></i>Не оценён — ${counts.unrated}</span>
+        </div>`;
+      } else {
+        legendMount.innerHTML = '';
+      }
+    }
   }
 
   // «+ Добавить риск» доступна и владельцу риска (process_full_v4.md, этап 1:
@@ -3632,7 +3738,12 @@ function renderPassport(){
       <button type="button" class="btn btn-text btn-sm" id="pAgendaBtn">📅 Добавить в повестку риск-сессии</button>
       <button type="button" class="btn btn-text btn-sm" id="pPrintBtn">🖶 Экспорт / печать паспорта</button>
     </div>
-    <div class="stepper" title="${esc(STATUSES.map((s,i)=>`${i+1}. ${s}`).join(' → '))}">${STATUSES.map((s,i) => `<span class="step ${i<stepIdx?'filled':''} ${i===stepIdx?'current':''}"><span class="dot">${i+1}</span><span class="lbl">${s}</span></span>${i<STATUSES.length-1?'<span class="bar"></span>':''}`).join('')}</div>
+    <div class="stepper" title="${esc(STATUSES.map((s,i)=>`${i+1}. ${s}`).join(' → '))}">${STATUSES.map((s,i) => {
+      const isFilled = i < stepIdx, isCurrent = i === stepIdx;
+      const dotHtml = isFilled ? ICON_SD_CHECK_SM : (i+1);
+      const curStyle = isCurrent ? ` style="--stepper-current:${zone ? severityColor(zone).fg : 'var(--navy-900)'}"` : '';
+      return `<span class="step ${isFilled?'filled':''} ${isCurrent?'current':''}" data-step-idx="${i}"${curStyle}><span class="dot">${dotHtml}</span><span class="lbl">${s}</span></span>${i<STATUSES.length-1?'<span class="bar"></span>':''}`;
+    }).join('')}</div>
 
     <h3 class="pp-h">ИДЕНТИФИКАЦИЯ</h3>
     <div class="passport-grid passport-grid-2">
@@ -3666,19 +3777,23 @@ function renderPassport(){
     </div>
 
     <h3 class="pp-h">ОЦЕНКА</h3>
-    <div class="passport-grid passport-grid-2">
-      <div class="passport-block">
+    <div class="pp-assess-row">
+      <div class="pp-assess-matrix">
+        ${migrationMatrixHtml(r.p, r.iLevel, null, null, 148)}
+        <div class="muted" style="font-size:10.5px;margin-top:6px;text-align:center;">P (вероятность, ось Y, снизу вверх) × I (влияние, ось X)</div>
+        ${(!r.p || !r.iLevel) ? (editable ? `<button type="button" class="btn btn-primary btn-sm" id="pAssessCtaBtn" style="margin-top:10px;width:100%;">Оценить P/I</button>`
+          : `<div class="muted" style="font-size:11.5px;margin-top:8px;text-align:center;">Оценка P/I ещё не проведена</div>`) : ''}
+      </div>
+      <div class="pp-assess-metrics">
         <div class="severity-box" style="background:${sc.bg};color:${sc.fg};">
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;">Уровень критичности</div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;">Уровень риска</div>
           <div class="lvl">${zone ? ZONE_LABEL[zone] : 'Не оценён'}</div>
           <div style="font-size:11.5px;margin-top:2px;">${r.p&&r.iLevel ? `P=${r.p} · I=${r.iLevel} · RRA=${rra}`:'нужна оценка P/I'}</div>
         </div>
-        ${r.committeeFlag ? `<div class="esc-note" style="margin-top:10px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9L2.6 18a1.5 1.5 0 0 0 1.3 2.2h16.2a1.5 1.5 0 0 0 1.3-2.2L13.7 3.9a1.5 1.5 0 0 0-2.6 0z"/></svg><span>Требует решения комитета (I=3)${r.committeeDecision?'<br>Решение: '+esc(r.committeeDecision):''}</span></div>` : ''}
-        ${el!=null ? `<div class="rra-preview" style="margin-top:10px;"><span class="lbl">EL</span><span class="val">${el.toFixed(1)} млн ₽</span></div>` : ''}
-      </div>
-      <div class="passport-block">
-        <div class="k">Тренд</div><div class="v">${renderRraTrend(r)}</div>
-        <div class="k" style="margin-top:10px;">Плановая периодичность пересмотра</div><div class="v">раз в ${r.reviewFrequencyDays||30} дн.</div>
+        ${trendBoxHtml(r)}
+        ${r.committeeFlag ? `<div class="esc-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9L2.6 18a1.5 1.5 0 0 0 1.3 2.2h16.2a1.5 1.5 0 0 0 1.3-2.2L13.7 3.9a1.5 1.5 0 0 0-2.6 0z"/></svg><span>Требует решения комитета (I=3)${r.committeeDecision?'<br>Решение: '+esc(r.committeeDecision):''}</span></div>` : ''}
+        <div><div class="k">Плановая периодичность пересмотра</div><div class="v">раз в ${r.reviewFrequencyDays||30} дн.</div></div>
+        ${el!=null ? `<div class="rra-preview"><span class="lbl">EL</span><span class="val">${el.toFixed(1)} млн ₽</span></div>` : ''}
       </div>
     </div>
 
@@ -3742,10 +3857,17 @@ function renderPassport(){
     ${renderAuditForRisk(r.id)}
   `;
 
+  mount.querySelectorAll('.stepper .step').forEach(stepEl => stepEl.addEventListener('click', () => {
+    const i = Number(stepEl.dataset.stepIdx);
+    const stageState = i < stepIdx ? 'пройден' : i === stepIdx ? 'текущий' : 'предстоит';
+    toast(`${i+1}. ${STATUSES[i]}`, {body:`Стадия ${stageState}`});
+  }));
   const editBtn = document.getElementById('pEditBtn');
   if (editBtn) editBtn.addEventListener('click', () => openRiskEditModal(r));
   const assessBtn = document.getElementById('pAssessBtn');
   if (assessBtn) assessBtn.addEventListener('click', () => openAssessModal(r));
+  const assessCtaBtn = document.getElementById('pAssessCtaBtn');
+  if (assessCtaBtn) assessCtaBtn.addEventListener('click', () => openAssessModal(r));
   const addActBtn = document.getElementById('pAddActionBtn');
   if (addActBtn) addActBtn.addEventListener('click', () => openActionModal(r, null));
   const advBtn = document.getElementById('pAdvanceBtn');
@@ -3771,18 +3893,60 @@ function renderPassport(){
   mount.querySelectorAll('[data-edit-action]').forEach(b => b.addEventListener('click', () => openActionModal(r, r.actions.find(a=>a.id===b.dataset.editAction))));
   mount.querySelectorAll('[data-assign-action]').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); openAssignActionModal(r, r.actions.find(a=>a.id===b.dataset.assignAction)); }));
 }
-// Оценка риска по времени — берём из AuditLog реальные переходы статуса
-// (единственная реальная временная ось, которая у нас есть на риске), без
-// выдуманных промежуточных точек и процентов.
-function renderRraTrend(r){
-  const rows = state.audit.filter(a => a.riskId === r.id);
-  if (!rows.length) return `<span class="muted">история появится после первого перехода статуса</span>`;
-  return rows.map(a => `<span class="mono" style="font-size:11px;">${a.timestamp.split(' ')[0]}: ${esc(a.toStatus)}</span>`).join(' → ');
+const ICON_TREND_UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M7 17L17 7M9 7h8v8"/></svg>';
+const ICON_TREND_DOWN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M7 7l10 10M7 15v-8h8"/></svg>';
+const ICON_TREND_FLAT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/></svg>';
+// Тренд риска — единственная реальная числовая история, которая есть на
+// риске без доработки бэкенда (risk.trend/история оценок для sparkline —
+// см. список нужных бэкенд-полей): сравниваем свойственный RRA с
+// зафиксированным остаточным после мер реагирования. Снижение = риск
+// уменьшается (зелёная стрелка вниз), рост — оранжево-красная вверх, пока
+// остаточная оценка не зафиксирована — нейтральный «без изменений».
+function trendBoxHtml(r){
+  if (!r.p || !r.iLevel){
+    return `<div class="pp-trend-box"><span class="arrow flat">${ICON_TREND_FLAT}</span><div class="txt"><span class="lbl">Тренд</span><span class="val">Нет оценки</span></div></div>`;
+  }
+  if (!r.residualP || !r.residualI){
+    return `<div class="pp-trend-box"><span class="arrow flat">${ICON_TREND_FLAT}</span><div class="txt"><span class="lbl">Тренд</span><span class="val">Без изменений</span><span class="date">остаточная оценка ещё не зафиксирована</span></div></div>`;
+  }
+  const inherentRra = rraOf(r.p, r.iLevel), residualRra = rraOf(r.residualP, r.residualI);
+  const dir = residualRra < inherentRra ? 'down' : residualRra > inherentRra ? 'up' : 'flat';
+  const icon = dir==='up' ? ICON_TREND_UP : dir==='down' ? ICON_TREND_DOWN : ICON_TREND_FLAT;
+  const cls = dir==='up' ? 'bad' : dir==='down' ? 'good' : 'flat';
+  const label = dir==='up' ? 'Риск вырос' : dir==='down' ? 'Риск снижен' : 'Без изменений';
+  return `<div class="pp-trend-box"><span class="arrow ${cls}">${icon}</span><div class="txt"><span class="lbl">Тренд</span><span class="val">${label}: RRA ${inherentRra} → ${residualRra}</span>${r.residualAcceptedDate?`<span class="date">на ${esc(r.residualAcceptedDate)}</span>`:''}</div></div>`;
+}
+// Тип события Audit Trail — определяем эвристически по имеющимся полям
+// записи (fromStatus/toStatus/comment), т.к. отдельного risk.auditLog[].type
+// сейчас в данных нет (см. список нужных бэкенд-полей) — создание,
+// эскалация/решение и переоценка остаточного риска отличимы по содержимому
+// перехода, остальное — обычная смена статуса.
+const ICON_AUDIT_CREATE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>';
+const ICON_AUDIT_STATUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 12h6m-2.5-2.5L15 12l-2.5 2.5"/></svg>';
+const ICON_AUDIT_ESCALATE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.6 18a1.5 1.5 0 0 0 1.3 2.2h16.2a1.5 1.5 0 0 0 1.3-2.2L13.7 3.9a1.5 1.5 0 0 0-2.6 0z"/></svg>';
+const ICON_AUDIT_REVIEW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>';
+function auditEventMeta(a){
+  if (!a.fromStatus) return {icon:ICON_AUDIT_CREATE, cls:'created'};
+  if (a.comment && /комитет|эскалац/i.test(a.comment)) return {icon:ICON_AUDIT_ESCALATE, cls:'escalated'};
+  if (a.comment && /остаточ/i.test(a.comment)) return {icon:ICON_AUDIT_REVIEW, cls:'review'};
+  return {icon:ICON_AUDIT_STATUS, cls:'status'};
+}
+function auditTimelineHtml(rows, withRiskLink){
+  return `<div class="audit-timeline">${rows.map(a => {
+    const m = auditEventMeta(a);
+    const riskLink = withRiskLink ? ` · <a href="#" data-open-risk="${a.riskId}"><code class="mono">${a.riskId}</code></a>` : '';
+    const desc = a.fromStatus
+      ? `перевёл(а) статус: ${esc(a.fromStatus)} → <b>${esc(a.toStatus)}</b>`
+      : `создал(а) риск — статус «${esc(a.toStatus)}»`;
+    return `<div class="audit-timeline-row"><span class="audit-timeline-icon ${m.cls}">${m.icon}</span>
+      <div class="audit-timeline-body"><span class="actor">${esc(a.actorName)}</span>${riskLink} <span class="desc">${desc}${a.comment?' — '+esc(a.comment):''}</span><span class="t">${esc(a.timestamp)}</span></div>
+    </div>`;
+  }).join('')}</div>`;
 }
 function renderAuditForRisk(riskId){
   const rows = state.audit.filter(a => a.riskId === riskId);
   if (!rows.length) return '<p class="muted" style="font-size:12.5px;">История переходов появится здесь после первого изменения статуса.</p>';
-  return `<div class="audit-list">${rows.map(a => `<div class="audit-row"><span class="t">${a.timestamp}</span><span class="desc">${esc(a.actorName)}: ${esc(a.fromStatus||'—')} → <b>${esc(a.toStatus)}</b>${a.comment?' — '+esc(a.comment):''}</span></div>`).join('')}</div>`;
+  return auditTimelineHtml(rows);
 }
 // Лог комментариев/решений — тот же AuditLog, но только записи с текстом
 // (эскалации, принятие остаточного риска, комментарии к переходам статуса),
