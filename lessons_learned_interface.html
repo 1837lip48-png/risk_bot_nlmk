@@ -1712,6 +1712,26 @@ function activateFonts(link){
   </div>
 </div>
 
+<!-- Выбор рисков для риск-сессии (Заметки дня) — отдельная модалка с
+     чек-листом (не инлайн-выпадайка внутри тесной формы): список — тот же
+     скоуп, что и в «Мои риски» (владелец видит свои, риск-менеджер — все). -->
+<div class="modal-overlay" id="riskPickerModalOverlay">
+  <div class="modal-card modal-card--wide" role="dialog" aria-modal="true">
+   <div class="modal-card-scroll">
+    <div class="modal-head"><span>Выбрать риски для сессии</span>
+      <button type="button" class="modal-close" data-close="riskPickerModalOverlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="search-box" style="margin-bottom:10px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input type="text" id="riskPickerSearch" placeholder="Поиск по риску..."></div>
+    <div id="riskPickerList" style="max-height:400px;overflow-y:auto;"></div>
+    <div class="btn-row" style="margin-top:14px;">
+      <button type="button" class="btn btn-text" data-close="riskPickerModalOverlay">Отмена</button>
+      <button type="button" class="btn btn-primary" id="riskPickerDoneBtn" style="flex:2;">Готово</button>
+    </div>
+   </div>
+  </div>
+</div>
+
 <!-- Lesson view/create modal -->
 <div class="modal-overlay" id="lessonModalOverlay">
   <div class="modal-card modal-card--wide" role="dialog" aria-modal="true">
@@ -5591,12 +5611,9 @@ function dayNotesBodyHtml(y,m,d){
       <select id="dnType" style="flex:1;">${NOTE_TYPES.map(t=>`<option value="${t.key}">${t.label}</option>`).join('')}</select>
     </div>
     <div class="field" style="margin-bottom:8px;" id="dnRisksField" hidden><label>Обсуждаемые риски</label>
-      <div class="ds-ms" id="dnRisksMs">
-        <div class="ds-ms-chips" id="dnRisksChips"></div>
-        <button type="button" class="ds-ms-addbtn" id="dnRisksAddBtn">+ Добавить риск</button>
-        <div class="ds-ms-menu" id="dnRisksMenu" hidden></div>
-      </div>
-      <div class="field-hint">Открывает сводку сессии (карточка «Sprint Planning») после сохранения — без риска карточка не откроется.</div>
+      <div class="ds-ms-chips" id="dnRisksChips" style="margin-bottom:8px;"></div>
+      <button type="button" class="ds-ms-addbtn" id="dnRisksAddBtn" style="width:100%;">+ Выбрать риски…</button>
+      <div class="field-hint">Список — как в «Мои риски»: только те риски, что видны вам по роли. Открывает сводку сессии («Sprint Planning») после сохранения — без риска карточка не откроется.</div>
     </div>
     <div class="field" style="margin-bottom:8px;"><label>Время сессии</label>
       <div class="btn-row dn-time-row" style="gap:8px;">
@@ -5663,32 +5680,50 @@ let dnAttendeeSelection = [];
 // из карточки риска, где computeSessionData() уже умеет объединять
 // несколько session-заметок одного дня в одну общую сводку.
 let dnRiskSelection = [];
+// Компактные пилюли выбранных рисков — короткий ID + обрезанное название
+// (не полный текст риска: заголовки часто длинные, а .ds-chip не
+// однострочный, разрасталась на 2-3 строки на одну пилюлю).
 function dnRenderRiskChips(){
   const chipsEl = document.getElementById('dnRisksChips');
   if (!chipsEl) return;
   chipsEl.innerHTML = dnRiskSelection.map(id => { const r = findRisk(id); return r ?
-    `<span class="ds-chip">${esc(r.title)}<button type="button" data-dn-remove-risk="${esc(id)}" aria-label="Убрать">×</button></span>` : ''; }).join('');
+    `<span class="ds-chip" title="${esc(r.title)}">${esc(r.id)} — ${esc(truncate(r.title, 36))}<button type="button" data-dn-remove-risk="${esc(id)}" aria-label="Убрать">×</button></span>` : ''; }).join('');
   chipsEl.querySelectorAll('[data-dn-remove-risk]').forEach(b => b.addEventListener('click', () => {
     dnRiskSelection = dnRiskSelection.filter(id => id !== b.dataset.dnRemoveRisk);
     dnRenderRiskChips();
   }));
 }
-function dnToggleRisksMenu(show){
-  const menu = document.getElementById('dnRisksMenu');
-  if (!menu) return;
-  if (show){
-    const rest = state.risks.filter(r => r.status !== 'Архивирован' && !dnRiskSelection.includes(r.id));
-    menu.innerHTML = rest.length ? rest.map(r => `<div class="ds-ms-item" data-dn-add-risk="${esc(r.id)}">${esc(r.id)} — ${esc(r.title)}</div>`).join('')
-      : '<div class="ds-ms-empty">Все активные риски уже добавлены</div>';
-    menu.querySelectorAll('[data-dn-add-risk]').forEach(el => el.addEventListener('click', () => {
-      dnRiskSelection.push(el.dataset.dnAddRisk);
-      dnRenderRiskChips();
-      dnToggleRisksMenu(false);
-    }));
-  }
-  menu.hidden = !show;
+// Модалка выбора рисков для сессии (чек-лист, не инлайн-выпадайка) — список
+// в том же скоупе, что и «Мои риски» текущего пользователя (scopedRisks():
+// владелец риска видит свои/предложенные им, риск-менеджер — весь портфель).
+let dnRiskPickerDraft = [];
+function openRiskPickerModal(){
+  dnRiskPickerDraft = dnRiskSelection.slice();
+  document.getElementById('riskPickerSearch').value = '';
+  renderRiskPickerList('');
+  openModal('riskPickerModalOverlay');
 }
-document.addEventListener('click', (e) => { if (!e.target.closest('#dnRisksMs')) dnToggleRisksMenu(false); });
+function renderRiskPickerList(q){
+  const listEl = document.getElementById('riskPickerList');
+  const query = q.trim().toLowerCase();
+  const risks = scopedRisks().filter(r => !query || (r.id+' '+r.title).toLowerCase().includes(query));
+  listEl.innerHTML = risks.length ? risks.map(r => `<label class="ds-ms-item" style="display:flex; align-items:center; gap:9px; cursor:pointer;">
+      <input type="checkbox" data-risk-picker-item="${esc(r.id)}" ${dnRiskPickerDraft.includes(r.id)?'checked':''}>
+      <span class="mono" style="font-size:11px; color:var(--ink-400); flex-shrink:0;">${esc(r.id)}</span>
+      <span style="flex:1; min-width:0;">${esc(r.title)}</span>
+    </label>`).join('')
+    : `<div class="ds-ms-empty">${query ? 'Ничего не найдено' : 'Нет доступных рисков в вашей области видимости'}</div>`;
+  listEl.querySelectorAll('[data-risk-picker-item]').forEach(cb => cb.addEventListener('change', () => {
+    const id = cb.dataset.riskPickerItem;
+    dnRiskPickerDraft = cb.checked ? [...dnRiskPickerDraft, id] : dnRiskPickerDraft.filter(x => x !== id);
+  }));
+}
+document.getElementById('riskPickerSearch').addEventListener('input', (e) => renderRiskPickerList(e.target.value));
+document.getElementById('riskPickerDoneBtn').addEventListener('click', () => {
+  dnRiskSelection = dnRiskPickerDraft.slice();
+  dnRenderRiskChips();
+  closeModal('riskPickerModalOverlay');
+});
 let dnHour = 10, dnMin = 0;
 // Простые выпадающие списки (обычные <select>) вместо прокручиваемых
 // колонок — тот же принцип, что и у «Длительности» рядом, компактнее и
@@ -5713,7 +5748,7 @@ function wireDayNotesForm(y,m,d){
   dnRenderAttendeeChips();
   document.getElementById('dnAttendeeAddBtn').addEventListener('click', (e) => { e.stopPropagation(); dnToggleAttendeeMenu(document.getElementById('dnAttendeeMenu').hidden); });
   dnRenderRiskChips();
-  document.getElementById('dnRisksAddBtn').addEventListener('click', (e) => { e.stopPropagation(); dnToggleRisksMenu(document.getElementById('dnRisksMenu').hidden); });
+  document.getElementById('dnRisksAddBtn').addEventListener('click', openRiskPickerModal);
   const dnTypeSel = document.getElementById('dnType');
   const syncDnRisksVisibility = () => { document.getElementById('dnRisksField').hidden = dnTypeSel.value !== 'session'; };
   syncDnRisksVisibility();
