@@ -374,7 +374,15 @@ function activateFonts(link){
     border-radius:var(--radius-card); box-shadow:var(--shadow-modal); transform:scale(.97) translateY(6px);
     transition:transform .2s cubic-bezier(.16,1,.3,1); max-height:88vh; overflow:hidden;
     display:flex; flex-direction:column;}
-  .modal-card-scroll{padding:22px; overflow-y:auto; min-height:0;}
+  /* scrollbar-gutter:stable — резервирует место под скроллбар всегда, а не
+     только когда контент реально переполняет модалку. Без этого на системах
+     с классическим (не overlay) скроллбаром открытие выпадающего списка у
+     последнего поля формы (напр. «Статус» мероприятия) временно раздувает
+     контент модалки за видимую область, скроллбар появляется, отжирает
+     ширину у .modal-card-scroll — и вся форма внутри сужается/переносится
+     иначе, что выглядит как «модалка меняет размер» при простом клике по
+     полю статуса. */
+  .modal-card-scroll{padding:22px; overflow-y:auto; min-height:0; scrollbar-gutter:stable;}
   .modal-overlay.show .modal-card{transform:scale(1) translateY(0);}
   .modal-card--wide{max-width:620px;}
   /* шаг 2 входа — поля Имя/Фамилия/СПП идут одно под другим (не сжаты в ряд),
