@@ -259,6 +259,12 @@ function activateFonts(link){
   .toolbar-row .ds-ac-input{font-size:12.5px; padding:8px 30px 8px 12px;}
   .map-link-picker .ds-ac{width:150px; flex-shrink:0;}
   .map-link-picker .ds-ac-input{font-size:12px; padding:6px 28px 6px 10px;}
+  /* Три автокомплит-селекта (часы/минуты/длительность) в одной строке —
+     .ds-ac по умолчанию width:100%, что при нескольких таких элементах
+     в одной flex-строке ломает раскладку (см. .toolbar-row/.map-link-picker
+     выше); здесь делаем их равными flex-элементами вместо фиксированной
+     ширины, т.к. они сами по себе узкие (чч/мм/«60 минут»). */
+  .dn-time-row .ds-ac{width:auto; flex:1; min-width:0;}
   .row2 .ds-ac-input, .row2 select{font-size:13.5px;}
 
   /* Плавающий лейбл на входе (шаг 2: имя/фамилия/СПП) — лейбл сидит внутри
@@ -1091,13 +1097,6 @@ function activateFonts(link){
   .dt-picker-time-col::-webkit-scrollbar-track{background:transparent;}
   .dt-picker-time-col::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
   .dt-picker-time-col::-webkit-scrollbar-button{display:none; height:0; width:0;}
-  .dt-picker-time-col--sm{max-height:130px;}
-  /* Селект «Длительность» рядом с колонками часов/минут — как и .ds-ac
-     в .toolbar-row/.map-link-picker, внутри flex-строки ему нужна
-     фиксированная ширина: без неё width:100% по умолчанию у .ds-ac
-     считался от всей строки .dt-picker-time целиком, обёртка «наезжала»
-     сама на себя, а шеврон съезжал за пределы видимого поля. */
-  .dt-picker-time .ds-ac{width:132px; flex-shrink:0; align-self:flex-start;}
   .dt-picker-time-col-head{font-size:10.5px; color:var(--ink-400); font-weight:700; margin-bottom:2px; position:sticky; top:0; background:var(--paper-0); width:100%; text-align:center;}
   .dt-time-item{width:32px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12.5px; cursor:pointer; flex-shrink:0;}
   .dt-time-item:hover{background:var(--accent-50);}
@@ -1539,6 +1538,16 @@ function activateFonts(link){
     <div id="riskSourceQuote"></div>
     <form id="riskForm" onsubmit="return false;" style="gap:12px;">
       <div class="field" data-field="rCategory"><label>Категория риска</label><select id="rCategory"></select></div>
+      <div class="field" data-field="rPhase" id="rPhaseField" hidden><label>Фаза проекта</label>
+        <select id="rPhase">
+          <option value="">Не указана</option>
+          <option value="Фаза 1">Фаза 1</option>
+          <option value="Фаза 2">Фаза 2</option>
+          <option value="Фаза 3">Фаза 3</option>
+          <option value="Фаза 4">Фаза 4</option>
+          <option value="Фаза 5">Фаза 5</option>
+        </select>
+      </div>
       <div class="field" data-field="rTitle"><label>Наименование риска</label><input type="text" id="rTitle" placeholder="Например, срыв поставки оборудования" spellcheck="true" lang="ru"></div>
       <div class="field" data-field="rCause"><label>Причина <span class="field-optional">(необязательно)</span></label><textarea id="rCause" placeholder="Что вызывает риск — если уже известно на этом этапе" spellcheck="true" lang="ru"></textarea></div>
       <div class="field" data-field="rEvent">
@@ -2774,6 +2783,7 @@ function enterWorkspace(){
   // PreMortem/предложений инициатора), поэтому здесь только подключаем
   // автокомплит-обёртку к уже существующему <select>.
   enhanceSelectAsAutocomplete(document.getElementById('regFiltPhase'));
+  enhanceSelectAsAutocomplete(document.getElementById('rPhase'));
 
   const sidebar = document.getElementById('wsSidebar');
   sidebar.addEventListener('mouseenter', () => sidebar.classList.add('expanded'));
@@ -3713,6 +3723,8 @@ function openRiskCreateModal(prefill){
   document.getElementById('riskModalTitle').textContent = prefill && prefill.sourceLessonId ? 'Новый риск на основе урока' : 'Новый риск';
   document.getElementById('rCategory').value = prefill && prefill.category ? prefill.category : '';
   syncAc('rCategory');
+  document.getElementById('rPhase').value = prefill && prefill.phase ? prefill.phase : '';
+  syncAc('rPhase');
   document.getElementById('rTitle').value = prefill && prefill.title ? prefill.title : '';
   document.getElementById('rCause').value = prefill && prefill.cause ? prefill.cause : '';
   document.getElementById('rEvent').value = prefill && prefill.event ? prefill.event : '';
@@ -3735,6 +3747,9 @@ function openRiskCreateModal(prefill){
   // «необязательно» рядом с лейблом) — в быстрой форме создания риска
   // просто не нужна, её можно заполнить позже при редактировании карточки.
   document.querySelector('.field[data-field="rCause"]').hidden = true;
+  // «Фаза проекта» — тоже только в детальной карточке (редактирование
+  // существующего риска), не в быстрой форме создания.
+  document.getElementById('rPhaseField').hidden = true;
   // Компактная форма «Предложить риск» — без поясняющих подписей полей
   // (плейсхолдеры внутри полей уже понятны), освободившееся место просто
   // схлопывается (поля — flex-колонка, .riskform-compact лишь прячет label).
@@ -4425,12 +4440,14 @@ function generateLessonDraft(r){
   toast('Риск закрыт — черновик урока добавлен в Реестр уроков на проверку');
 }
 function openRiskEditModal(r){
-  openRiskCreateModal({title:r.title, cause:r.cause, event:r.event, consequence:r.consequence, category:r.category, editingId:r.id});
+  openRiskCreateModal({title:r.title, cause:r.cause, event:r.event, consequence:r.consequence, category:r.category, phase:r.phase, editingId:r.id});
   riskOwnerSelection = r.ownerNames.slice(); renderOwnerChips(); toggleOwnerMenu(false);
   // «Причина» скрыта в быстрой форме создания (см. openRiskCreateModal), но
   // при редактировании уже существующего риска должна быть видна и
   // редактируема как обычно.
   document.querySelector('.field[data-field="rCause"]').hidden = false;
+  // «Фаза проекта» — тоже только в детальной карточке (см. openRiskCreateModal).
+  document.getElementById('rPhaseField').hidden = false;
   // «Обоснование стратегии» имеет смысл только когда у риска уже есть мероприятия —
   // при создании нового риска (компактная форма Инициатора/«+Добавить риск») поле скрыто.
   document.getElementById('rStrategyRationaleField').hidden = false;
@@ -4445,6 +4462,7 @@ function saveRiskEdit(r){
   const consVal = document.getElementById('rConsequence').value.trim();
   if (!title || !eventVal || !consVal){ toast('Заполните название, риск-событие и следствие', {tone:'warning'}); return; }
   r.title = title; r.category = document.getElementById('rCategory').value;
+  r.phase = document.getElementById('rPhase').value || null;
   r.cause = document.getElementById('rCause').value.trim();
   r.event = eventVal; r.consequence = consVal;
   r.ownerNames = riskOwnerSelection.slice();
@@ -5545,7 +5563,7 @@ function openDayNotesModal(y, m, d){
   const title = `${d} ${CAL_MONTH_NAMES[m].toLowerCase()} ${y}`;
   dnAttendeeSelection = [];
   dnHour = 10; dnMin = 0;
-  openChartModal('Заметки дня — ' + title, '', dayNotesBodyHtml(y,m,d), {maxWidth:'440px'});
+  openChartModal('Заметки дня — ' + title, '', dayNotesBodyHtml(y,m,d), {maxWidth:'380px'});
   wireDayNotesForm(y,m,d);
 }
 // «Что запланировано на день» — список без max-height/overflow: при
@@ -5556,7 +5574,7 @@ function dayNotesBodyHtml(y,m,d){
   const sessionRiskCount = notes.filter(n => n.type === 'session' && n.riskId).length;
   return `${sessionRiskCount ? `<button type="button" class="btn btn-secondary btn-sm" id="dnOpenSessionSummary" style="width:100%;margin-bottom:10px;">Открыть сводку риск-сессии (${sessionRiskCount})</button>` : ''}
     <div id="dayNotesList">${notes.map(n => { const t=noteType(n.type); return `
-    <div class="cal-note-row"><div style="flex:1;"><div class="cal-note-type" style="color:${t.color}">${esc(t.label)}</div><div style="font-size:13px;margin-top:2px;">${esc(n.text)}</div>${n.time?`<div class="muted cal-note-time-row" style="font-size:11px;margin-top:2px;">${ICON_SD_CLOCK}${esc(n.time)}${n.timeTo?'–'+esc(n.timeTo):''}</div>`:''}${n.phase?`<div class="muted" style="font-size:11px;margin-top:2px;">${esc(n.phase)}</div>`:''}${n.attendees && n.attendees.length ? `<div class="muted" style="font-size:11px;margin-top:2px;">Участники: ${esc(n.attendees.join(', '))}</div>` : ''}${n.author?`<div class="muted" style="font-size:11px;margin-top:2px;">${esc(n.author)}</div>`:''}${n.riskId?`<a href="#" data-open-risk-from-note="${n.riskId}" style="font-size:11px;font-weight:600;">Открыть риск →</a>`:''}</div>
+    <div class="cal-note-row"><div style="flex:1;"><div class="cal-note-type" style="color:${t.color}">${esc(t.label)}</div><div style="font-size:13px;margin-top:2px;">${esc(n.text)}</div>${n.time?`<div class="muted cal-note-time-row" style="font-size:11px;margin-top:2px;">${ICON_SD_CLOCK}${esc(n.time)}${n.timeTo?'–'+esc(n.timeTo):''}</div>`:''}${n.attendees && n.attendees.length ? `<div class="muted" style="font-size:11px;margin-top:2px;">Участники: ${esc(n.attendees.join(', '))}</div>` : ''}${n.author?`<div class="muted" style="font-size:11px;margin-top:2px;">${esc(n.author)}</div>`:''}${n.riskId?`<a href="#" data-open-risk-from-note="${n.riskId}" style="font-size:11px;font-weight:600;">Открыть риск →</a>`:''}</div>
       <button type="button" class="cal-note-del" data-del-note="${n.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`; }).join('')}</div>
     <div class="field" style="margin:12px 0 8px;"><label>Участники</label>
       <div class="ds-ms" id="dnAttendeeMs">
@@ -5569,9 +5587,9 @@ function dayNotesBodyHtml(y,m,d){
       <select id="dnType" style="flex:1;">${NOTE_TYPES.map(t=>`<option value="${t.key}">${t.label}</option>`).join('')}</select>
     </div>
     <div class="field" style="margin-bottom:8px;"><label>Время сессии</label>
-      <div class="dt-picker-time" style="border-left:none;padding-left:0;">
-        <div class="dt-picker-time-col dt-picker-time-col--sm" id="dnHourCol"></div>
-        <div class="dt-picker-time-col dt-picker-time-col--sm" id="dnMinCol"></div>
+      <div class="btn-row dn-time-row" style="gap:8px;">
+        <select id="dnHourSel"></select>
+        <select id="dnMinSel"></select>
         <select id="dnDuration">
           <option value="30">30 минут</option>
           <option value="60" selected>60 минут</option>
@@ -5579,16 +5597,6 @@ function dayNotesBodyHtml(y,m,d){
           <option value="120">120 минут</option>
         </select>
       </div>
-    </div>
-    <div class="field" style="margin-bottom:8px;"><label>Фаза проекта</label>
-      <select id="dnPhase">
-        <option value="">Не указана</option>
-        <option value="Фаза 1">Фаза 1</option>
-        <option value="Фаза 2">Фаза 2</option>
-        <option value="Фаза 3">Фаза 3</option>
-        <option value="Фаза 4">Фаза 4</option>
-        <option value="Фаза 5">Фаза 5</option>
-      </select>
     </div>
     <textarea id="dnText" placeholder="Что запланировано на этот день..." style="width:100%;min-height:52px;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 12px;font-size:13.5px;font-family:inherit;resize:vertical;"></textarea>
     <div class="btn-row" style="margin-top:10px;"><button type="button" class="btn btn-primary" id="dnAdd" style="flex:1;">Направить приглашение на сессию</button></div>`;
@@ -5636,21 +5644,25 @@ function dnToggleAttendeeMenu(show){
 document.addEventListener('click', (e) => { if (!e.target.closest('#dnAttendeeMs')) dnToggleAttendeeMenu(false); });
 let dnAttendeeSelection = [];
 let dnHour = 10, dnMin = 0;
+// Простые выпадающие списки (обычные <select>) вместо прокручиваемых
+// колонок — тот же принцип, что и у «Длительности» рядом, компактнее и
+// без вопросов к формату отображения.
 function dnRenderTimePicker(){
-  const hourCol = document.getElementById('dnHourCol');
-  const minCol = document.getElementById('dnMinCol');
-  if (!hourCol || !minCol) return;
-  hourCol.innerHTML = '<div class="dt-picker-time-col-head">чч</div>' + Array.from({length:24},(_,h)=>`<div class="dt-time-item${h===dnHour?' selected':''}" data-dn-hour="${h}">${String(h).padStart(2,'0')}</div>`).join('');
-  hourCol.querySelectorAll('[data-dn-hour]').forEach(el => el.addEventListener('click', () => { dnHour = parseInt(el.dataset.dnHour,10); dnRenderTimePicker(); }));
-  minCol.innerHTML = '<div class="dt-picker-time-col-head">мм</div>' + Array.from({length:60},(_,mn)=>`<div class="dt-time-item${mn===dnMin?' selected':''}" data-dn-min="${mn}">${String(mn).padStart(2,'0')}</div>`).join('');
-  minCol.querySelectorAll('[data-dn-min]').forEach(el => el.addEventListener('click', () => { dnMin = parseInt(el.dataset.dnMin,10); dnRenderTimePicker(); }));
-  const selHour = hourCol.querySelector('.selected'); if (selHour) selHour.scrollIntoView({block:'center'});
-  const selMin = minCol.querySelector('.selected'); if (selMin) selMin.scrollIntoView({block:'center'});
+  const hourSel = document.getElementById('dnHourSel');
+  const minSel = document.getElementById('dnMinSel');
+  if (!hourSel || !minSel) return;
+  hourSel.innerHTML = Array.from({length:24},(_,h)=>`<option value="${h}">${String(h).padStart(2,'0')}</option>`).join('');
+  minSel.innerHTML = Array.from({length:60},(_,mn)=>`<option value="${mn}">${String(mn).padStart(2,'0')}</option>`).join('');
+  hourSel.value = dnHour; minSel.value = dnMin;
+  syncAc('dnHourSel'); syncAc('dnMinSel');
+  hourSel.addEventListener('change', () => { dnHour = parseInt(hourSel.value,10); });
+  minSel.addEventListener('change', () => { dnMin = parseInt(minSel.value,10); });
 }
 function wireDayNotesForm(y,m,d){
   enhanceSelectAsAutocomplete(document.getElementById('dnType'));
+  enhanceSelectAsAutocomplete(document.getElementById('dnHourSel'));
+  enhanceSelectAsAutocomplete(document.getElementById('dnMinSel'));
   enhanceSelectAsAutocomplete(document.getElementById('dnDuration'));
-  enhanceSelectAsAutocomplete(document.getElementById('dnPhase'));
   dnRenderTimePicker();
   dnRenderAttendeeChips();
   document.getElementById('dnAttendeeAddBtn').addEventListener('click', (e) => { e.stopPropagation(); dnToggleAttendeeMenu(document.getElementById('dnAttendeeMenu').hidden); });
@@ -5674,10 +5686,9 @@ function wireDayNotesForm(y,m,d){
     const pad = n => String(n).padStart(2,'0');
     const time = `${pad(dnHour)}:${pad(dnMin)}`;
     const durationMin = parseInt(document.getElementById('dnDuration').value, 10) || 60;
-    const phase = document.getElementById('dnPhase').value;
     const key = dayKey(y,m,d);
     (state.dayNotes[key] = state.dayNotes[key]||[]).push({id:uid('note'), type:document.getElementById('dnType').value, text,
-      time, durationMin, phase: phase || undefined,
+      time, durationMin,
       attendees: dnAttendeeSelection.slice(), author:sessionName(), createdAt:nowStr()});
     saveState();
     toast('Приглашение на сессию направлено', {body: dnAttendeeSelection.length ? 'Участники: '+dnAttendeeSelection.join(', ') : undefined});
