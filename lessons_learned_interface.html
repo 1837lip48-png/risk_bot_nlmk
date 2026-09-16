@@ -825,9 +825,10 @@
   .ds-avatar img{width:100%; height:100%; object-fit:cover; display:block;}
   .ds-avatar svg{width:56%; height:56%;}
 
-  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
+  #calBody{display:flex; flex-direction:column; min-height:0;}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); grid-template-rows:auto; grid-auto-rows:1fr; gap:6px; flex:1; min-height:0;}
   .cal-dow{text-align:center; font-size:10.5px; color:var(--ink-400); font-weight:700; padding-bottom:4px;}
-  .cal-cell{min-height:88px; background:var(--paper-0); border:1px solid var(--line); border-radius:8px; padding:6px; overflow:hidden; cursor:pointer; transition:border-color .15s ease;}
+  .cal-cell{min-height:0; background:var(--paper-0); border:1px solid var(--line); border-radius:8px; padding:6px; overflow:auto; cursor:pointer; transition:border-color .15s ease;}
   .cal-cell:hover{border-color:var(--accent-600);}
   .cal-cell.empty{background:transparent; border:none; cursor:default;}
   .cal-cell.empty:hover{border-color:transparent;}
@@ -4596,7 +4597,7 @@ function renderCalendarMonth(){
     </div>`;
   }
   document.getElementById('calBody').innerHTML = `<div class="cal-grid">${grid}</div>
-    <p class="field-hint" style="margin-top:10px;">Кликните день, чтобы добавить заметку (индивидуальная работа, риск-сессия, семинар, Pre-mortem сессия).</p>`;
+    <p class="field-hint" style="margin-top:8px;flex-shrink:0;">Кликните день, чтобы добавить заметку (индивидуальная работа, риск-сессия, семинар, Pre-mortem сессия).</p>`;
   document.querySelectorAll('.cal-ev').forEach(e => e.addEventListener('click', ev => { ev.stopPropagation(); openPassport(e.dataset.risk); }));
   document.querySelectorAll('[data-open-session]').forEach(el => el.addEventListener('click', ev => {
     ev.stopPropagation();
@@ -4616,8 +4617,25 @@ function renderCalendarMonth(){
     const hasSession = notesFor(y,m,dd).some(n => n.type === 'session' && n.riskId);
     hasSession ? openSessionSummaryModal(y,m,dd) : openDayNotesModal(y,m,dd);
   }));
+  fitCalendarMonthHeight();
 }
+// Сетка месяца подгоняется под остаток высоты экрана (а не фиксированные
+// min-height ячеек), чтобы весь месяц помещался без скролла страницы.
+// Ячейки при этом сами скроллятся (overflow:auto), если в конкретный
+// день много событий.
+function fitCalendarMonthHeight(){
+  const calBody = document.getElementById('calBody');
+  const wsContent = document.querySelector('.ws-content');
+  if (!calBody || !wsContent || calViewMode !== 'month') return;
+  wsContent.scrollTop = 0;
+  const avail = window.innerHeight - calBody.getBoundingClientRect().top - 24;
+  calBody.style.height = Math.max(320, avail) + 'px';
+}
+window.addEventListener('resize', () => {
+  if (calViewMode === 'month' && document.getElementById('calBody')?.offsetParent) fitCalendarMonthHeight();
+});
 function renderCalendarWeek(){
+  document.getElementById('calBody').style.height = '';
   // Воскресенье недели, содержащей calDate — раскладка Sun-Sat по референсу
   // недельного календаря (п.13 промта раунд 3), в отличие от Пн-первой сетки
   // месяца.
