@@ -793,6 +793,9 @@ function activateFonts(link){
      статус срока. Полная детализация — в паспорте по клику. */
   .risk-card-mini{padding:14px 16px;}
   .rcm-top{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;}
+  .rcm-top-right{display:flex; align-items:center; gap:4px; flex-shrink:0;}
+  .rcm-top-right .icon-btn-del{width:22px; height:22px;}
+  .rcm-top-right .icon-btn-del svg{width:13px; height:13px;}
   .rcm-id{font-size:11.5px; color:var(--ink-400); font-weight:600;}
   .rcm-unrated{font-size:11px; color:var(--ink-400); font-weight:700;}
   .rcm-title{font-family:var(--font-display); font-weight:700; font-size:14px; color:var(--ink-900); margin-bottom:10px; line-height:1.3;}
@@ -1127,18 +1130,18 @@ function activateFonts(link){
   .rt-card-row{display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap;}
 
   /* ===== Паспорт риска ===== */
-  .passport-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:16px;}
+  .passport-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:12px;}
   .passport-grid.passport-grid-2{grid-template-columns:1fr 1fr;}
   @media (max-width:700px){.passport-grid{grid-template-columns:1fr;}}
   .passport-block .k{font-size:var(--fs-additional); text-transform:uppercase; letter-spacing:.2px; color:var(--ink-400); margin-bottom:4px;}
   .passport-block .v{font-size:13px; line-height:1.4;}
-  .severity-box{border-radius:var(--radius-field); padding:14px; text-align:center;}
+  .severity-box{border-radius:var(--radius-field); padding:10px; text-align:center;}
   .severity-box .lvl{font-family:var(--font-display); font-weight:800; font-size:20px;}
 
   /* ===== Паспорт риска: матрица P×I + метрик-блоки (раздел «ОЦЕНКА») ===== */
-  .pp-assess-row{display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start; margin-bottom:16px;}
+  .pp-assess-row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-start; margin-bottom:12px;}
   .pp-assess-matrix{flex-shrink:0;}
-  .pp-assess-metrics{flex:1; min-width:220px; display:flex; flex-direction:column; gap:10px;}
+  .pp-assess-metrics{flex:1; min-width:220px; display:flex; flex-direction:column; gap:8px;}
   .pp-trend-box{display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:var(--radius-field); background:var(--canvas);}
   .pp-trend-box .arrow{width:28px; height:28px; border-radius:7px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
   .pp-trend-box .arrow svg{width:14px; height:14px;}
@@ -1167,28 +1170,34 @@ function activateFonts(link){
   .audit-timeline-body .desc{color:var(--ink-700);}
   .audit-timeline-body .t{display:block; font-size:11px; color:var(--ink-400); font-family:var(--font-mono); margin-top:2px;}
   .pp-h{font-family:var(--font-display); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px;
-    color:var(--accent-600); margin:20px 0 8px; padding-top:14px; border-top:1px solid var(--line);}
-  .pp-h:first-of-type{margin-top:14px; border-top:none; padding-top:0;}
-  .stepper{display:flex; align-items:center; margin-bottom:16px; overflow-x:auto;}
-  .stepper .step{display:flex; align-items:center; gap:6px; flex-shrink:0; cursor:pointer; border-radius:6px; padding:2px 4px; margin:-2px -4px; transition:background-color .15s ease;}
+    color:var(--accent-600); margin:14px 0 6px; padding-top:10px; border-top:1px solid var(--line);}
+  .pp-h:first-of-type{margin-top:0; border-top:none; padding-top:0;}
+  /* Степпер — узлы (кружок+подпись) фиксированного размера, соединительные
+     линии между ними резиновые (flex:1, ужимаются до 8px) — весь путь из
+     5 стадий помещается по ширине паспорта на любом экране без горизонтального
+     скролла, подписи переносятся на 2 строки под кружком вместо однострочных
+     вбок. */
+  .stepper{display:flex; align-items:flex-start; margin-bottom:12px; width:100%;}
+  .stepper .step{display:flex; flex-direction:column; align-items:center; gap:6px; flex:0 0 auto;
+    cursor:pointer; border-radius:8px; padding:4px 3px; transition:background-color .15s ease;}
   .stepper .step:hover{background:var(--canvas);}
   .stepper .step:hover .dot{transform:scale(1.08);}
-  .stepper .dot{width:22px; height:22px; border-radius:50%; background:var(--paper-0); color:var(--ink-400); font-size:10px;
-    font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-sizing:border-box;
+  .stepper .dot{width:30px; height:30px; border-radius:50%; background:var(--paper-0); color:var(--ink-600); font-size:13px;
+    font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-sizing:border-box;
     border:2px solid var(--line); transition:transform .15s ease;}
-  .stepper .dot svg{width:11px; height:11px;}
+  .stepper .dot svg{width:14px; height:14px;}
   /* Пройденный шаг — закрашен зелёным (правило 5: зелёный = «шаг пройден»,
      та же семантика, что и «низкий риск»), с иконкой check вместо номера. */
   .stepper .step.filled .dot{background:var(--green-700); border-color:var(--green-700); color:#fff;}
-  /* Текущий шаг — обводка цветом уровня риска (передаётся из JS через
-     --stepper-current: severityColor(zone).fg, либо нейтральный navy, пока
-     риск не оценён), номер шага внутри. */
-  .stepper .step.current .dot{background:#fff; border-color:var(--stepper-current, var(--navy-900));
-    color:var(--stepper-current, var(--navy-900)); border-width:2.5px;}
-  .stepper .lbl{font-size:10.5px; color:var(--ink-400); white-space:nowrap;}
+  /* Текущий шаг — крупнее и ярче остальных, обводка цветом уровня риска
+     (передаётся из JS через --stepper-current: severityColor(zone).fg, либо
+     нейтральный navy, пока риск не оценён), номер шага внутри. */
+  .stepper .step.current .dot{width:34px; height:34px; background:#fff; border-color:var(--stepper-current, var(--navy-900));
+    color:var(--stepper-current, var(--navy-900)); border-width:3px; font-size:15px;}
+  .stepper .lbl{font-size:10.5px; color:var(--ink-400); text-align:center; line-height:1.25; max-width:82px;}
   .stepper .step.filled .lbl{color:var(--ink-700);}
   .stepper .step.current .lbl{color:var(--ink-900); font-weight:700;}
-  .stepper .bar{width:26px; height:2px; background:var(--line); margin:0 4px; flex-shrink:0;}
+  .stepper .bar{flex:1 1 auto; min-width:8px; height:2px; background:var(--line); margin-top:16px; flex-shrink:1;}
   .stepper .step.filled + .bar{background:var(--green-700);}
 
   .audit-list{display:flex; flex-direction:column; gap:8px; max-height:180px; overflow-y:auto;}
@@ -1371,7 +1380,6 @@ function activateFonts(link){
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
         </button>
         <span class="result-count" id="regCount"></span>
-        <button type="button" class="btn btn-primary" id="btnAddRisk">+ Добавить риск</button>
       </div>
       <div id="regQuickChip"></div>
       <div id="regAiChip"></div>
@@ -3259,10 +3267,14 @@ function dueStatusInfo(r){
 function riskCardHtml(r){
   const zone = zoneOf(rraOf(r.p, r.iLevel));
   const due = dueStatusInfo(r);
+  const editable = canManage(r);
   return `<div class="risk-card risk-card-mini" data-risk-id="${r.id}" data-zone="${zone||'unrated'}" style="cursor:pointer;">
     <div class="rcm-top">
       <span class="rcm-id mono">${esc(r.id)}</span>
-      ${zone ? `<span class="badge-pill ${ZONE_BADGE[zone]}">${ZONE_LABEL[zone]}</span>` : `<span class="rcm-unrated">Не оценён</span>`}
+      <span class="rcm-top-right">
+        ${zone ? `<span class="badge-pill ${ZONE_BADGE[zone]}">${ZONE_LABEL[zone]}</span>` : `<span class="rcm-unrated">Не оценён</span>`}
+        ${editable ? `<button type="button" class="icon-btn-del" data-del-risk="${r.id}" title="Удалить риск из реестра" aria-label="Удалить риск из реестра"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>` : ''}
+      </span>
     </div>
     <div class="rcm-title">${esc(r.title)}</div>
     <div class="rcm-meta">
@@ -3427,6 +3439,9 @@ function renderRegister(){
     document.querySelectorAll('#registerList .risk-card, #registerList [data-open-risk]').forEach(c => {
       c.addEventListener('click', (e) => { e.stopPropagation(); openPassport(c.dataset.riskId || c.dataset.openRisk); });
     });
+    document.querySelectorAll('#registerList [data-del-risk]').forEach(b => {
+      b.addEventListener('click', (e) => { e.stopPropagation(); deleteRisk(b.dataset.delRisk); });
+    });
     document.querySelectorAll('#registerList [data-open-template]').forEach(b => {
       b.addEventListener('click', (e) => { e.stopPropagation(); openRiskCreateModal(); });
     });
@@ -3444,12 +3459,6 @@ function renderRegister(){
     }
   }
 
-  // «+ Добавить риск» доступна и владельцу риска (process_full_v4.md, этап 1:
-  // «риск-менеджер/владелец — тем же набором полей прямо в карточке риска») —
-  // задизейблен только фильтр списка выше (владелец видит лишь свои риски),
-  // не сама возможность подать риск. Для владельца формулировка — «предложить»,
-  // это тот же компактный флоу подачи, что и у Инициатора.
-  document.getElementById('btnAddRisk').textContent = ownerLocked ? '+ Предложить риск' : '+ Добавить риск';
 }
 let registerPaging = {page:1, pageSize:5};
 let registerAiQuery = '';
@@ -3467,8 +3476,6 @@ document.getElementById('regFilterReset').addEventListener('click', () => {
   registerPaging.page = 1;
   renderRegister();
 });
-document.getElementById('btnAddRisk').addEventListener('click', () => openRiskCreateModal());
-
 // ===================================================================
 // СОЗДАНИЕ РИСКА (компактная форма — Категория/Наименование/Событие/
 // Следствие/Владелец, одинаковая для Инициатора и для «+Добавить риск»)
@@ -3848,7 +3855,6 @@ function renderPassport(){
   mount.innerHTML = `
     <div class="btn-row" style="justify-content:flex-end;margin-bottom:10px;">
       <button type="button" class="btn btn-text btn-sm" id="pAgendaBtn">📅 Добавить в повестку риск-сессии</button>
-      <button type="button" class="btn btn-text btn-sm" id="pPrintBtn">🖶 Экспорт / печать паспорта</button>
     </div>
     <div class="stepper" title="${esc(STATUSES.map((s,i)=>`${i+1}. ${s}`).join(' → '))}">${STATUSES.map((s,i) => {
       const isFilled = i < stepIdx, isCurrent = i === stepIdx;
@@ -3861,21 +3867,21 @@ function renderPassport(){
     <div class="passport-grid passport-grid-2">
       <div class="passport-block">
         <div class="k">ID / № паспорта</div><div class="v">${r.id}<br>№ ${r.displayNumber||'—'}</div>
-        <div class="k" style="margin-top:10px;">Категория</div><div class="v">${esc(r.category)}</div>
-        ${r.phase ? `<div class="k" style="margin-top:10px;">Стадия</div><div class="v">${esc(r.phase)}</div>` : ''}
-        <div class="k" style="margin-top:10px;">Владелец(ы)</div><div class="v">${esc(r.ownerNames.join(', ')||'—')}</div>
-        <div class="k" style="margin-top:10px;">Светофор</div><div class="v"><span class="status-dot" style="background:${tl.color}"></span> ${tl.label}</div>
-        <div class="k" style="margin-top:10px;">Связанные риски</div><div class="v">${relatedRisksHtml(r.id)}</div>
+        <div class="k" style="margin-top:8px;">Категория</div><div class="v">${esc(r.category)}</div>
+        ${r.phase ? `<div class="k" style="margin-top:8px;">Стадия</div><div class="v">${esc(r.phase)}</div>` : ''}
+        <div class="k" style="margin-top:8px;">Владелец(ы)</div><div class="v">${esc(r.ownerNames.join(', ')||'—')}</div>
+        <div class="k" style="margin-top:8px;">Светофор</div><div class="v"><span class="status-dot" style="background:${tl.color}"></span> ${tl.label}</div>
+        <div class="k" style="margin-top:8px;">Связанные риски</div><div class="v">${relatedRisksHtml(r.id)}</div>
       </div>
       <div class="passport-block">
         <div class="k">Причина</div><div class="v">${esc(r.cause)||'<span class="muted">не заполнено — заполняется на оценке</span>'}</div>
-        <div class="k" style="margin-top:10px;">Риск-событие</div><div class="v">${esc(r.event)}</div>
-        <div class="k" style="margin-top:10px;">Прямое следствие</div><div class="v">${esc(r.consequence)}</div>
+        <div class="k" style="margin-top:8px;">Риск-событие</div><div class="v">${esc(r.event)}</div>
+        <div class="k" style="margin-top:8px;">Прямое следствие</div><div class="v">${esc(r.consequence)}</div>
       </div>
     </div>
 
     <h3 class="pp-h">ПОХОЖИЙ УРОК В БАЗЕ ЗНАНИЙ</h3>
-    <div class="passport-block" style="margin-bottom:16px;">
+    <div class="passport-block" style="margin-bottom:12px;">
       ${similarLesson ? `
         <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
           <div style="flex:1; min-width:200px;">
@@ -3893,7 +3899,7 @@ function renderPassport(){
       <div class="pp-assess-matrix">
         ${migrationMatrixHtml(r.p, r.iLevel, null, null, 148)}
         <div class="muted" style="font-size:10.5px;margin-top:6px;text-align:center;">P (вероятность, ось Y, снизу вверх) × I (влияние, ось X)</div>
-        ${(!r.p || !r.iLevel) ? (editable ? `<button type="button" class="btn btn-primary btn-sm" id="pAssessCtaBtn" style="margin-top:10px;width:100%;">Оценить P/I</button>`
+        ${(!r.p || !r.iLevel) ? (editable ? `<button type="button" class="btn btn-primary btn-sm" id="pAssessCtaBtn" style="margin-top:8px;width:100%;">Оценить P/I</button>`
           : `<div class="muted" style="font-size:11.5px;margin-top:8px;text-align:center;">Оценка P/I ещё не проведена</div>`) : ''}
       </div>
       <div class="pp-assess-metrics">
@@ -3910,14 +3916,14 @@ function renderPassport(){
     </div>
 
     <h3 class="pp-h">ОБРАБОТКА</h3>
-    <div class="passport-block" style="margin-bottom:16px;">
+    <div class="passport-block" style="margin-bottom:12px;">
       <div class="k">Стратегия(и) по мероприятиям</div><div class="v">${strategies.length?esc(strategies.join(', ')):'<span class="muted">пока не выбрана — появится вместе с первым мероприятием</span>'}</div>
-      <div class="k" style="margin-top:10px;">Обоснование выбора</div><div class="v">${esc(r.strategyRationale)||'<span class="muted">не заполнено</span>'}</div>
-      <div class="k" style="margin-top:10px;">Дата решения о переходе в «Управление»</div><div class="v mono">${decisionDate||'—'}</div>
+      <div class="k" style="margin-top:8px;">Обоснование выбора</div><div class="v">${esc(r.strategyRationale)||'<span class="muted">не заполнено</span>'}</div>
+      <div class="k" style="margin-top:8px;">Дата решения о переходе в «Управление»</div><div class="v mono">${decisionDate||'—'}</div>
     </div>
 
     <h3 class="pp-h">ОСТАТОЧНЫЙ РИСК</h3>
-    <div class="passport-block" style="margin-bottom:16px;">
+    <div class="passport-block" style="margin-bottom:12px;">
       ${r.p && r.iLevel ? `
         <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
           <div>
@@ -3931,15 +3937,15 @@ function renderPassport(){
         </div>
       ` : `<div class="muted" style="font-size:12.5px;">Нужна оценка P/I, чтобы увидеть миграцию риска.</div>`}
       ${r.residualAcceptedBy ? `<div class="k" style="margin-top:12px;">Кто и когда принял</div><div class="v">${esc(r.residualAcceptedBy)} · ${r.residualAcceptedDate}${r.residualComment?' — '+esc(r.residualComment):''}</div>` : ''}
-      ${canAcceptResidual ? `<div class="btn-row" style="margin-top:10px;"><button class="btn btn-secondary btn-sm" id="pResidualBtn">${r.residualAcceptedBy?'Обновить остаточный риск':'Принять остаточный риск'}</button></div>` : ''}
+      ${canAcceptResidual ? `<div class="btn-row" style="margin-top:8px;"><button class="btn btn-secondary btn-sm" id="pResidualBtn">${r.residualAcceptedBy?'Обновить остаточный риск':'Принять остаточный риск'}</button></div>` : ''}
     </div>
 
     <h3 class="pp-h">КОНТРОЛИ (существующие процедуры)</h3>
-    ${controls.length ? `<div class="actions-table-wrap" style="margin-bottom:16px;"><table class="data-table"><thead><tr><th>Контроль</th><th>Эффективность</th><th>Ответственный оператор</th>${editable?'<th></th>':''}</tr></thead><tbody>
+    ${controls.length ? `<div class="actions-table-wrap" style="margin-bottom:12px;"><table class="data-table"><thead><tr><th>Контроль</th><th>Эффективность</th><th>Ответственный оператор</th>${editable?'<th></th>':''}</tr></thead><tbody>
       ${controls.map(a => `<tr><td>${esc(a.title)}</td><td>${CONTROL_EFFECT[a.status]}</td><td>${assigneeCellHtml(a, editable)}</td>${editable?`<td><button class="btn-sm" data-edit-action="${a.id}">✎</button></td>`:''}</tr>`).join('')}
-    </tbody></table></div>` : `<div class="empty-state" style="margin-bottom:16px;">Существующих процедур контроля пока не привязано.</div>`}
+    </tbody></table></div>` : `<div class="empty-state" style="margin-bottom:12px;">Существующих процедур контроля пока не привязано.</div>`}
 
-    <div class="btn-row" style="margin-bottom:16px;">
+    <div class="btn-row" style="margin-bottom:12px;">
       ${editable ? `<button class="btn btn-secondary btn-sm" id="pEditBtn">Редактировать карточку</button>` : ''}
       ${editable && (r.status==='Идентификация'||r.status==='Анализ и оценка') ? `<button class="btn btn-secondary btn-sm" id="pAssessBtn">Провести оценку (P/I)</button>` : ''}
       ${editable && r.p && r.iLevel ? `<button class="btn btn-secondary btn-sm" id="pAddActionBtn">+ Мероприятие</button>` : ''}
@@ -3956,7 +3962,7 @@ function renderPassport(){
     </tbody></table></div>` : `<div class="empty-state">Мероприятий пока нет — светофор красный, пока не появится хотя бы одно.</div>`}
 
     <h3 class="pp-h">ЭСКАЛАЦИЯ И КОММУНИКАЦИЯ</h3>
-    <div class="passport-block" style="margin-bottom:16px;">
+    <div class="passport-block" style="margin-bottom:12px;">
       <div class="btn-row" style="margin:0 0 10px;">
         ${editable && !r.committeeFlag ? `<button class="btn btn-secondary btn-sm" id="pEscalateBtn">Эскалировать риск-менеджеру / комитету</button>` : ''}
         ${editable && r.ownerNames.length > 1 ? `<span class="badge-pill" style="background:var(--amber-50);color:var(--amber-700);">Кросс-функциональный риск — требуется согласование ${r.ownerNames.length} совладельцев</span>` : ''}
@@ -3987,8 +3993,6 @@ function renderPassport(){
   const mergeBtn = document.getElementById('pMergeBtn');
   if (mergeBtn) mergeBtn.addEventListener('click', () => openMergePicker(r));
   mount.querySelectorAll('[data-related-risk]').forEach(el => el.addEventListener('click', () => openPassport(el.dataset.relatedRisk)));
-  const printBtn = document.getElementById('pPrintBtn');
-  if (printBtn) printBtn.addEventListener('click', () => window.print());
   const agendaBtn = document.getElementById('pAgendaBtn');
   if (agendaBtn) agendaBtn.addEventListener('click', () => openAddToAgendaModal(r));
   const openSimilarBtn = document.getElementById('pOpenSimilarLesson');
