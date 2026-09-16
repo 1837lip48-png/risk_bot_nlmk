@@ -4991,6 +4991,7 @@ function truncate(text, max){
 // чтобы решение «читать/не читать» карточку целиком принималось без клика.
 function lessonCardHtml(l){
   const rr = lessonRepeatRate(l);
+  const prob = lessonProblemText(l);
   return `<div class="risk-card" data-lesson-id="${l.id}" style="cursor:pointer;" data-open-lesson="${l.id}">
     <div class="rc-head">
       <div class="rc-head-left">
@@ -5006,14 +5007,14 @@ function lessonCardHtml(l){
         <button class="btn btn-sm" data-open-lesson="${l.id}">Детали</button>
       </div>
     </div>
+    ${prob.text ? `<div class="lesson-problem-line" style="font-size:12.5px;color:var(--ink-700);margin:4px 0 10px;line-height:1.4;">${esc(prob.text)}</div>` : ''}
     <div class="rc-meta4">
       <div><div class="k">Проект</div><div class="v">${esc(l.project)}</div></div>
       <div><div class="k">Фаза</div><div class="v">${esc(l.phase||'—')}</div></div>
       <div><div class="k">Категория</div><div class="v">${esc(l.category)}</div></div>
       <div><div class="k">Влияние</div><div class="v">${esc(l.impact)||'—'}</div></div>
     </div>
-    ${l.lessonLearned ? `<div class="lesson-preview-quote"><span class="k">Выученный урок</span> ${esc(truncate(l.lessonLearned, 160))}</div>` : ''}
-    ${l.recommendation ? `<div class="lesson-preview-quote"><span class="k">Рекомендация</span> ${esc(truncate(l.recommendation, 160))}</div>` : ''}
+    ${l.recommendation ? `<div class="lesson-preview-quote" style="font-size:11.5px;color:var(--ink-400);"><span class="k">Рекомендация</span> ${esc(truncate(l.recommendation, 140))}</div>` : ''}
     <div style="margin-bottom:10px;">${l.hashtags.map(t=>`<span class="lesson-tag-pill">${esc(tagLabel(t))}</span>`).join('')}</div>
     <div class="risk-card-foot">${l.sourceRiskId?`<span>источник — риск <code class="mono">${l.sourceRiskId}</code></span>`:'<span></span>'}<button class="link-btn btn-sm" data-create-risk="${l.id}">Создать риск на основе урока →</button></div>
   </div>`;
@@ -5030,20 +5031,31 @@ function lessonCardHtml(l){
 function lessonFieldBlock(label, value){
   return `<div class="passport-block" style="margin-bottom:10px;"><div class="k">${esc(label)}</div><div class="v">${value ? esc(value) : '<span class="muted">не зафиксировано в исходном реестре</span>'}</div></div>`;
 }
+// Проблема/риск-событие урока — главное поле для решения «заводить риск или
+// нет», но в части записей (напр. L-06) не заполнено при том, что суть
+// проблемы и её влияние уже есть текстом в description — тогда используем
+// description как честный fallback (с пометкой), а не молчим о проблеме.
+function lessonProblemText(l){
+  if (l.problemOrRiskEvent) return {text: l.problemOrRiskEvent, fallback:false};
+  if (l.description) return {text: truncate(l.description, 220), fallback:true};
+  return {text: null, fallback:false};
+}
 function openLessonModal(id, createNew){
   const mount = document.getElementById('lessonMount');
-  document.getElementById('lessonModalTitle').textContent = createNew ? 'Новый урок' : 'Урок ' + id;
   if (createNew){
+    document.getElementById('lessonModalTitle').textContent = 'Новый урок';
     mount.innerHTML = lessonFormHtml();
     openModal('lessonModalOverlay');
     enhanceSelectAsAutocomplete(document.getElementById('lfStrategy'));
     document.getElementById('lessonSaveBtn').addEventListener('click', () => {
       const title = document.getElementById('lfTitle').value.trim();
       if (!title){ toast('Укажите наименование урока'); return; }
+      const problem = document.getElementById('lfProblem').value.trim();
+      if (!problem){ toast('Укажите проблему / риск-событие — без неё урок неинформативен'); return; }
       state.lessons.push({
         id: 'L-' + String(state.lessons.length+1).padStart(2,'0'), project: document.getElementById('lfProject').value.trim()||'—',
         phase: document.getElementById('lfPhase').value.trim(), category: document.getElementById('lfCategory').value.trim(),
-        title, problemOrRiskEvent: document.getElementById('lfProblem').value.trim(), description: document.getElementById('lfDesc').value.trim(),
+        title, problemOrRiskEvent: problem, description: document.getElementById('lfDesc').value.trim(),
         rootCause: document.getElementById('lfRoot').value.trim(), impact: document.getElementById('lfImpact').value.trim(),
         triggerIndicator: document.getElementById('lfTrigger').value.trim(), strategy: document.getElementById('lfStrategy').value,
         lessonLearned: document.getElementById('lfLearned').value.trim(), recommendation: document.getElementById('lfRec').value.trim(),
@@ -5055,23 +5067,43 @@ function openLessonModal(id, createNew){
     return;
   }
   const l = findLesson(id);
+  // Заголовок модалки (по аналогии с паспортом риска) — ID мелко сверху,
+  // содержательное наименование урока подзаголовком под ним; отдельного
+  // блока «Наименование» в теле карточки больше нет — не дублируем.
+  document.getElementById('lessonModalTitle').innerHTML = `<span class="mono" style="display:block;font-size:11px;color:var(--ink-400);font-weight:600;">Урок ${esc(l.id)}</span><span style="display:block;font-weight:700;font-size:15px;">${esc(l.title)}</span>`;
+  const prob = lessonProblemText(l);
+  const rr = lessonRepeatRate(l);
   mount.innerHTML = `
     <div class="passport-grid" style="grid-template-columns:1fr 1fr 1fr;">
       <div class="passport-block"><div class="k">ID урока</div><div class="v mono">${esc(l.id)}</div></div>
       <div class="passport-block"><div class="k">Проект</div><div class="v">${esc(l.project)}</div></div>
       <div class="passport-block"><div class="k">Фаза</div><div class="v">${esc(l.phase||'—')}</div></div>
     </div>
-    <div class="passport-block" style="margin-bottom:10px;"><div class="k">Категория</div><div class="v">${esc(l.category)}</div></div>
-    <div class="passport-block" style="margin-bottom:10px;"><div class="k">Наименование</div><div class="v">${esc(l.title)}</div></div>
-    <div class="passport-block" style="margin-bottom:14px;"><div class="k">Влияние</div><div class="v">${l.impact ? esc(l.impact) : '<span class="muted">не зафиксировано в исходном реестре</span>'}</div></div>
-    <div class="lesson-detail-divider">Подробности</div>
-    ${lessonFieldBlock('Проблема / Риск-событие', l.problemOrRiskEvent)}
-    ${lessonFieldBlock('Описание', l.description)}
-    ${lessonFieldBlock('Корневая причина', l.rootCause)}
-    ${lessonFieldBlock('Триггер / Индикатор', l.triggerIndicator)}
-    ${lessonFieldBlock('Стратегия реагирования', l.strategy)}
-    ${lessonFieldBlock('Выученный урок', l.lessonLearned)}
-    ${lessonFieldBlock('Рекомендация / Действие', l.recommendation)}
+    <div class="passport-block" style="margin-bottom:6px;">
+      <div class="k">Проблема / риск-событие</div>
+      <div class="v" style="font-weight:600;">${prob.text ? esc(prob.text) : '<span class="muted">не зафиксировано в исходном реестре</span>'}</div>
+      ${prob.fallback ? `<div class="muted" style="font-size:11px;margin-top:3px;">⚠ поле не заполнено — показано из «Описание»</div>` : ''}
+    </div>
+    <div style="display:flex; gap:10px; margin-bottom:14px;">
+      <div class="rra-preview" style="flex:1; background:${l.impact?'var(--amber-50)':'var(--surface-2, #F7F8FA)'};">
+        <span class="lbl" style="${l.impact?'color:var(--amber-700);':''}">Влияние</span>
+        <span class="val" style="${l.impact?'color:var(--amber-700);':''}">${l.impact ? esc(l.impact) : '—'}</span>
+      </div>
+      <div class="rra-preview" style="flex:1;"><span class="lbl">Повтор</span><span class="val">${rr.pct}%</span></div>
+      ${l.strategy ? `<div class="rra-preview" style="flex:1;"><span class="lbl">Стратегия</span><span class="val" style="font-size:13px;">${esc(l.strategy)}</span></div>` : ''}
+    </div>
+    <div class="lesson-details-toggle" id="lessonDetailsToggle" style="display:flex; align-items:center; justify-content:space-between; cursor:pointer; padding-top:10px; border-top:1px solid var(--line); margin-bottom:10px;">
+      <span style="font-size:12.5px; color:var(--accent-600); font-weight:600;">Подробности: категория, причина, триггер, рекомендация, выученный урок</span>
+      <span class="chevron">▾</span>
+    </div>
+    <div id="lessonDetailsBody" hidden>
+      ${lessonFieldBlock('Категория', l.category)}
+      ${lessonFieldBlock('Описание', l.description)}
+      ${lessonFieldBlock('Корневая причина', l.rootCause)}
+      ${lessonFieldBlock('Триггер / Индикатор', l.triggerIndicator)}
+      ${lessonFieldBlock('Выученный урок', l.lessonLearned)}
+      ${lessonFieldBlock('Рекомендация / Действие', l.recommendation)}
+    </div>
     <div style="margin-bottom:14px;">${l.hashtags.map(t=>`<span class="lesson-tag-pill">${esc(tagLabel(t))}</span>`).join('') || '<span class="muted" style="font-size:12.5px;">Тегов нет</span>'}</div>
     ${l.sourceRiskId?`<div class="field-hint" style="margin-bottom:10px;">Источник: риск <code class="mono">${l.sourceRiskId}</code></div>`:''}
     <div class="btn-row">
@@ -5079,6 +5111,11 @@ function openLessonModal(id, createNew){
       <button class="btn btn-primary" id="createRiskFromLesson" style="flex:2;">Создать риск на основе урока</button>
     </div>`;
   openModal('lessonModalOverlay');
+  document.getElementById('lessonDetailsToggle').addEventListener('click', () => {
+    const body = document.getElementById('lessonDetailsBody');
+    body.hidden = !body.hidden;
+    document.querySelector('#lessonDetailsToggle .chevron').textContent = body.hidden ? '▾' : '▴';
+  });
   document.getElementById('createRiskFromLesson').addEventListener('click', () => {
     closeModal('lessonModalOverlay');
     openRiskCreateModal({title:'На основе урока: '+l.title, event: l.problemOrRiskEvent||l.description, consequence: l.impact||l.description,
