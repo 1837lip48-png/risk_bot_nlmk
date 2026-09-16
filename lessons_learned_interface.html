@@ -347,7 +347,11 @@ function activateFonts(link){
   .btn:active{transform:scale(.96); filter:brightness(.94);}
   .btn-primary{background:var(--accent-600); border-color:var(--accent-600); color:#fff;}
   .btn-primary:hover{background:var(--accent-500); border-color:var(--accent-500); color:#fff;}
-  #sppSubmit:hover:not(:disabled){box-shadow:0 8px 20px -8px var(--accent-500); transform:translateY(-1px);}
+  /* Фон «Войти» после выбора роли задаётся инлайн-градиентом (JS), поэтому
+     :hover{background:...} из .btn-primary его не перебивает — подсветка
+     при наведении идёт через filter:brightness (тот же приём, что и у
+     .btn-danger:hover), заметно светлее, а не только тенью/сдвигом. */
+  #sppSubmit:hover:not(:disabled){filter:brightness(1.12); box-shadow:0 8px 20px -8px var(--accent-500); transform:translateY(-1px);}
   .btn-primary:active{background:var(--accent-600); border-color:var(--accent-600); color:#fff; transform:scale(.96); filter:brightness(.7);}
   .btn-primary:disabled{opacity:.45; cursor:not-allowed;}
   .btn-secondary{background:var(--accent-50); border-color:var(--accent-50); color:var(--accent-600);}
@@ -1011,10 +1015,6 @@ function activateFonts(link){
   .filter-reset-btn:hover{background:var(--canvas); color:var(--accent-600); border-color:var(--accent-600);}
   .filter-reset-btn svg{width:15px; height:15px;}
   .filter-reset-btn.active{background:var(--accent-50); color:var(--accent-600); border-color:var(--accent-600);}
-  /* Вариант с подписью «Фильтры» — сама круглая иконка "сбросить все
-     фильтры" без текста читалась как что-то другое (напр. «обновить»);
-     значок сменили на классические три линии-фильтра плюс явный текст. */
-  .filter-reset-btn--labeled{width:auto; border-radius:var(--radius-pill); padding:0 14px 0 12px; gap:7px; font-size:12.5px; font-weight:600;}
 
   /* ===== Пагинация @nlmk/ds-2.0 — единый компонент для всех многостраничных списков ===== */
   .ds-pagination{display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:14px; flex-wrap:wrap; font-size:12.5px; color:var(--ink-600);}
@@ -1070,7 +1070,15 @@ function activateFonts(link){
     background:var(--paper-0); border:1px solid var(--line); border-radius:var(--radius-card); box-shadow:var(--shadow-pop); padding:14px;}
   .dt-picker-cal{width:224px; flex-shrink:0;}
   .dt-picker-time{display:flex; gap:4px; border-left:1px solid var(--line); padding-left:14px;}
-  .dt-picker-time-col{display:flex; flex-direction:column; align-items:center; gap:3px; max-height:216px; overflow-y:auto; width:38px;}
+  .dt-picker-time-col{display:flex; flex-direction:column; align-items:center; gap:3px; max-height:216px; overflow-y:auto; width:38px;
+    scrollbar-width:thin; scrollbar-color:var(--line) transparent;}
+  /* Обе колонки (часы/минуты) должны выглядеть одинаково: без нативных
+     кнопок-стрелок скролла (они у колонок разной длины списка выглядели
+     неровно/по-разному) — тонкий однотипный скроллбар без стрелок. */
+  .dt-picker-time-col::-webkit-scrollbar{width:4px;}
+  .dt-picker-time-col::-webkit-scrollbar-track{background:transparent;}
+  .dt-picker-time-col::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+  .dt-picker-time-col::-webkit-scrollbar-button{display:none; height:0; width:0;}
   .dt-picker-time-col--sm{max-height:130px;}
   .dt-picker-time-col-head{font-size:10.5px; color:var(--ink-400); font-weight:700; margin-bottom:2px; position:sticky; top:0; background:var(--paper-0); width:100%; text-align:center;}
   .dt-time-item{width:32px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12.5px; cursor:pointer; flex-shrink:0;}
@@ -1479,9 +1487,8 @@ function activateFonts(link){
           <input type="text" id="regAiAsk" placeholder="Спросить AI..."></div>
         <select id="regFiltCat"><option value="">Все категории</option></select>
         <select id="regFiltStatus"><option value="">Все статусы</option></select>
-        <button type="button" class="filter-reset-btn filter-reset-btn--labeled" id="regFilterReset" title="Сбросить все фильтры" aria-label="Сбросить все фильтры">
+        <button type="button" class="filter-reset-btn" id="regFilterReset" title="Сбросить все фильтры" aria-label="Сбросить все фильтры">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
-          <span>Фильтры</span>
         </button>
         <span class="result-count" id="regCount"></span>
       </div>
@@ -4770,9 +4777,8 @@ function renderLessons(){
         </div>
       </div>
       <select id="lesPhaseFilter" style="width:160px;flex-shrink:0;"><option value="">Все фазы</option>${Array.from(new Set(state.lessons.map(l=>l.phase).filter(Boolean))).sort().map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('')}</select>
-      <button type="button" class="filter-reset-btn filter-reset-btn--labeled" id="lesFilterReset" title="Сбросить все фильтры" aria-label="Сбросить все фильтры">
+      <button type="button" class="filter-reset-btn" id="lesFilterReset" title="Сбросить все фильтры" aria-label="Сбросить все фильтры">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
-        <span>Фильтры</span>
       </button>
       <span class="result-count" id="lesCount"></span>
       <button type="button" class="btn btn-secondary" id="btnImportLessons" title="Импортировать уроки" aria-label="Импортировать уроки"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 21h16"/></svg> Импортировать</button>
@@ -5238,15 +5244,18 @@ function renderCalendar(){
     </div>
     <div class="cal-legend-row" style="${calLegendVisible?'':'display:none;'}">
       <div class="cal-legend" id="calLegend"></div>
-      <button type="button" class="filter-reset-btn filter-reset-btn--labeled" id="calFilterReset" title="Сбросить все фильтры" aria-label="Сбросить все фильтры" ${calHiddenFilters.size?'':'hidden'}>
+      <button type="button" class="filter-reset-btn" id="calFilterReset" title="Сбросить все фильтры" aria-label="Сбросить все фильтры" ${calHiddenFilters.size?'':'hidden'}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
-        <span>Фильтры</span>
       </button>
     </div>
     <div id="calBody"></div>`;
   document.getElementById('calViewToggle').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
-    calViewMode = b.dataset.view; renderCalendar();
+    calViewMode = b.dataset.view;
+    // «Неделя» всегда открывается на текущей неделе, а не там, где
+    // случайно остался calDate после навигации по месяцу/другой неделе.
+    if (calViewMode === 'week') calDate = new Date(TODAY);
+    renderCalendar();
   });
   document.getElementById('calLegendToggle').addEventListener('click', () => {
     calLegendVisible = !calLegendVisible; renderCalendar();
