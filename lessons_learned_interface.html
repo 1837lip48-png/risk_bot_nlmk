@@ -3758,7 +3758,6 @@ function openPassport(riskId){
 const PP_SECTIONS = [
   {id:'pp-sec-ident',    label:'Идентификация'},
   {id:'pp-sec-assess',   label:'Оценка'},
-  {id:'pp-sec-treat',    label:'Обработка'},
   {id:'pp-sec-residual', label:'Остаточный риск'},
   {id:'pp-sec-actions',  label:'Мероприятия'},
   {id:'pp-sec-audit',    label:'История'},
@@ -3784,7 +3783,7 @@ function ppShowTab(id){
 const STAGE_TO_SECTION = {
   'Идентификация':          'pp-sec-ident',
   'Анализ и оценка':        'pp-sec-assess',
-  'Управление':             'pp-sec-treat',
+  'Управление':             'pp-sec-actions',
   'Мониторинг и Контроль':  'pp-sec-actions',
   'Закрыт':                 'pp-sec-residual',
 };
@@ -3995,9 +3994,6 @@ function renderPassport(){
   // секции: физически это одна и та же сущность Action, разделять их на
   // два списка было избыточно.
   const planActions = r.actions;
-  const strategies = Array.from(new Set(r.actions.map(a => a.strategy).filter(Boolean)));
-  const decisionEntry = state.audit.find(a => a.riskId === r.id && a.toStatus === 'Управление');
-  const decisionDate = r.committeeDecisionDate || (decisionEntry ? decisionEntry.timestamp : null);
   const canAcceptResidual = editable && r.p && r.iLevel && r.status !== 'Идентификация';
   const similarLesson = findBestLessonForRisk(r);
 
@@ -4082,17 +4078,6 @@ function renderPassport(){
             ${el!=null ? `<div class="rra-preview" style="flex:1;"><span class="lbl">EL</span><span class="val">${el.toFixed(1)} млн ₽</span></div>` : ''}
           </div>
         </div>
-      </div>
-    </div>
-
-    <div class="pp-tab-panel${ppActive('pp-sec-treat')}" id="pp-sec-treat">
-      <h3 class="pp-h">ОБРАБОТКА</h3>
-      <div class="passport-block" style="margin-bottom:12px;">
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px 20px;">
-          <div><div class="k">Стратегия(и) по мероприятиям</div><div class="v">${strategies.length?esc(strategies.join(', ')):'<span class="muted">пока не выбрана — появится вместе с первым мероприятием</span>'}</div></div>
-          <div><div class="k">Дата решения о переходе в «Управление»</div><div class="v mono">${decisionDate||'—'}</div></div>
-        </div>
-        <div style="margin-top:8px;"><div class="k">Обоснование выбора</div><div class="v">${esc(r.strategyRationale)||'<span class="muted">не заполнено</span>'}</div></div>
       </div>
     </div>
 
