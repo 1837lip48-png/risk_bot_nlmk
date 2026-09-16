@@ -857,10 +857,15 @@
   .dt-time-item:hover{background:var(--accent-50);}
   .dt-time-item.selected{background:var(--accent-600); color:#fff; font-weight:700;}
   .cal-ev{font-size:9.5px; padding:2px 5px; border-radius:4px; margin-bottom:2px; font-weight:700; line-height:1.3; cursor:pointer;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:3px;}
+  .cal-ev span{overflow:hidden; text-overflow:ellipsis; flex:1;}
   .cal-note-pill{font-size:9.5px; padding:2px 5px; border-radius:4px; margin-bottom:2px; font-weight:600; line-height:1.3;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:3px;}
   .cal-note-pill span{overflow:hidden; text-overflow:ellipsis; flex:1;}
+  /* Иконка вида активности в пилюле дня месячного календаря (п.2, скрин
+     из чата) — фиксированного размера, не растягивается как текстовый span. */
+  .cal-pill-icon{flex:0 0 auto; width:10px; height:10px; display:flex;}
+  .cal-pill-icon svg{width:10px; height:10px; display:block;}
   .cal-note-del-x{flex-shrink:0; border:none; background:none; color:inherit; opacity:.55; cursor:pointer; padding:0; width:11px; height:11px;
     display:flex; align-items:center; justify-content:center; border-radius:50%; font-size:10px; line-height:1;}
   .cal-note-del-x svg{width:8px; height:8px;}
@@ -4442,11 +4447,17 @@ const CAL_DOW_NAMES_SUN = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
 // пользовательские заметки дня (для «пересмотра»/«согласования»/личной работы —
 // у них нет отдельного поля даты в модели, поэтому это свободные заметки владельца).
 const NOTE_TYPES = [
-  {key:'individual', label:'Индивидуальная работа', color:'#64748b', bg:'#eef1f4'},
-  {key:'session',    label:'Риск-сессия',            color:'#7c3aed', bg:'#efe7fd'},
-  {key:'seminar',    label:'Семинар/обучение',       color:'#0d9488', bg:'#e2f6f4'},
-  {key:'premortem',  label:'Pre-mortem сессия',      color:'#b45309', bg:'#fbeed9'},
+  {key:'individual', label:'Индивидуальная работа', color:'#64748b', bg:'#eef1f4',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>'},
+  {key:'session',    label:'Риск-сессия',            color:'#7c3aed', bg:'#efe7fd',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><circle cx="18" cy="8.5" r="2.6"/><path d="M15.5 13.6c2.9.4 5 2.8 5 6.4h-3"/></svg>'},
+  {key:'seminar',    label:'Семинар/обучение',       color:'#0d9488', bg:'#e2f6f4',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6z"/><path d="M15 3v3h3"/><path d="M9 12h6M9 16h6"/></svg>'},
+  {key:'premortem',  label:'Pre-mortem сессия',      color:'#b45309', bg:'#fbeed9',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.6 18a1.5 1.5 0 0 0 1.3 2.2h16.2a1.5 1.5 0 0 0 1.3-2.2L13.7 3.9a1.5 1.5 0 0 0-2.6 0z"/></svg>'},
 ];
+const CAL_EV_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>';
+const CAL_EV_OVERDUE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.6 18a1.5 1.5 0 0 0 1.3 2.2h16.2a1.5 1.5 0 0 0 1.3-2.2L13.7 3.9a1.5 1.5 0 0 0-2.6 0z"/></svg>';
 function noteType(key){ return NOTE_TYPES.find(t=>t.key===key) || NOTE_TYPES[0]; }
 let calHiddenFilters = new Set();
 function collectCalEvents(){
@@ -4528,9 +4539,9 @@ function renderCalendarMonth(){
     const notes = notesFor(y,m,d).filter(n => !calHiddenFilters.has(n.type));
     grid += `<div class="cal-cell${isToday?' today':''}" data-day="${d}">
       <div class="dnum">${d}</div>
-      ${evs.map(e=>`<div class="cal-ev" style="background:${e.bg};color:${e.color}" data-risk="${e.riskId}" title="${esc(e.fullText)}">${esc(e.text)}</div>`).join('')}
+      ${evs.map(e=>`<div class="cal-ev" style="background:${e.bg};color:${e.color}" data-risk="${e.riskId}" title="${esc(e.fullText)}"><span class="cal-pill-icon">${e.overdue?CAL_EV_OVERDUE_ICON:CAL_EV_ICON}</span><span>${esc(e.text)}</span></div>`).join('')}
       ${notes.map(n=>{const t=noteType(n.type); const isSession = n.type==='session' && n.riskId;
-        return `<div class="cal-note-pill" style="background:${t.bg};color:${t.color}" title="${esc(n.text)}"${isSession?` data-open-session="${y}-${m}-${d}"`:''}><span>${esc(t.label)}</span><button type="button" class="cal-note-del-x" data-del-cal-note="${n.id}" data-del-cal-date="${y}-${m}-${d}" title="Удалить встречу" aria-label="Удалить встречу"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`;}).join('')}
+        return `<div class="cal-note-pill" style="background:${t.bg};color:${t.color}" title="${esc(n.text)}"${isSession?` data-open-session="${y}-${m}-${d}"`:''}><span class="cal-pill-icon">${t.icon}</span><span>${esc(t.label)}</span><button type="button" class="cal-note-del-x" data-del-cal-note="${n.id}" data-del-cal-date="${y}-${m}-${d}" title="Удалить встречу" aria-label="Удалить встречу"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`;}).join('')}
     </div>`;
   }
   document.getElementById('calBody').innerHTML = `<div class="cal-grid">${grid}</div>
@@ -4672,7 +4683,7 @@ function dayNotesBodyHtml(y,m,d){
     <div class="btn-row" style="margin-bottom:8px;gap:8px;">
       <select id="dnType" style="flex:1;">${NOTE_TYPES.map(t=>`<option value="${t.key}">${t.label}</option>`).join('')}</select>
     </div>
-    <textarea id="dnText" placeholder="Что запланировано на этот день..." style="width:100%;min-height:52px;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 12px;font-size:13.5px;font-family:inherit;"></textarea>
+    <textarea id="dnText" placeholder="Что запланировано на этот день..." style="width:100%;min-height:52px;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 12px;font-size:13.5px;font-family:inherit;resize:vertical;"></textarea>
     <div class="btn-row" style="margin-top:10px;"><button type="button" class="btn btn-primary" id="dnAdd" style="flex:1;">Добавить заметку</button></div>`;
 }
 function dnRenderAttendeeChips(){
