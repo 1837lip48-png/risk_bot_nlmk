@@ -1011,6 +1011,10 @@ function activateFonts(link){
   .filter-reset-btn:hover{background:var(--canvas); color:var(--accent-600); border-color:var(--accent-600);}
   .filter-reset-btn svg{width:15px; height:15px;}
   .filter-reset-btn.active{background:var(--accent-50); color:var(--accent-600); border-color:var(--accent-600);}
+  /* Вариант с подписью «Фильтры» — сама круглая иконка "сбросить все
+     фильтры" без текста читалась как что-то другое (напр. «обновить»);
+     значок сменили на классические три линии-фильтра плюс явный текст. */
+  .filter-reset-btn--labeled{width:auto; border-radius:var(--radius-pill); padding:0 14px 0 12px; gap:7px; font-size:12.5px; font-weight:600;}
 
   /* ===== Пагинация @nlmk/ds-2.0 — единый компонент для всех многостраничных списков ===== */
   .ds-pagination{display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:14px; flex-wrap:wrap; font-size:12.5px; color:var(--ink-600);}
@@ -1472,8 +1476,9 @@ function activateFonts(link){
           <input type="text" id="regAiAsk" placeholder="Спросить AI..."></div>
         <select id="regFiltCat"><option value="">Все категории</option></select>
         <select id="regFiltStatus"><option value="">Все статусы</option></select>
-        <button type="button" class="filter-reset-btn" id="regFilterReset" title="Сбросить все фильтры" aria-label="Сбросить все фильтры">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
+        <button type="button" class="filter-reset-btn filter-reset-btn--labeled" id="regFilterReset" title="Сбросить все фильтры" aria-label="Сбросить все фильтры">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+          <span>Фильтры</span>
         </button>
         <span class="result-count" id="regCount"></span>
       </div>
@@ -4755,8 +4760,9 @@ function renderLessons(){
         </div>
       </div>
       <select id="lesPhaseFilter" style="width:160px;flex-shrink:0;"><option value="">Все фазы</option>${Array.from(new Set(state.lessons.map(l=>l.phase).filter(Boolean))).sort().map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('')}</select>
-      <button type="button" class="filter-reset-btn" id="lesFilterReset" title="Сбросить все фильтры" aria-label="Сбросить все фильтры">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
+      <button type="button" class="filter-reset-btn filter-reset-btn--labeled" id="lesFilterReset" title="Сбросить все фильтры" aria-label="Сбросить все фильтры">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+        <span>Фильтры</span>
       </button>
       <span class="result-count" id="lesCount"></span>
       <button type="button" class="btn btn-secondary" id="btnImportLessons" title="Импортировать уроки" aria-label="Импортировать уроки"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 21h16"/></svg> Импортировать</button>
@@ -5183,8 +5189,9 @@ function renderCalendar(){
     </div>
     <div class="cal-legend-row" style="${calLegendVisible?'':'display:none;'}">
       <div class="cal-legend" id="calLegend"></div>
-      <button type="button" class="filter-reset-btn" id="calFilterReset" title="Сбросить все фильтры" aria-label="Сбросить все фильтры" ${calHiddenFilters.size?'':'hidden'}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
+      <button type="button" class="filter-reset-btn filter-reset-btn--labeled" id="calFilterReset" title="Сбросить все фильтры" aria-label="Сбросить все фильтры" ${calHiddenFilters.size?'':'hidden'}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+        <span>Фильтры</span>
       </button>
     </div>
     <div id="calBody"></div>`;
@@ -5349,7 +5356,11 @@ function renderCalendarWeek(){
         const metaParts = [];
         if (n.time || n.durationMin) metaParts.push(`<span>${ICON_SD_CLOCK}${n.time?esc(n.time)+(n.timeTo?'–'+esc(n.timeTo):''):''}${(n.durationMin && !n.timeTo)?' · '+n.durationMin+' мин':''}</span>`);
         if (attendeeCount != null) metaParts.push(`<span>${ICON_SD_PEOPLE}${attendeeCount}</span>`);
-        metaParts.push(`<span>${isPastDay?ICON_SD_CHECK_SM:ICON_SD_CLOCK}${isPastDay?'проведено':'план'}</span>`);
+        // Для риск-сессии «проведено» учитывает не только прошедшую дату,
+        // но и ручную отметку бегунком в модалке сводки (sessSd.isPast) —
+        // сессию сегодняшнего дня можно закрыть, не дожидаясь полуночи.
+        const cardDone = isSession ? sessSd.isPast : isPastDay;
+        metaParts.push(`<span>${cardDone?ICON_SD_CHECK_SM:ICON_SD_CLOCK}${cardDone?'проведено':'план'}</span>`);
         return `<div class="calw-card calw-card--del" style="background:${t.bg};color:${t.color};border-color:${t.color}33;"${isSession?` data-open-session="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}"`:''}>
         <button type="button" class="cal-note-del-x" data-del-cal-note="${n.id}" data-del-cal-date="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}" title="Удалить встречу" aria-label="Удалить встречу"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
         <div class="ct">${esc(t.label)}</div><div class="cn">${esc(n.text.slice(0,50))}</div>
@@ -5563,7 +5574,12 @@ function computeSessionData(y, m, d){
   if (!risks.length) return null;
 
   const dateObj = new Date(y, m, d);
-  const isPast = dateObj < TODAY;
+  // «Проведена» — либо дата уже прошла, либо риск-менеджер вручную отметил
+  // сессию как проведённую бегунком в модалке (напр. сессия сегодня,
+  // прошла раньше конца дня — ждать полуночи, чтобы увидеть AI-сводку,
+  // не нужно).
+  const manuallyCompleted = notes.some(n => n.completed);
+  const isPast = dateObj < TODAY || manuallyCompleted;
   const attendeeNames = [...new Set(risks.flatMap(r => r.ownerNames))];
   const actions = risks.flatMap(r => r.actions.map(a => ({...a, riskId:r.id, riskZone:zoneOf(rraOf(r.p, r.iLevel))})));
   const doneActions = actions.filter(a => a.status === 'done').length;
@@ -5572,7 +5588,7 @@ function computeSessionData(y, m, d){
   const highPct = risks.length ? Math.round(highCount / risks.length * 100) : 0;
   const overdueActions = actions.filter(a => { const dd = parseRuShortDate(a.plannedDate); return a.status!=='done' && a.status!=='rejected' && dd && dd < TODAY; });
   const durationMin = Math.max(60, ...notes.map(n => n.durationMin || 60));
-  return {y, m, d, notes, risks, dateObj, isPast, attendeeNames, actions, doneActions, actionsPct, highCount, highPct, overdueActions, durationMin};
+  return {y, m, d, notes, risks, dateObj, isPast, manuallyCompleted, attendeeNames, actions, doneActions, actionsPct, highCount, highPct, overdueActions, durationMin};
 }
 // Для прошедшей/завершённой встречи — полная карточка (участники, реальные
 // метрики выполнения вместо выдуманных sentiment/participation, AI-сводка,
@@ -5583,12 +5599,17 @@ function computeSessionData(y, m, d){
 function openSessionSummaryModal(y, m, d){
   const sd = computeSessionData(y, m, d);
   if (!sd) return;
-  const {risks, dateObj, isPast, attendeeNames, actions, doneActions, actionsPct, highCount, highPct} = sd;
+  const {risks, dateObj, isPast, manuallyCompleted, attendeeNames, actions, doneActions, actionsPct, highCount, highPct} = sd;
+  const canToggleCompleted = dateObj <= TODAY;
 
   document.getElementById('sessionModalHead').innerHTML = `
     <div class="session-modal-badges">
       <span class="session-badge type">Риск-сессия</span>
       <span class="session-badge ${isPast?'status-done':'status-planned'}">${isPast?'Проведена':'Запланирована'}</span>
+      ${canToggleCompleted ? `<label class="notif-switch" style="margin-left:auto;" title="Отметить сессию проведённой">
+        <input type="checkbox" id="sessionCompletedToggle" ${manuallyCompleted?'checked':''}>
+        <span class="notif-switch-track"><span class="notif-switch-thumb"></span></span>
+      </label><span style="font-size:11.5px;color:var(--ink-600);">Выполнено</span>` : ''}
     </div>
     <div class="session-modal-title">
       <h3>Риск-сессия — ${risks.length} ${pluralRu(risks.length,['риск','риска','рисков'])}</h3>
@@ -5657,6 +5678,13 @@ function openSessionSummaryModal(y, m, d){
 
   document.getElementById('sessionModalCloseX').addEventListener('click', () => closeModal('sessionModalOverlay'));
   document.getElementById('sessionModalCloseBtn').addEventListener('click', () => closeModal('sessionModalOverlay'));
+  const completedToggle = document.getElementById('sessionCompletedToggle');
+  if (completedToggle) completedToggle.addEventListener('change', (e) => {
+    sd.notes.forEach(n => { n.completed = e.target.checked; });
+    saveState();
+    openSessionSummaryModal(y, m, d);
+    renderAll();
+  });
   // Клик по дню с риск-сессией всегда открывает сводку этой сессии (а не
   // «Заметки дня»), поэтому без этой кнопки на такой день нельзя было
   // добавить вторую активность (семинар, индивидуальную работу и т.п.) —
