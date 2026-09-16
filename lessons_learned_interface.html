@@ -4109,11 +4109,10 @@ function renderPassport(){
 
     <div class="pp-tab-panel${ppActive('pp-sec-actions')}" id="pp-sec-actions">
       <div class="pp-h-row"><h3 class="pp-h">МЕРОПРИЯТИЯ (${planActions.length})</h3>${editable && r.p && r.iLevel ? `<button type="button" class="btn btn-secondary btn-sm" id="pAddActionBtn">+ Добавить мероприятие</button>` : ''}</div>
-      ${planActions.length ? `<div class="actions-table-wrap"><table class="data-table"><thead><tr><th>Стратегия</th><th>Мероприятие</th><th>Вид</th><th>Ответственный</th><th>План</th><th>Прогноз/факт</th><th>Стоимость</th><th>Статус</th>${editable?'<th></th>':''}</tr></thead><tbody>
+      ${planActions.length ? `<div class="actions-table-wrap"><table class="data-table"><thead><tr><th>Стратегия</th><th>Мероприятие</th><th>Вид</th><th>Ответственный</th><th>План</th><th>Прогноз/факт</th><th>Стоимость</th><th>Статус</th></tr></thead><tbody>
         ${planActions.map(a => `<tr${editable?` data-action-row="${a.id}" style="cursor:pointer;"`:''}><td>${esc(a.strategy)}</td><td>${esc(a.title)}${a.triggerCondition?`<div class="muted" style="font-size:11px;margin-top:2px;">Запасной план: ${esc(a.triggerCondition)}</div>`:''}</td><td>${ACTION_KIND_LABEL[a.kind]}</td><td>${assigneeCellHtml(a, editable)}</td>
           <td class="mono">${esc(a.plannedDate||'—')}${a.plannedDate && a.status!=='done' && a.status!=='rejected' && parseRuShortDate(a.plannedDate) && parseRuShortDate(a.plannedDate) < TODAY ? ' <span style="color:var(--red-700);">⚠ просрочено</span>' : ''}</td><td class="mono">${esc(a.forecastActualDate||'—')}</td><td class="mono">${esc(a.cost||'—')}</td>
-          <td><span class="status-dot-row"><i class="status-dot" style="background:${ACTION_STATUS_COLOR[a.status]}"></i>${ACTION_STATUS_LABEL[a.status]}</span></td>
-          ${editable?`<td><button class="btn-sm" data-edit-action="${a.id}">✎</button></td>`:''}</tr>`).join('')}
+          <td><span class="status-dot-row"><i class="status-dot" style="background:${ACTION_STATUS_COLOR[a.status]}"></i>${ACTION_STATUS_LABEL[a.status]}</span></td></tr>`).join('')}
       </tbody></table></div>` : (editable
         ? `<div class="risk-card-cta" id="pAddActionEmptyCta" style="min-height:72px;"><div class="risk-card-cta-inner" style="flex-direction:row;gap:8px;"><span class="risk-card-cta-icon" style="width:24px;height:24px;font-size:15px;">+</span><span class="risk-card-cta-lbl">Добавить мероприятие</span></div></div>`
         : `<div class="empty-state">Мероприятий пока нет — светофор красный, пока не появится хотя бы одно.</div>`)}
@@ -4196,7 +4195,6 @@ function renderPassport(){
     pushAudit(r.id, r.status, r.status, 'Эскалация риск-менеджеру/комитету' + (comment?': '+comment:''));
     saveState(); toast('Риск эскалирован'); renderPassport(); renderAll();
   });
-  mount.querySelectorAll('[data-edit-action]').forEach(b => b.addEventListener('click', () => openActionModal(r, r.actions.find(a=>a.id===b.dataset.editAction))));
   mount.querySelectorAll('[data-assign-action]').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); openAssignActionModal(r, r.actions.find(a=>a.id===b.dataset.assignAction)); }));
   mount.querySelectorAll('tr[data-action-row]').forEach(tr => tr.addEventListener('click', (e) => {
     if (e.target.closest('button')) return;
