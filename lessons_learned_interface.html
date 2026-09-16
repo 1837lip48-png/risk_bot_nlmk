@@ -391,9 +391,10 @@ function activateFonts(link){
   /* Заголовок паспорта риска обновляется динамически (ID/уровень/название
      риска — см. renderPassport()) и остаётся видимым при скролле длинной
      модалки, как и панель-навигация .pp-nav сразу под ним. */
-  #passportModalOverlay .modal-head{position:sticky; top:0; z-index:3; background:var(--paper-0);}
-  .pp-nav{display:flex; gap:4px; padding:8px 0; margin-bottom:12px; border-bottom:1px solid var(--line);
-    overflow-x:auto; position:sticky; top:56px; z-index:2; background:var(--paper-0);}
+  #passportModalOverlay .modal-head{position:sticky; top:-22px; z-index:3; background:var(--paper-0);
+    margin:-22px -22px 16px; padding:22px 22px 0;}
+  .pp-nav{display:flex; gap:4px; padding:8px 22px; margin:0 -22px 12px;
+    border-bottom:1px solid var(--line); overflow-x:auto; position:sticky; top:46px; z-index:2; background:var(--paper-0);}
   .pp-nav-pill{font-size:12px; padding:5px 10px; border-radius:var(--radius-field);
     color:var(--ink-600); white-space:nowrap; cursor:pointer; flex-shrink:0;}
   .pp-nav-pill.active{background:var(--accent-50); color:var(--accent-600); font-weight:600;}
@@ -3747,6 +3748,38 @@ function ppScrollTo(id){
   const el = document.getElementById(id);
   if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
 }
+// Активна — последняя (по порядку секций) шапка, уже поднявшаяся выше линии
+// сразу под липкими modal-head+pp-nav. Считаем по реальным координатам на
+// каждый scroll-евент (а не через IntersectionObserver enter/exit по
+// секциям — короткие секции вроде «Обработки» иначе теряются, когда
+// следующая шапка попадает в зону наблюдения в том же кадре).
+function ppUpdateActive(){
+  const ppNavBar = document.getElementById('ppNavBar');
+  if (!ppNavBar) return;
+  const ppScrollBox = document.querySelector('#passportModalOverlay .modal-card-scroll');
+  const ppSectionEls = PP_SECTIONS.map(s => document.getElementById(s.id)).filter(Boolean);
+  if (!ppSectionEls.length) return;
+  // У самого низа контента последней секции («История») иногда некуда
+  // доскроллить, чтобы её заголовок поднялся выше линии-порога — скролл
+  // упирается в конец раньше. Если долистали до конца контейнера, считаем
+  // активной последнюю секцию явно, без проверки по координатам.
+  const atBottom = ppScrollBox.scrollTop + ppScrollBox.clientHeight >= ppScrollBox.scrollHeight - 2;
+  let current = ppSectionEls[atBottom ? ppSectionEls.length - 1 : 0];
+  if (!atBottom){
+    const threshold = ppScrollBox.getBoundingClientRect().top + 130;
+    ppSectionEls.forEach(el => { if (el.getBoundingClientRect().top <= threshold) current = el; });
+  }
+  ppNavBar.querySelectorAll('.pp-nav-pill.active').forEach(p => p.classList.remove('active'));
+  const pill = current && ppNavBar.querySelector(`[data-pp-goto="${current.id}"]`);
+  if (pill) pill.classList.add('active');
+}
+{
+  let ppScrollRaf = null;
+  document.querySelector('#passportModalOverlay .modal-card-scroll').addEventListener('scroll', () => {
+    if (ppScrollRaf) return;
+    ppScrollRaf = requestAnimationFrame(() => { ppScrollRaf = null; ppUpdateActive(); });
+  });
+}
 // Соответствие стадии степпера и релевантной секции паспорта — клик по
 // шагу должен вести туда, где эта стадия на самом деле отражена в данных.
 const STAGE_TO_SECTION = {
@@ -4105,17 +4138,7 @@ function renderPassport(){
   }));
   mount.parentElement.querySelectorAll('[data-pp-goto]').forEach(el =>
     el.addEventListener('click', () => ppScrollTo(el.dataset.ppGoto)));
-  const ppNavBar = document.getElementById('ppNavBar');
-  if (ppNavBar){
-    const ppSectionEls = PP_SECTIONS.map(s => document.getElementById(s.id)).filter(Boolean);
-    const ppObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        const pill = ppNavBar.querySelector(`[data-pp-goto="${entry.target.id}"]`);
-        if (pill) pill.classList.toggle('active', entry.isIntersecting);
-      });
-    }, {root: mount.closest('.modal-card-scroll'), rootMargin: '-40% 0px -55% 0px', threshold: 0});
-    ppSectionEls.forEach(el => ppObserver.observe(el));
-  }
+  ppUpdateActive();
   const auditExpandBtn = document.getElementById('pAuditExpandBtn');
   if (auditExpandBtn) auditExpandBtn.addEventListener('click', () => { auditExpanded = true; renderPassport(); });
   const commentExpandBtn = document.getElementById('pCommentExpandBtn');
