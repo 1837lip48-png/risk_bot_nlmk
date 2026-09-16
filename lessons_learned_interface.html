@@ -347,11 +347,17 @@ function activateFonts(link){
   .btn:active{transform:scale(.96); filter:brightness(.94);}
   .btn-primary{background:var(--accent-600); border-color:var(--accent-600); color:#fff;}
   .btn-primary:hover{background:var(--accent-500); border-color:var(--accent-500); color:#fff;}
-  /* Фон «Войти» после выбора роли задаётся инлайн-градиентом (JS), поэтому
-     :hover{background:...} из .btn-primary его не перебивает — подсветка
-     при наведении идёт через filter:brightness (тот же приём, что и у
-     .btn-danger:hover), заметно светлее, а не только тенью/сдвигом. */
-  #sppSubmit:hover:not(:disabled){filter:brightness(1.12); box-shadow:0 8px 20px -8px var(--accent-500); transform:translateY(-1px);}
+  /* Фон «Войти» после выбора роли — не инлайн-стиль (JS), а один из трёх
+     классов ниже, чтобы обычный CSS :hover мог по-настоящему сменить цвет
+     кнопки (саму заливку, а не контур/яркость) — так же, как у «Назад»
+     (.btn-secondary: accent-50 → accent-100), а не просто светлее/тенью. */
+  #sppSubmit.spp-submit-riskmanager{background:linear-gradient(135deg,var(--role-manager-1),var(--role-manager-2)); border-color:transparent;}
+  #sppSubmit.spp-submit-riskowner{background:linear-gradient(135deg,var(--role-owner-1),var(--role-owner-2)); border-color:transparent;}
+  #sppSubmit.spp-submit-initiator{background:linear-gradient(135deg,var(--role-initiator-1),var(--role-initiator-2)); border-color:transparent;}
+  #sppSubmit.spp-submit-riskmanager:hover:not(:disabled){background:var(--role-manager-2); border-color:var(--role-manager-2);}
+  #sppSubmit.spp-submit-riskowner:hover:not(:disabled){background:var(--role-owner-2); border-color:var(--role-owner-2);}
+  #sppSubmit.spp-submit-initiator:hover:not(:disabled){background:var(--role-initiator-2); border-color:var(--role-initiator-2);}
+  #sppSubmit:hover:not(:disabled){transform:translateY(-1px);}
   .btn-primary:active{background:var(--accent-600); border-color:var(--accent-600); color:#fff; transform:scale(.96); filter:brightness(.7);}
   .btn-primary:disabled{opacity:.45; cursor:not-allowed;}
   .btn-secondary{background:var(--accent-50); border-color:var(--accent-50); color:var(--accent-600);}
@@ -2493,8 +2499,8 @@ document.querySelectorAll('.role-card').forEach(card => {
     roleIcon.innerHTML = LOGIN_ICON_SVG;
     roleIcon.style.background = ROLE_CSS_GRADIENT[selectedRole] || '';
     const submitBtn = document.getElementById('sppSubmit');
-    submitBtn.style.background = ROLE_CSS_GRADIENT[selectedRole] || '';
-    submitBtn.style.borderColor = 'transparent';
+    submitBtn.classList.remove('spp-submit-riskmanager', 'spp-submit-riskowner', 'spp-submit-initiator');
+    submitBtn.classList.add('spp-submit-' + selectedRole);
     // Поля шага 2 — с чистого листа при каждом новом выборе роли: без
     // сброса здесь данные предыдущего входа (например, после «Выйти» и
     // возврата на выбор роли) оставались в незакрытых <input>, и следующий
