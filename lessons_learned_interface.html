@@ -509,8 +509,9 @@
     overflow:hidden; opacity:0; max-width:0; transition:.3s ease;}
   .ws-sidebar.expanded .ws-brand .name{opacity:1; max-width:160px;}
   .ws-nav{flex:1; display:flex; flex-direction:column; overflow-y:auto; overflow-x:hidden;}
-  .ws-nav-item{display:flex; align-items:center; gap:12px; padding:10px 11px; border-radius:8px; border:none;
-    background:none; color:rgba(255,255,255,.75); font-size:13.5px; font-weight:600; cursor:pointer; text-align:left; width:100%;}
+  .ws-nav-item{display:flex; align-items:center; justify-content:center; padding:10px 11px; border-radius:8px; border:none;
+    background:none; color:rgba(255,255,255,.75); font-size:13.5px; font-weight:600; cursor:pointer; text-align:left; width:100%; aspect-ratio:1;}
+  .ws-sidebar.expanded .ws-nav-item{justify-content:flex-start; gap:12px; aspect-ratio:auto;}
   .ws-nav-item span{white-space:nowrap; overflow:hidden; opacity:0; max-width:0; transition:.3s ease;}
   .ws-sidebar.expanded .ws-nav-item span{opacity:1; max-width:160px;}
   .ws-nav-item svg{width:21px; height:21px; flex-shrink:0; stroke-width:2.3;}
@@ -710,7 +711,11 @@
   .rc-head{display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:12px;}
   .rc-head-left{flex:1; min-width:0;}
   .rc-desc{font-size:12.5px; color:var(--ink-600); line-height:1.4;}
-  .rc-head-actions{display:flex; gap:8px; flex-shrink:0;}
+  .rc-head-actions{display:flex; align-items:center; gap:8px; flex-shrink:0;}
+  .icon-btn-del{border:none; background:none; width:26px; height:26px; border-radius:50%; color:var(--ink-400);
+    cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; padding:0;}
+  .icon-btn-del:hover{background:var(--red-50); color:var(--red-700);}
+  .icon-btn-del svg{width:15px; height:15px;}
   .rc-meta4{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:12px; padding:12px 14px; background:var(--canvas); border-radius:var(--radius-field);}
   @media (max-width:900px){.rc-meta4{grid-template-columns:1fr 1fr;}}
   .rc-icon-row{display:flex; flex-wrap:wrap; gap:16px; font-size:12px; color:var(--ink-600); margin-bottom:12px;}
@@ -2925,8 +2930,8 @@ function riskCardHtml(r){
       </div>
       <div class="rc-head-actions">
         ${editable ? `<button class="btn btn-secondary btn-sm" data-edit-risk="${r.id}">Изменить</button>` : ''}
-        ${editable ? `<button class="btn btn-sm" style="color:var(--red-700);" data-del-risk="${r.id}" title="Удалить риск из реестра">Удалить</button>` : ''}
         <button class="btn btn-sm" data-open-risk="${r.id}">Детали</button>
+        ${editable ? `<button type="button" class="icon-btn-del" data-del-risk="${r.id}" title="Удалить риск из реестра" aria-label="Удалить риск из реестра"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>` : ''}
       </div>
     </div>
     <div class="rc-meta4">
