@@ -134,7 +134,7 @@
   /* Шаг 1 (выбор роли) — без белой карточки-контейнера: бренд и роли лежат
      прямо на фоне страницы. Заголовочный блок оформлен по образцу референса
      (крупный заголовок / акцентный подзаголовок / серая подсказка). */
-  .role-select-shell{width:100%; max-width:760px; display:flex; flex-direction:column; align-items:center; gap:22px;}
+  .role-select-shell{width:100%; max-width:960px; display:flex; flex-direction:column; align-items:center; gap:22px;}
   .role-select-header{display:flex; flex-direction:column; align-items:center; gap:8px;}
   .brand.brand--lg{display:flex; align-items:center; gap:14px; border-bottom:none; padding:0; margin:0;}
   .brand--lg .brand-mark{width:50px; height:28px;}
@@ -152,6 +152,9 @@
   @media (max-width:520px){ .row3{grid-template-columns:1fr;} }
   .field{display:flex; flex-direction:column; gap:6px;}
   .field > label{font-size:var(--fs-additional); font-weight:600; color:var(--ink-600); text-transform:uppercase; letter-spacing:.2px;}
+  /* Компактная форма «Предложить риск» (владелец риска) — без подписей
+     полей, плейсхолдеры внутри полей уже объясняют их назначение. */
+  .riskform-compact > .field > label{display:none;}
   .field-optional{text-transform:none; font-weight:400; letter-spacing:0; color:var(--ink-400);}
   .field input, .field select, .field textarea{border:1px solid var(--line); border-radius:var(--radius-field);
     padding:9px 12px; font-size:13.5px; color:var(--ink-900); background:var(--paper-0); width:100%;}
@@ -254,9 +257,9 @@
 
   /* Карточки ролей — белая заливка + видимый контур, подсвечивается на
      hover (акцентная рамка + лёгкий подъём) — по образцу референса. */
-  .role-cards{display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; width:100%;}
-  .role-card{display:flex; flex-direction:row; align-items:center; text-align:left; gap:14px;
-    position:relative; border-radius:8px; padding:20px 20px; cursor:pointer; overflow:hidden;
+  .role-cards{display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; width:100%;}
+  .role-card{display:flex; flex-direction:row; align-items:center; text-align:left; gap:18px;
+    position:relative; border-radius:10px; padding:28px 24px; cursor:pointer; overflow:hidden;
     background:var(--paper-0); border:1.5px solid var(--line);
     transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease, background-color .2s ease;}
   .role-card::before{content:''; position:absolute; inset:0; opacity:0; transition:opacity .2s ease; pointer-events:none;}
@@ -265,7 +268,7 @@
   .role-card[data-value="initiator"]::before{background:linear-gradient(120deg,var(--role-initiator-1),var(--role-initiator-2));}
   .role-card:hover{border-color:var(--accent-600); box-shadow:0 16px 36px -20px rgba(17,37,66,.3); transform:translateY(-3px);}
   .role-card:hover::before{opacity:.08;}
-  .role-card-icon{width:56px; height:56px; border-radius:8px; color:#fff; position:relative;
+  .role-card-icon{width:68px; height:68px; border-radius:10px; color:#fff; position:relative;
     display:flex; align-items:center; justify-content:center; flex-shrink:0;
     box-shadow:0 8px 18px -6px rgba(17,37,66,.35), inset 0 0 0 1px rgba(255,255,255,.18);
     transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
@@ -273,13 +276,18 @@
   .role-card[data-value="riskowner"] .role-card-icon{background:linear-gradient(135deg,var(--role-owner-1),var(--role-owner-2));}
   .role-card[data-value="initiator"] .role-card-icon{background:linear-gradient(135deg,var(--role-initiator-1),var(--role-initiator-2));}
   .role-card:hover .role-card-icon{transform:scale(1.07);}
-  .role-card-icon svg{width:32px; height:32px; display:block;}
-  .role-card-body{position:relative; display:flex; flex-direction:column; gap:3px; min-width:0;}
-  .role-card-title{font-size:15.5px; font-weight:700; color:var(--ink-900);}
-  .role-card-desc{font-size:12.5px; line-height:16px; color:var(--ink-600);}
+  .role-card-icon svg{width:38px; height:38px; display:block;}
+  .role-card-body{position:relative; display:flex; flex-direction:column; gap:5px; min-width:0;}
+  .role-card-title{font-size:17.5px; font-weight:700; color:var(--ink-900);}
+  .role-card-desc{font-size:13.5px; line-height:18px; color:var(--ink-600);}
   @media (max-width:760px){
     .role-cards{grid-template-columns:1fr;}
   }
+  .spp-role-icon{width:40px; height:40px; border-radius:8px; color:#fff; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 6px 14px -6px rgba(17,37,66,.35), inset 0 0 0 1px rgba(255,255,255,.18);}
+  .spp-role-icon svg{width:22px; height:22px; display:block;}
+  .spp-role-icon:empty{box-shadow:none;}
 
   .btn{display:inline-flex; align-items:center; justify-content:center; gap:6px; white-space:nowrap;
     border-radius:var(--radius-field); padding:9px 16px; font-size:13px; font-weight:700; border:1px solid transparent;
@@ -667,6 +675,8 @@
   .owner-counter.active{border-color:var(--accent-600); background:var(--accent-50);}
   .owner-counter .n{font-family:var(--font-display); font-size:22px; font-weight:800; color:var(--ink-900);}
   .owner-counter .l{font-size:11.5px; color:var(--ink-600); margin-top:2px;}
+  .owner-counter-icon{width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; margin-bottom:9px;}
+  .owner-counter-icon svg{width:16px; height:16px;}
   @media (max-width:760px){ .owner-counters{grid-template-columns:repeat(2,1fr);} }
 
   .risk-card{background:var(--paper-0); border:1px solid var(--line); border-radius:var(--radius-field); padding:16px 18px; margin-bottom:10px;}
@@ -683,6 +693,7 @@
   .badge-status-archived{background:var(--canvas); color:var(--ink-400); border:1px solid var(--line);}
   .badge-esc{background:var(--red-700); color:#fff;}
   .badge-new{background:var(--ai-700); color:#fff;}
+  .badge-initiator{background:var(--purple-50); color:var(--purple-700);}
   .risk-card-meta{font-size:11.5px; color:var(--ink-600); margin-bottom:12px;}
   .risk-card-meta code{font-family:var(--font-mono); font-size:11px;}
   .risk-card-grid{display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:14px; margin-bottom:12px; align-items:start;}
@@ -810,6 +821,15 @@
   .cal-cell .dnum{font-size:11px; font-weight:700; color:var(--ink-600); margin-bottom:4px; display:inline-flex; align-items:center; justify-content:center;}
   .cal-cell.today{border-color:var(--accent-600); background:var(--accent-50);}
   .cal-cell.today .dnum{background:var(--accent-600); color:#fff; width:19px; height:19px; border-radius:50%;}
+  /* Компактная версия .cal-grid/.cal-cell (тот же визуальный язык, что и
+     основной календарь) — для выбора даты внутри модалок, например
+     повестки риск-сессии, вместо нативного input[type=date]. */
+  .mini-cal .cal-grid{gap:4px;}
+  .mini-cal .cal-cell{min-height:0; padding:0; display:flex; align-items:center; justify-content:center; aspect-ratio:1;}
+  .mini-cal .cal-cell .dnum{margin-bottom:0;}
+  .mini-cal .cal-cell.selected{border-color:var(--accent-600); background:var(--accent-600);}
+  .mini-cal .cal-cell.selected .dnum{background:transparent; color:#fff;}
+  .mini-cal .cal-head h3{font-size:13px;}
   .cal-ev{font-size:9.5px; padding:2px 5px; border-radius:4px; margin-bottom:2px; font-weight:700; line-height:1.3; cursor:pointer;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .cal-note-pill{font-size:9.5px; padding:2px 5px; border-radius:4px; margin-bottom:2px; font-weight:600; line-height:1.3;
@@ -836,10 +856,17 @@
   .calw-dayhead .dow{font-size:10px; font-weight:700; color:var(--ink-400); text-transform:uppercase;}
   .calw-dayhead .dnum{font-family:var(--font-display); font-size:18px; font-weight:800; margin-top:2px;}
   .calw-dayhead.today .dnum{color:var(--accent-600);}
-  .calw-card{position:relative; border-radius:8px; padding:8px 10px; margin-bottom:6px; font-size:11px; cursor:pointer; border:1px solid transparent;}
+  .calw-card{position:relative; border-radius:8px; padding:8px 10px; margin-bottom:6px; font-size:11px; cursor:pointer; border:1px solid transparent;
+    transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;}
+  .calw-card:hover{transform:translateY(-1px); box-shadow:0 5px 12px -5px rgba(17,37,66,.3); filter:brightness(.97);}
   .calw-card .ct{font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.2px; margin-bottom:2px;}
   .calw-card .cn{font-weight:700; margin-bottom:2px; line-height:1.3;}
   .calw-card .cm{font-size:10px; opacity:.8;}
+  .calw-card-meta{display:flex; align-items:center; gap:8px; margin-top:4px; font-size:10px; font-weight:600; opacity:.85;}
+  .calw-card-meta span{display:inline-flex; align-items:center; gap:3px;}
+  .calw-card-meta svg{width:10px; height:10px; flex-shrink:0;}
+  .calw-daycol{min-height:220px; border-radius:10px; padding:6px; margin:-6px; transition:background-color .15s ease;}
+  .calw-daycol:hover{background:var(--canvas);}
 
   /* ===== Карта связей ===== */
   .map-toolbar{display:flex; gap:6px; margin-bottom:14px; background:var(--paper-0); border:1px solid var(--line);
@@ -1065,6 +1092,7 @@
       </div>
     </form>
     <div class="btn-row">
+      <span class="spp-role-icon" id="sppRoleIcon"></span>
       <button type="button" class="btn btn-secondary" id="sppCancel">Назад</button>
       <button type="button" class="btn btn-primary" id="sppSubmit">Войти в систему</button>
     </div>
@@ -1956,14 +1984,26 @@ function isMyRisk(r){
   if (!state.session) return false;
   return Array.isArray(r.ownerNames) && r.ownerNames.includes(sessionName());
 }
+// Владелец риска сам предложил риск (authorName), но не обязательно
+// является его владельцем — на этапе предложения владелец ещё не назначен
+// (см. openRiskCreateModal/submitNewRisk). «Мои риски» показывает такие
+// риски тоже — пользователь выступает в них инициатором, а не владельцем
+// (бейдж «Я инициатор» — см. riskCardHtml).
+function isMyInitiated(r){
+  return !!state.session && r.authorName === sessionName();
+}
+function isMineOrInitiated(r){
+  return isMyRisk(r) || isMyInitiated(r);
+}
 // Активные риски в области видимости текущей роли — владелец риска видит
-// только свои (отдельное рабочее пространство, не общий портфель), риск-менеджер
-// видит всё. Используется Матрицей/Картой/Календарём, чтобы владелец риска не
-// просто заходил в общее пространство с одной скрытой вкладкой, а работал в
-// действительно своём наборе данных на каждом разделе.
+// только свои и предложенные им (отдельное рабочее пространство, не общий
+// портфель), риск-менеджер видит всё. Используется Матрицей/Картой/
+// Календарём, чтобы владелец риска не просто заходил в общее пространство
+// с одной скрытой вкладкой, а работал в действительно своём наборе данных
+// на каждом разделе.
 function scopedRisks(){
   const base = state.risks.filter(r => r.status !== 'Архивирован');
-  return state.session.role === 'riskowner' ? base.filter(isMyRisk) : base;
+  return state.session.role === 'riskowner' ? base.filter(isMineOrInitiated) : base;
 }
 
 // Единый шаблон карточки уведомления (Блок 5, п.2) — иконка-кружок по типу
@@ -2041,9 +2081,28 @@ const firstNameInput = document.getElementById('firstName');
 const lastNameInput = document.getElementById('lastName');
 
 // Шаг 1 — клик по карточке роли сразу открывает шаг 2 (имя/фамилия + СПП).
+// Иконка и цвет кнопки «Войти в систему» на шаге 2 — те же SVG/градиент,
+// что и у карточки выбранной роли на шаге 1 (.role-card-icon), а не единые
+// для всех ролей.
+const ROLE_ICON_SVG = {
+  riskmanager: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L4 5v6c0 5.25 3.4 9.74 8 11 4.6-1.26 8-5.75 8-11V5l-8-3z"/></svg>',
+  riskowner: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8v1H4v-1z"/></svg>',
+  initiator: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="4.2" y="2" width="1.6" height="20" rx="0.8"/><path d="M5.8 3h13l-3.2 4.2 3.2 4.2h-13z"/></svg>',
+};
+const ROLE_CSS_GRADIENT = {
+  riskmanager: 'linear-gradient(135deg, var(--role-manager-1), var(--role-manager-2))',
+  riskowner: 'linear-gradient(135deg, var(--role-owner-1), var(--role-owner-2))',
+  initiator: 'linear-gradient(135deg, var(--role-initiator-1), var(--role-initiator-2))',
+};
 document.querySelectorAll('.role-card').forEach(card => {
   card.addEventListener('click', () => {
     selectedRole = card.dataset.value;
+    const roleIcon = document.getElementById('sppRoleIcon');
+    roleIcon.innerHTML = ROLE_ICON_SVG[selectedRole] || '';
+    roleIcon.style.background = ROLE_CSS_GRADIENT[selectedRole] || '';
+    const submitBtn = document.getElementById('sppSubmit');
+    submitBtn.style.background = ROLE_CSS_GRADIENT[selectedRole] || '';
+    submitBtn.style.borderColor = 'transparent';
     // Поля шага 2 — с чистого листа при каждом новом выборе роли: без
     // сброса здесь данные предыдущего входа (например, после «Выйти» и
     // возврата на выбор роли) оставались в незакрытых <input>, и следующий
@@ -2828,6 +2887,7 @@ function riskCardHtml(r){
         <div class="risk-card-top" style="margin-bottom:6px;">
           ${r.isNew ? `<span class="badge-pill badge-new">NEW</span>` : ''}
           <span class="risk-card-title">${esc(r.title)}</span>
+          ${state.session.role === 'riskowner' && isMyInitiated(r) && !isMyRisk(r) ? `<span class="badge-pill badge-initiator" title="Вы предложили этот риск — владелец назначается риск-менеджером">Я инициатор</span>` : ''}
           ${zone ? `<span class="badge-pill ${ZONE_BADGE[zone]}">${ZONE_LABEL[zone]}</span>` : `<span class="badge-pill" style="background:var(--canvas);color:var(--ink-400);">Не оценён</span>`}
           ${r.committeeFlag ? `<span class="badge-pill badge-esc">Эскалация комитету</span>` : ''}
           <span class="badge-pill ${r.status==='Закрыт'?'badge-status-closed':(r.status==='Идентификация'?'badge-status-ident':(r.status==='Архивирован'?'badge-status-archived':'badge-status-progress'))}">${esc(r.status)}</span>
@@ -2836,6 +2896,7 @@ function riskCardHtml(r){
       </div>
       <div class="rc-head-actions">
         ${editable ? `<button class="btn btn-secondary btn-sm" data-edit-risk="${r.id}">Изменить</button>` : ''}
+        ${state.session.role === 'riskmanager' ? `<button class="btn btn-sm" style="color:var(--red-700);" data-del-risk="${r.id}" title="Удалить риск из реестра">Удалить</button>` : ''}
         <button class="btn btn-sm" data-open-risk="${r.id}">Детали</button>
       </div>
     </div>
@@ -2882,10 +2943,14 @@ const QUICK_FILTERS = {
 // Счётчики персональной сводки владельца риска ("Мои риски") — те же критерии,
 // что и остальные быстрые фильтры реестра, просто с другой подачей (карточки-счётчики).
 const OWNER_COUNTERS = [
-  {key:'ownerNew',      label:'Новые',          test:r => r.status === 'Идентификация'},
-  {key:'ownerReview',   label:'На пересмотре',  test:r => r.committeeFlag || r.status === 'Анализ и оценка'},
-  {key:'ownerOverdue',  label:'Просроченные',   test:r => QUICK_FILTERS.overdue.test(r)},
-  {key:'ownerAccepted', label:'Остаточный риск принят', test:r => !!r.residualAcceptedBy},
+  {key:'ownerNew',      label:'Новые',          test:r => r.status === 'Идентификация',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.8 5.6L19 9l-5.2 1.4L12 16l-1.8-5.6L5 9l5.2-1.4L12 2z"/></svg>', bg:'var(--accent-50)', fg:'var(--accent-600)'},
+  {key:'ownerReview',   label:'На пересмотре',  test:r => r.committeeFlag || r.status === 'Анализ и оценка',
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>', bg:'var(--amber-50)', fg:'var(--amber-700)'},
+  {key:'ownerOverdue',  label:'Просроченные',   test:r => QUICK_FILTERS.overdue.test(r),
+    icon:KPI_ICONS.overdue, bg:'var(--red-50)', fg:'var(--red-700)'},
+  {key:'ownerAccepted', label:'Остаточный риск принят', test:r => !!r.residualAcceptedBy,
+    icon:KPI_ICONS.done, bg:'var(--green-50)', fg:'var(--green-700)'},
 ];
 QUICK_FILTERS.ownerNew = {label:'Новые (Идентификация)', test: OWNER_COUNTERS[0].test};
 QUICK_FILTERS.ownerReview = {label:'На пересмотре', test: OWNER_COUNTERS[1].test};
@@ -2904,7 +2969,7 @@ function renderRegister(){
   document.getElementById('regAiAskWrap').hidden = !ownerLocked;
 
   let list = state.risks.filter(r => r.status !== 'Архивирован');
-  if (ownerLocked) list = list.filter(isMyRisk);
+  if (ownerLocked) list = list.filter(isMineOrInitiated);
   // «У владельца пока нет ни одного риска» — отдельная демо-ситуация: показываем
   // один пустой шаблон вместо реальных данных, а не подставляем чужие риски.
   const ownerHasNoRisks = ownerLocked && list.length === 0;
@@ -2941,10 +3006,12 @@ function renderRegister(){
 
   const counterMount = document.getElementById('regOwnerCounters');
   if (ownerLocked){
-    const scope = state.risks.filter(r => r.status !== 'Архивирован').filter(isMyRisk);
+    const scope = state.risks.filter(r => r.status !== 'Архивирован').filter(isMineOrInitiated);
     counterMount.innerHTML = `<div class="owner-counters">${OWNER_COUNTERS.map(c => {
       const n = scope.filter(c.test).length;
-      return `<div class="owner-counter ${registerQuickFilter===c.key?'active':''}" data-owner-counter="${c.key}"><div class="n">${n}</div><div class="l">${c.label}</div></div>`;
+      return `<div class="owner-counter ${registerQuickFilter===c.key?'active':''}" data-owner-counter="${c.key}">
+        <span class="owner-counter-icon" style="background:${c.bg};color:${c.fg};">${c.icon}</span>
+        <div class="n">${n}</div><div class="l">${c.label}</div></div>`;
     }).join('')}</div>`;
     counterMount.querySelectorAll('[data-owner-counter]').forEach(el => el.addEventListener('click', () => {
       const key = el.dataset.ownerCounter;
@@ -2981,6 +3048,9 @@ function renderRegister(){
     });
     document.querySelectorAll('#registerList [data-edit-risk]').forEach(b => {
       b.addEventListener('click', (e) => { e.stopPropagation(); openRiskEditModal(findRisk(b.dataset.editRisk)); });
+    });
+    document.querySelectorAll('#registerList [data-del-risk]').forEach(b => {
+      b.addEventListener('click', (e) => { e.stopPropagation(); deleteRisk(b.dataset.delRisk); });
     });
   }
 
@@ -3058,21 +3128,25 @@ function openRiskCreateModal(prefill){
   document.getElementById('rCause').value = prefill && prefill.cause ? prefill.cause : '';
   document.getElementById('rEvent').value = prefill && prefill.event ? prefill.event : '';
   document.getElementById('rConsequence').value = prefill && prefill.consequence ? prefill.consequence : '';
-  // Владелец риска предлагает риск от своего лица — предвыбираем его самого
-  // владельцем по умолчанию (можно убрать/дополнить), иначе поданный им же
-  // риск без явного выбора владельца не попадёт в его «Мои риски» (см. isMyRisk).
-  riskOwnerSelection = (prefill && prefill.ownerNames) ? prefill.ownerNames.slice()
-    : (state.session && state.session.role === 'riskowner') ? [sessionName()] : [];
+  // На этапе предложения риска владелец ещё не назначен (это делает позже
+  // риск-менеджер или сам владелец), поэтому поле «Владелец» здесь не
+  // предзаполняется — ни для владельца риска, ни тем более для риск-менеджера.
+  riskOwnerSelection = (prefill && prefill.ownerNames) ? prefill.ownerNames.slice() : [];
   renderOwnerChips(); toggleOwnerMenu(false);
   document.getElementById('rStrategyRationale').value = '';
   document.getElementById('rStrategyRationaleField').hidden = true;
-  // «Причина»/«Владелец» — enterInitiatorScreen() скрывает их на общем узле
-  // #riskForm для узкой формы подачи риска Инициатором; эта функция открывает
-  // полную форму (риск-менеджер/владелец), поэтому всегда возвращает оба поля
-  // видимыми — иначе после визита в роль Инициатора они оставались скрытыми
-  // и здесь (тот же DOM-элемент, hidden не сбрасывался обратно).
-  document.querySelector('.field[data-field="rOwner"]').hidden = false;
+  // «Владелец» — скрыт в узкой форме подачи риска Инициатором (enterInitiatorScreen)
+  // и в форме «Предложить риск» владельца риска (владелец на этом этапе ещё не
+  // назначается, см. п.5 промта); для риск-менеджера всегда возвращаем поле
+  // видимым — иначе после визита в другую роль оно оставалось скрытым и здесь
+  // (тот же DOM-элемент #riskForm, hidden не сбрасывался обратно).
+  const isOwnerPropose = !!(state.session && state.session.role === 'riskowner');
+  document.querySelector('.field[data-field="rOwner"]').hidden = isOwnerPropose;
   document.querySelector('.field[data-field="rCause"]').hidden = false;
+  // Компактная форма «Предложить риск» — без поясняющих подписей полей
+  // (плейсхолдеры внутри полей уже понятны), освободившееся место просто
+  // схлопывается (поля — flex-колонка, .riskform-compact лишь прячет label).
+  document.getElementById('riskForm').classList.toggle('riskform-compact', isOwnerPropose);
   document.getElementById('riskSourceQuote').innerHTML = (prefill && prefill.sourceQuote)
     ? `<div class="source-quote" style="margin-bottom:12px;">Источник — урок <code class="mono">${prefill.sourceLessonId}</code>: «${esc(prefill.sourceQuote)}»</div>` : '';
   hideAiHint('dupHint'); hideAiHint('lessonHint');
@@ -3151,6 +3225,20 @@ function submitNewRisk(){
     openPassport(risk.id);
   }
 }
+// Удаление риска из реестра — доступно только риск-менеджеру (портфель
+// компании целиком), с подтверждением, чтобы не удалить риск случайным
+// кликом. Заодно чистим связи (RiskDependency), чтобы Карта взаимосвязей
+// не осталась со ссылкой на несуществующий риск.
+function deleteRisk(id){
+  const r = findRisk(id);
+  if (!r) return;
+  if (!confirm(`Удалить риск «${r.title}» (${r.id}) из реестра?\n\nДействие необратимо.`)) return;
+  state.risks = state.risks.filter(x => x.id !== id);
+  state.deps = state.deps.filter(d => d.fromId !== id && d.toId !== id);
+  saveState();
+  toast('Риск удалён из реестра', {tone:'success'});
+  renderAll();
+}
 
 // ===================================================================
 // ПАСПОРТ РИСКА
@@ -3220,9 +3308,43 @@ function isoDatePlus(days){
 // «Добавить в повестку риск-сессии» — связывает риск с календарём через
 // ту же модель дневных заметок (dayNotes, тип 'session'), что уже
 // используется для риск-сессий в календаре, плюс riskId для обратной ссылки.
+// Тот же .cal-grid/.cal-cell, что и на вкладке «Календарь» (компактная
+// версия .mini-cal), вместо нативного input[type=date] — плюс отдельное
+// поле времени, которого раньше не было (см. п.15 промта раунд 3).
+let agendaCalView = null;
+let agendaSelectedYMD = null;
+function agendaMiniCalGridHtml(){
+  const y = agendaCalView.getFullYear(), m = agendaCalView.getMonth();
+  const first = new Date(y,m,1), startDow = (first.getDay()+6)%7, daysInMonth = new Date(y,m+1,0).getDate();
+  let grid = CAL_DOW_NAMES.map(dw=>`<div class="cal-dow">${dw}</div>`).join('');
+  for (let i=0;i<startDow;i++) grid += '<div class="cal-cell empty"></div>';
+  for (let day=1; day<=daysInMonth; day++){
+    const isToday = y===TODAY.getFullYear() && m===TODAY.getMonth() && day===TODAY.getDate();
+    const isSelected = agendaSelectedYMD && agendaSelectedYMD.y===y && agendaSelectedYMD.m===m && agendaSelectedYMD.d===day;
+    grid += `<div class="cal-cell${isToday?' today':''}${isSelected?' selected':''}" data-agenda-day="${day}"><div class="dnum">${day}</div></div>`;
+  }
+  return grid;
+}
+function renderAgendaMiniCal(){
+  document.getElementById('agendaCalTitle').textContent = `${CAL_MONTH_NAMES[agendaCalView.getMonth()]} ${agendaCalView.getFullYear()}`;
+  document.getElementById('agendaCalGrid').innerHTML = agendaMiniCalGridHtml();
+  document.querySelectorAll('#agendaCalGrid [data-agenda-day]').forEach(c => c.addEventListener('click', () => {
+    agendaSelectedYMD = {y: agendaCalView.getFullYear(), m: agendaCalView.getMonth(), d: parseInt(c.dataset.agendaDay,10)};
+    renderAgendaMiniCal();
+  }));
+}
 function openAddToAgendaModal(r){
+  const [dy,dm,dd] = isoDatePlus(7).split('-').map(Number);
+  agendaCalView = new Date(dy, dm-1, 1);
+  agendaSelectedYMD = {y:dy, m:dm-1, d:dd};
   const body = `
-    <div class="field"><label>Дата риск-сессии</label><input type="date" id="agendaDateInput" value="${isoDatePlus(7)}"></div>
+    <div class="field"><label>Дата риск-сессии</label>
+      <div class="mini-cal">
+        <div class="cal-head" style="margin-bottom:8px;"><button type="button" id="agendaCalPrev" class="cal-nav-btn">‹</button><h3 id="agendaCalTitle" style="flex:1;text-align:center;"></h3><button type="button" id="agendaCalNext" class="cal-nav-btn">›</button></div>
+        <div class="cal-grid" id="agendaCalGrid"></div>
+      </div>
+    </div>
+    <div class="field" style="margin-top:10px;"><label>Время</label><input type="time" id="agendaTimeInput" value="10:00"></div>
     <div class="field" style="margin-top:10px;"><label>Длительность</label>
       <select id="agendaDurationInput">
         <option value="30">30 минут</option>
@@ -3233,17 +3355,20 @@ function openAddToAgendaModal(r){
     </div>
     <div class="btn-row" style="margin-top:10px;"><button type="button" class="btn btn-primary" id="agendaSubmitBtn" style="flex:1;">Добавить в повестку</button></div>`;
   openChartModal('Добавить в повестку риск-сессии', `Риск: «${r.title}»`, body);
+  renderAgendaMiniCal();
+  document.getElementById('agendaCalPrev').addEventListener('click', () => { agendaCalView.setMonth(agendaCalView.getMonth()-1); renderAgendaMiniCal(); });
+  document.getElementById('agendaCalNext').addEventListener('click', () => { agendaCalView.setMonth(agendaCalView.getMonth()+1); renderAgendaMiniCal(); });
   enhanceSelectAsAutocomplete(document.getElementById('agendaDurationInput'));
   document.getElementById('agendaSubmitBtn').addEventListener('click', () => {
-    const val = document.getElementById('agendaDateInput').value;
-    if (!val){ toast('Выберите дату', {tone:'warning'}); return; }
-    const [y,m,d] = val.split('-').map(Number);
-    const key = dayKey(y, m-1, d);
+    if (!agendaSelectedYMD){ toast('Выберите дату', {tone:'warning'}); return; }
+    const {y,m,d} = agendaSelectedYMD;
+    const time = document.getElementById('agendaTimeInput').value || '10:00';
+    const key = dayKey(y, m, d);
     const durationMin = parseInt(document.getElementById('agendaDurationInput').value, 10) || 60;
     (state.dayNotes[key] = state.dayNotes[key]||[]).push({id:uid('note'), type:'session',
-      text:'Обсуждение риска: ' + r.title, author:sessionName(), createdAt:nowStr(), riskId:r.id, durationMin});
+      text:'Обсуждение риска: ' + r.title, author:sessionName(), createdAt:nowStr(), riskId:r.id, durationMin, time});
     saveState(); closeModal('chartModalOverlay');
-    toast('Риск добавлен в повестку риск-сессии', {body: new Date(y,m-1,d).toLocaleDateString('ru-RU'), duration:4000});
+    toast('Риск добавлен в повестку риск-сессии', {body: new Date(y,m,d).toLocaleDateString('ru-RU') + ', ' + time, duration:4000});
   });
 }
 // Остаточный риск — отдельная оценка P×I ПОСЛЕ мероприятий (не копия
@@ -3304,7 +3429,7 @@ function renderPassport(){
     <h3 class="pp-h">ИДЕНТИФИКАЦИЯ</h3>
     <div class="passport-grid passport-grid-2">
       <div class="passport-block">
-        <div class="k">ID / № паспорта</div><div class="v mono">${r.id}<br>№ ${r.displayNumber||'—'}</div>
+        <div class="k">ID / № паспорта</div><div class="v">${r.id}<br>№ ${r.displayNumber||'—'}</div>
         <div class="k" style="margin-top:10px;">Категория</div><div class="v">${esc(r.category)}</div>
         ${r.phase ? `<div class="k" style="margin-top:10px;">Стадия</div><div class="v">${esc(r.phase)}</div>` : ''}
         <div class="k" style="margin-top:10px;">Владелец(ы)</div><div class="v">${esc(r.ownerNames.join(', ')||'—')}</div>
@@ -4238,6 +4363,9 @@ let calDate = new Date(2026, 8, 1);
 let calViewMode = 'month';
 const CAL_MONTH_NAMES = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const CAL_DOW_NAMES = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+// Sun-first — только для недельного вида (renderCalendarWeek), по референсу
+// недельного календаря; месяц остаётся Пн-первым (ISO, как раньше).
+const CAL_DOW_NAMES_SUN = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
 // Три типа событий по process_full_v4.md: мероприятие (из плановых дат Action) +
 // пользовательские заметки дня (для «пересмотра»/«согласования»/личной работы —
 // у них нет отдельного поля даты в модели, поэтому это свободные заметки владельца).
@@ -4245,7 +4373,7 @@ const NOTE_TYPES = [
   {key:'individual', label:'Индивидуальная работа', color:'#64748b', bg:'#eef1f4'},
   {key:'session',    label:'Риск-сессия',            color:'#7c3aed', bg:'#efe7fd'},
   {key:'seminar',    label:'Семинар/обучение',       color:'#0d9488', bg:'#e2f6f4'},
-  {key:'approval',   label:'Согласование',           color:'#b45309', bg:'#fbeed9'},
+  {key:'premortem',  label:'Pre-mortem сессия',      color:'#b45309', bg:'#fbeed9'},
 ];
 function noteType(key){ return NOTE_TYPES.find(t=>t.key===key) || NOTE_TYPES[0]; }
 let calHiddenFilters = new Set();
@@ -4334,7 +4462,7 @@ function renderCalendarMonth(){
     </div>`;
   }
   document.getElementById('calBody').innerHTML = `<div class="cal-grid">${grid}</div>
-    <p class="field-hint" style="margin-top:10px;">Условное «сегодня» для демо — ${TODAY.toLocaleDateString('ru-RU')}, поэтому часть 2026-х сроков уже просрочена. Кликните день, чтобы добавить заметку (индивидуальная работа, риск-сессия, семинар, согласование).</p>`;
+    <p class="field-hint" style="margin-top:10px;">Кликните день, чтобы добавить заметку (индивидуальная работа, риск-сессия, семинар, Pre-mortem сессия).</p>`;
   document.querySelectorAll('.cal-ev').forEach(e => e.addEventListener('click', ev => { ev.stopPropagation(); openPassport(e.dataset.risk); }));
   document.querySelectorAll('[data-open-session]').forEach(el => el.addEventListener('click', ev => {
     ev.stopPropagation();
@@ -4356,11 +4484,13 @@ function renderCalendarMonth(){
   }));
 }
 function renderCalendarWeek(){
-  // Понедельник недели, содержащей calDate
-  const dow = (calDate.getDay()+6)%7;
-  const monday = new Date(calDate); monday.setDate(calDate.getDate() - dow);
-  const days = Array.from({length:7}, (_,i) => { const d = new Date(monday); d.setDate(monday.getDate()+i); return d; });
-  document.getElementById('calHeadTitle').textContent = `${CAL_MONTH_NAMES[monday.getMonth()]} ${monday.getFullYear()} · неделя ${monday.getDate()}–${days[6].getDate()}`;
+  // Воскресенье недели, содержащей calDate — раскладка Sun-Sat по референсу
+  // недельного календаря (п.13 промта раунд 3), в отличие от Пн-первой сетки
+  // месяца.
+  const dow = calDate.getDay();
+  const sunday = new Date(calDate); sunday.setDate(calDate.getDate() - dow);
+  const days = Array.from({length:7}, (_,i) => { const d = new Date(sunday); d.setDate(sunday.getDate()+i); return d; });
+  document.getElementById('calHeadTitle').textContent = `${CAL_MONTH_NAMES[sunday.getMonth()]} ${sunday.getFullYear()} · неделя ${sunday.getDate()}–${days[6].getDate()}`;
 
   const weekEvents = [];
   Object.values(collectCalEvents()).flat().forEach(e => { if (days.some(d => d.toDateString()===e.date.toDateString())) weekEvents.push(e); });
@@ -4380,16 +4510,26 @@ function renderCalendarWeek(){
 
   const cols = days.map(d => {
     const isToday = d.toDateString() === TODAY.toDateString();
+    const isPastDay = d < TODAY && !isToday;
     const evs = weekEvents.filter(e => e.date.toDateString()===d.toDateString() && !calHiddenFilters.has(e.overdue?'overdue':'action'));
     const notes = weekNotes.filter(n => n.date.toDateString()===d.toDateString() && !calHiddenFilters.has(n.type));
     return `<div class="calw-daycol">
-      <div class="calw-dayhead${isToday?' today':''}"><div class="dow">${CAL_DOW_NAMES[(d.getDay()+6)%7]}</div><div class="dnum">${d.getDate()}</div></div>
+      <div class="calw-dayhead${isToday?' today':''}"><div class="dow">${CAL_DOW_NAMES_SUN[d.getDay()]}</div><div class="dnum">${d.getDate()}</div></div>
       ${evs.map(e => `<div class="calw-card" style="background:${e.bg};color:${e.color};border-color:${e.color}33;" data-risk="${e.riskId}">
-        <div class="ct">${e.overdue?'Просрочено':'Мероприятие'}</div><div class="cn">${esc(e.fullText.slice(0,50))}</div></div>`).join('')}
+        <div class="ct">${e.overdue?'Просрочено':'Мероприятие'}</div><div class="cn">${esc(e.fullText.slice(0,50))}</div>
+        <div class="calw-card-meta"><span>${e.overdue?ICON_SD_WARN:ICON_SD_CLOCK}${e.overdue?'просрочено':'план'}</span></div></div>`).join('')}
       ${notes.map(n => { const t=noteType(n.type); const isSession = n.type==='session' && n.riskId;
+        const sessSd = isSession ? computeSessionData(d.getFullYear(), d.getMonth(), d.getDate()) : null;
+        const attendeeCount = sessSd ? sessSd.attendeeNames.length : (n.attendees ? n.attendees.length : null);
+        const metaParts = [];
+        if (n.time || n.durationMin) metaParts.push(`<span>${ICON_SD_CLOCK}${n.time?esc(n.time):''}${n.durationMin?' · '+n.durationMin+' мин':''}</span>`);
+        if (attendeeCount != null) metaParts.push(`<span>${ICON_SD_PEOPLE}${attendeeCount}</span>`);
+        metaParts.push(`<span>${isPastDay?ICON_SD_CHECK_SM:ICON_SD_CLOCK}${isPastDay?'проведено':'план'}</span>`);
         return `<div class="calw-card calw-card--del" style="background:${t.bg};color:${t.color};border-color:${t.color}33;"${isSession?` data-open-session="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}"`:''}>
         <button type="button" class="cal-note-del-x" data-del-cal-note="${n.id}" data-del-cal-date="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}" title="Удалить встречу" aria-label="Удалить встречу"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-        <div class="ct">${esc(t.label)}</div><div class="cn">${esc(n.text.slice(0,50))}</div><div class="cm">${esc(n.author||'')}</div></div>`; }).join('')}
+        <div class="ct">${esc(t.label)}</div><div class="cn">${esc(n.text.slice(0,50))}</div>
+        <div class="calw-card-meta">${metaParts.join('')}</div>
+        <div class="cm">${esc(n.author||'')}</div></div>`; }).join('')}
       <button type="button" class="btn btn-text btn-sm" data-add-note-day="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}" style="width:100%;">+ заметка</button>
     </div>`;
   }).join('');
@@ -4412,24 +4552,64 @@ function renderCalendarWeek(){
 }
 function openDayNotesModal(y, m, d){
   const title = `${d} ${CAL_MONTH_NAMES[m].toLowerCase()} ${y}`;
-  openChartModal('Заметки дня — ' + title, 'Индивидуальная работа, риск-сессии, семинары, согласования — свободные заметки, не связаны с конкретным риском', dayNotesBodyHtml(y,m,d));
+  dnAttendeeSelection = [];
+  openChartModal('Заметки дня — ' + title, '', dayNotesBodyHtml(y,m,d));
   wireDayNotesForm(y,m,d);
 }
+// «Что запланировано на день» — список без max-height/overflow: при
+// добавлении заметок блок растёт вниз вместе с модалкой (она и так
+// скроллится целиком на маленьких экранах), ширина модалки не меняется.
 function dayNotesBodyHtml(y,m,d){
   const notes = notesFor(y,m,d);
   const sessionRiskCount = notes.filter(n => n.type === 'session' && n.riskId).length;
-  return `${sessionRiskCount ? `<button type="button" class="btn btn-secondary btn-sm" id="dnOpenSessionSummary" style="width:100%;margin-bottom:12px;">Открыть сводку риск-сессии (${sessionRiskCount})</button>` : ''}
+  return `${sessionRiskCount ? `<button type="button" class="btn btn-secondary btn-sm" id="dnOpenSessionSummary" style="width:100%;margin-bottom:10px;">Открыть сводку риск-сессии (${sessionRiskCount})</button>` : ''}
     <div id="dayNotesList">${notes.length ? notes.map(n => { const t=noteType(n.type); return `
-    <div class="cal-note-row"><div style="flex:1;"><div class="cal-note-type" style="color:${t.color}">${esc(t.label)}</div><div style="font-size:13px;margin-top:2px;">${esc(n.text)}</div>${n.author?`<div class="muted" style="font-size:11px;margin-top:2px;">${esc(n.author)}</div>`:''}${n.riskId?`<a href="#" data-open-risk-from-note="${n.riskId}" style="font-size:11px;font-weight:600;">Открыть риск →</a>`:''}</div>
+    <div class="cal-note-row"><div style="flex:1;"><div class="cal-note-type" style="color:${t.color}">${esc(t.label)}</div><div style="font-size:13px;margin-top:2px;">${esc(n.text)}</div>${n.attendees && n.attendees.length ? `<div class="muted" style="font-size:11px;margin-top:2px;">Участники: ${esc(n.attendees.join(', '))}</div>` : ''}${n.author?`<div class="muted" style="font-size:11px;margin-top:2px;">${esc(n.author)}</div>`:''}${n.riskId?`<a href="#" data-open-risk-from-note="${n.riskId}" style="font-size:11px;font-weight:600;">Открыть риск →</a>`:''}</div>
       <button type="button" class="cal-note-del" data-del-note="${n.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`; }).join('') : '<p class="muted" style="font-size:12.5px;">Заметок пока нет.</p>'}</div>
-    <div class="btn-row" style="margin:14px 0 8px;gap:8px;">
+    <div class="field" style="margin:12px 0 8px;"><label>Участники</label>
+      <div class="ds-ms" id="dnAttendeeMs">
+        <div class="ds-ms-chips" id="dnAttendeeChips"></div>
+        <button type="button" class="ds-ms-addbtn" id="dnAttendeeAddBtn">+ Добавить участника</button>
+        <div class="ds-ms-menu" id="dnAttendeeMenu" hidden></div>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-bottom:8px;gap:8px;">
       <select id="dnType" style="flex:1;">${NOTE_TYPES.map(t=>`<option value="${t.key}">${t.label}</option>`).join('')}</select>
     </div>
-    <textarea id="dnText" placeholder="Что запланировано на этот день..." style="width:100%;min-height:60px;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 12px;font-size:13.5px;font-family:inherit;"></textarea>
+    <textarea id="dnText" placeholder="Что запланировано на этот день..." style="width:100%;min-height:52px;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 12px;font-size:13.5px;font-family:inherit;"></textarea>
     <div class="btn-row" style="margin-top:10px;"><button type="button" class="btn btn-primary" id="dnAdd" style="flex:1;">Добавить заметку</button></div>`;
 }
+function dnRenderAttendeeChips(){
+  const chipsEl = document.getElementById('dnAttendeeChips');
+  if (!chipsEl) return;
+  chipsEl.innerHTML = dnAttendeeSelection.map(n =>
+    `<span class="ds-chip">${esc(n)}<button type="button" data-dn-remove-attendee="${esc(n)}" aria-label="Убрать">×</button></span>`).join('');
+  chipsEl.querySelectorAll('[data-dn-remove-attendee]').forEach(b => b.addEventListener('click', () => {
+    dnAttendeeSelection = dnAttendeeSelection.filter(n => n !== b.dataset.dnRemoveAttendee);
+    dnRenderAttendeeChips();
+  }));
+}
+function dnToggleAttendeeMenu(show){
+  const menu = document.getElementById('dnAttendeeMenu');
+  if (!menu) return;
+  if (show){
+    const rest = ALL_USERS.filter(n => !dnAttendeeSelection.includes(n));
+    menu.innerHTML = rest.length ? rest.map(n => `<div class="ds-ms-item" data-dn-add-attendee="${esc(n)}">${esc(n)}</div>`).join('')
+      : '<div class="ds-ms-empty">Все пользователи уже добавлены</div>';
+    menu.querySelectorAll('[data-dn-add-attendee]').forEach(el => el.addEventListener('click', () => {
+      dnAttendeeSelection.push(el.dataset.dnAddAttendee);
+      dnRenderAttendeeChips();
+      dnToggleAttendeeMenu(false);
+    }));
+  }
+  menu.hidden = !show;
+}
+document.addEventListener('click', (e) => { if (!e.target.closest('#dnAttendeeMs')) dnToggleAttendeeMenu(false); });
+let dnAttendeeSelection = [];
 function wireDayNotesForm(y,m,d){
   enhanceSelectAsAutocomplete(document.getElementById('dnType'));
+  dnRenderAttendeeChips();
+  document.getElementById('dnAttendeeAddBtn').addEventListener('click', (e) => { e.stopPropagation(); dnToggleAttendeeMenu(document.getElementById('dnAttendeeMenu').hidden); });
   const summaryBtn = document.getElementById('dnOpenSessionSummary');
   if (summaryBtn) summaryBtn.addEventListener('click', () => openSessionSummaryModal(y,m,d));
   document.querySelectorAll('[data-open-risk-from-note]').forEach(a => a.addEventListener('click', (e) => {
@@ -4446,8 +4626,9 @@ function wireDayNotesForm(y,m,d){
     const text = document.getElementById('dnText').value.trim();
     if (!text){ toast('Введите текст заметки', {tone:'warning'}); return; }
     const key = dayKey(y,m,d);
-    (state.dayNotes[key] = state.dayNotes[key]||[]).push({id:uid('note'), type:document.getElementById('dnType').value, text, author:sessionName(), createdAt:nowStr()});
+    (state.dayNotes[key] = state.dayNotes[key]||[]).push({id:uid('note'), type:document.getElementById('dnType').value, text, attendees: dnAttendeeSelection.slice(), author:sessionName(), createdAt:nowStr()});
     saveState(); toast('Заметка добавлена');
+    dnAttendeeSelection = [];
     document.getElementById('chartModalMount').innerHTML = dayNotesBodyHtml(y,m,d); wireDayNotesForm(y,m,d); renderCalendar();
   });
 }
@@ -4488,6 +4669,12 @@ function computeSessionData(y, m, d){
   const durationMin = Math.max(60, ...notes.map(n => n.durationMin || 60));
   return {y, m, d, notes, risks, dateObj, isPast, attendeeNames, actions, doneActions, actionsPct, highCount, highPct, overdueActions, durationMin};
 }
+// Для прошедшей/завершённой встречи — полная карточка (участники, реальные
+// метрики выполнения вместо выдуманных sentiment/participation, AI-сводка,
+// решения, чек-лист мероприятий, Recording/Transcript/Discussion). Для ещё
+// не начавшейся — честная облегчённая заглушка: участники и подпись
+// «AI-саммари появится после завершения», без выдуманного контента
+// несостоявшейся встречи (см. п.13 промта раунд 3, референс upcoming-карточки).
 function openSessionSummaryModal(y, m, d){
   const sd = computeSessionData(y, m, d);
   if (!sd) return;
@@ -4504,14 +4691,16 @@ function openSessionSummaryModal(y, m, d){
     </div>
     <div class="session-modal-date"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>${dateObj.toLocaleDateString('ru-RU',{weekday:'short', day:'numeric', month:'long'})}</div>`;
 
-  document.getElementById('sessionModalMount').innerHTML = `
-    <div class="session-sec">
+  const attendeesHtml = `<div class="session-sec"${isPast?'':' style="margin-bottom:0;"'}>
       <div class="session-sec-title">Участники (${attendeeNames.length})</div>
       <div class="session-attendees">${attendeeNames.length ? attendeeNames.map(n => {
         const parts = n.split(' ');
         return `<span class="session-attendee-chip">${avatarHtml({firstName:parts[0]||'', lastName:parts[1]||'', size:22})}${esc(n)}</span>`;
       }).join('') : '<span class="session-empty">Владельцы не указаны</span>'}</div>
-    </div>
+    </div>`;
+
+  document.getElementById('sessionModalMount').innerHTML = isPast ? `
+    ${attendeesHtml}
     <div class="session-sec">
       <div class="session-stat-grid">
         <div class="session-stat-card">
@@ -4535,16 +4724,27 @@ function openSessionSummaryModal(y, m, d){
         return `<div class="session-decision-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l2.5 2.5L16 9"/></svg><span><b>${esc(r.id)}</b> — ${esc(r.title)}: ${decision}</span></div>`;
       }).join('')}
     </div>
-    <div class="session-sec" style="margin-bottom:0;">
+    <div class="session-sec">
       <div class="session-sec-title">Мероприятия (${doneActions}/${actions.length} выполнено)</div>
       ${actions.length ? actions.map(a => `<div class="session-action-row${a.status==='done'?' done':''}"><span class="session-action-check">${a.status==='done'?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>':''}</span><span>${esc(a.title)}</span></div>`).join('') : '<span class="session-empty">Мероприятий по этим рискам пока нет.</span>'}
+    </div>
+    <div class="btn-row" style="margin-bottom:0;gap:8px;">
+      <button type="button" class="btn btn-secondary btn-sm" id="sessionRecordingBtn" style="flex:1;">${ICON_SD_VIDEO}Recording</button>
+      <button type="button" class="btn btn-secondary btn-sm" id="sessionTranscriptBtn" style="flex:1;">${ICON_SD_MIC}Transcript</button>
+      <button type="button" class="btn btn-secondary btn-sm" id="sessionDiscussionBtn" style="flex:1;">${ICON_SD_CHAT}Discussion</button>
+    </div>` : `
+    ${attendeesHtml}
+    <div class="session-sec" style="margin-bottom:0;text-align:center;padding:20px 10px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30" style="color:var(--ink-400);margin-bottom:8px;"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+      <div style="font-weight:700;color:var(--ink-700);margin-bottom:4px;">Встреча ещё не началась</div>
+      <div class="session-empty">AI-саммари появится после завершения</div>
     </div>`;
 
   document.getElementById('sessionModalFoot').innerHTML = `
     <button type="button" class="btn btn-text" id="sessionModalCloseBtn">Закрыть</button>
     <span style="display:flex; gap:8px;">
       ${risks.length === 1 ? `<button type="button" class="btn btn-secondary" id="sessionOpenRiskBtn">Открыть риск</button>` : ''}
-      <button type="button" class="btn btn-primary" id="sessionFullDetailsBtn">Full Details →</button>
+      <button type="button" class="btn btn-primary" id="sessionFullDetailsBtn">Подробнее →</button>
     </span>`;
 
   document.getElementById('sessionModalCloseX').addEventListener('click', () => closeModal('sessionModalOverlay'));
@@ -4554,6 +4754,11 @@ function openSessionSummaryModal(y, m, d){
       closeModal('sessionModalOverlay');
       openPassport(risks[0].id);
     });
+  }
+  if (isPast){
+    document.getElementById('sessionRecordingBtn').addEventListener('click', () => toast('Recording', {body:'Демо-прототип: запись встречи недоступна в этой версии.', duration:4000}));
+    document.getElementById('sessionTranscriptBtn').addEventListener('click', () => toast('Transcript', {body:'Демо-прототип: транскрипт недоступен в этой версии.', duration:4000}));
+    document.getElementById('sessionDiscussionBtn').addEventListener('click', () => toast('Discussion', {body:'Демо-прототип: обсуждение недоступно в этой версии.', duration:4000}));
   }
   document.getElementById('sessionFullDetailsBtn').addEventListener('click', () => {
     closeModal('sessionModalOverlay');
