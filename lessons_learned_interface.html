@@ -3977,7 +3977,7 @@ function renderPassport(){
 
     <div class="pp-h-row"><h3 class="pp-h">МЕРОПРИЯТИЯ (${planActions.length})</h3>${editable && r.p && r.iLevel ? `<button type="button" class="btn btn-secondary btn-sm" id="pAddActionBtn">+ Добавить мероприятие</button>` : ''}</div>
     ${planActions.length ? `<div class="actions-table-wrap"><table class="data-table"><thead><tr><th>Стратегия</th><th>Мероприятие</th><th>Вид</th><th>Ответственный</th><th>План</th><th>Прогноз/факт</th><th>Стоимость</th><th>Статус</th>${editable?'<th></th>':''}</tr></thead><tbody>
-      ${planActions.map(a => `<tr><td>${esc(a.strategy)}</td><td>${esc(a.title)}${a.triggerCondition?`<div class="muted" style="font-size:11px;margin-top:2px;">Запасной план: ${esc(a.triggerCondition)}</div>`:''}</td><td>${ACTION_KIND_LABEL[a.kind]}</td><td>${assigneeCellHtml(a, editable)}</td>
+      ${planActions.map(a => `<tr${editable?` data-action-row="${a.id}" style="cursor:pointer;"`:''}><td>${esc(a.strategy)}</td><td>${esc(a.title)}${a.triggerCondition?`<div class="muted" style="font-size:11px;margin-top:2px;">Запасной план: ${esc(a.triggerCondition)}</div>`:''}</td><td>${ACTION_KIND_LABEL[a.kind]}</td><td>${assigneeCellHtml(a, editable)}</td>
         <td class="mono">${esc(a.plannedDate||'—')}${a.plannedDate && a.status!=='done' && a.status!=='rejected' && parseRuShortDate(a.plannedDate) && parseRuShortDate(a.plannedDate) < TODAY ? ' <span style="color:var(--red-700);">⚠ просрочено</span>' : ''}</td><td class="mono">${esc(a.forecastActualDate||'—')}</td><td class="mono">${esc(a.cost||'—')}</td>
         <td><span class="status-dot-row"><i class="status-dot" style="background:${ACTION_STATUS_COLOR[a.status]}"></i>${ACTION_STATUS_LABEL[a.status]}</span></td>
         ${editable?`<td><button class="btn-sm" data-edit-action="${a.id}">✎</button></td>`:''}</tr>`).join('')}
@@ -4053,6 +4053,10 @@ function renderPassport(){
   });
   mount.querySelectorAll('[data-edit-action]').forEach(b => b.addEventListener('click', () => openActionModal(r, r.actions.find(a=>a.id===b.dataset.editAction))));
   mount.querySelectorAll('[data-assign-action]').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); openAssignActionModal(r, r.actions.find(a=>a.id===b.dataset.assignAction)); }));
+  mount.querySelectorAll('tr[data-action-row]').forEach(tr => tr.addEventListener('click', (e) => {
+    if (e.target.closest('button')) return;
+    openActionModal(r, r.actions.find(a=>a.id===tr.dataset.actionRow));
+  }));
 }
 const ICON_TREND_UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M7 17L17 7M9 7h8v8"/></svg>';
 const ICON_TREND_DOWN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M7 7l10 10M7 15v-8h8"/></svg>';
