@@ -1099,7 +1099,9 @@ function activateFonts(link){
   .cal-note-del{border:none; background:none; color:var(--ink-400); cursor:pointer; padding:2px; flex-shrink:0;}
   .cal-note-del:hover{color:var(--red-700);}
   /* Недельный вид "Календарь встреч" */
-  .calw-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:8px; align-items:start;}
+  .calw-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:8px; align-items:start;}
+  .calw-daycol.is-past{opacity:.5;}
+  .calw-daycol.is-past .btn[data-add-note-day]{display:none;}
   .calw-daycol{min-height:220px;}
   .calw-dayhead{text-align:center; padding-bottom:8px; margin-bottom:8px; border-bottom:2px solid transparent;}
   .calw-dayhead.today{border-bottom-color:var(--accent-600);}
@@ -1508,7 +1510,7 @@ function activateFonts(link){
     <div class="modal-head"><span id="riskModalTitle">Новый риск</span>
       <button type="button" class="modal-close" data-close="riskModalOverlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
-    <p class="modal-sub">Категория, наименование, причина, риск-событие, прямое следствие, владелец(ы) — те же поля, что и в карточке риска реестра.</p>
+    <p class="modal-sub">Категория, наименование, риск-событие, прямое следствие, владелец(ы) — те же поля, что и в карточке риска реестра.</p>
     <div id="riskSourceQuote"></div>
     <form id="riskForm" onsubmit="return false;" style="gap:12px;">
       <div class="field" data-field="rCategory"><label>Категория риска</label><select id="rCategory"></select></div>
@@ -3683,7 +3685,10 @@ function openRiskCreateModal(prefill){
   // (тот же DOM-элемент #riskForm, hidden не сбрасывался обратно).
   const isOwnerPropose = !!(state.session && state.session.role === 'riskowner');
   document.querySelector('.field[data-field="rOwner"]').hidden = isOwnerPropose;
-  document.querySelector('.field[data-field="rCause"]').hidden = false;
+  // «Причина» — единственное необязательное поле формы (см. подпись
+  // «необязательно» рядом с лейблом) — в быстрой форме создания риска
+  // просто не нужна, её можно заполнить позже при редактировании карточки.
+  document.querySelector('.field[data-field="rCause"]').hidden = true;
   // Компактная форма «Предложить риск» — без поясняющих подписей полей
   // (плейсхолдеры внутри полей уже понятны), освободившееся место просто
   // схлопывается (поля — flex-колонка, .riskform-compact лишь прячет label).
@@ -4376,6 +4381,10 @@ function generateLessonDraft(r){
 function openRiskEditModal(r){
   openRiskCreateModal({title:r.title, cause:r.cause, event:r.event, consequence:r.consequence, category:r.category, editingId:r.id});
   riskOwnerSelection = r.ownerNames.slice(); renderOwnerChips(); toggleOwnerMenu(false);
+  // «Причина» скрыта в быстрой форме создания (см. openRiskCreateModal), но
+  // при редактировании уже существующего риска должна быть видна и
+  // редактируема как обычно.
+  document.querySelector('.field[data-field="rCause"]').hidden = false;
   // «Обоснование стратегии» имеет смысл только когда у риска уже есть мероприятия —
   // при создании нового риска (компактная форма Инициатора/«+Добавить риск») поле скрыто.
   document.getElementById('rStrategyRationaleField').hidden = false;
@@ -5337,15 +5346,18 @@ function computeWeekData(){
 }
 function renderCalendarWeek(){
   document.getElementById('calBody').style.height = '';
-  const {days, sunday, weekEvents, weekNotes, kpi} = computeWeekData();
-  document.getElementById('calHeadTitle').textContent = `${CAL_MONTH_NAMES[sunday.getMonth()]} ${sunday.getFullYear()} · неделя ${sunday.getDate()}–${days[6].getDate()}`;
+  const {days: allDays, sunday, weekEvents, weekNotes, kpi} = computeWeekData();
+  // В «Неделе» показываем только рабочие дни (Пн–Пт); «Повестка» по-прежнему
+  // использует полный набор дней из computeWeekData (там своя вёрстка).
+  const days = allDays.filter(d => d.getDay() !== 0 && d.getDay() !== 6);
+  document.getElementById('calHeadTitle').textContent = `${CAL_MONTH_NAMES[sunday.getMonth()]} ${sunday.getFullYear()} · неделя ${days[0].getDate()}–${days[days.length-1].getDate()}`;
 
   const cols = days.map(d => {
     const isToday = d.toDateString() === TODAY.toDateString();
     const isPastDay = d < TODAY && !isToday;
     const evs = weekEvents.filter(e => e.date.toDateString()===d.toDateString() && !calHiddenFilters.has(e.overdue?'overdue':'action'));
     const notes = weekNotes.filter(n => n.date.toDateString()===d.toDateString() && !calHiddenFilters.has(n.type));
-    return `<div class="calw-daycol">
+    return `<div class="calw-daycol${isPastDay?' is-past':''}">
       <div class="calw-dayhead${isToday?' today':''}"><div class="dow">${CAL_DOW_NAMES_SUN[d.getDay()]}</div><div class="dnum">${d.getDate()}</div></div>
       ${evs.map(e => `<div class="calw-card" style="background:${e.bg};color:${e.color};border-color:${e.color}33;" data-risk="${e.riskId}">
         <div class="ct">${e.overdue?'Просрочено':'Мероприятие'}</div><div class="cn">${esc(e.fullText.slice(0,50))}</div>
