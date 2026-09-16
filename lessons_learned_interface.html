@@ -1200,7 +1200,8 @@ function activateFonts(link){
   .pp-assess-row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-start; margin-bottom:12px;}
   .pp-assess-matrix{flex-shrink:0;}
   .pp-assess-metrics{flex:1; min-width:220px; display:flex; flex-direction:column; gap:8px;}
-  .pp-trend-box{display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:var(--radius-field); background:var(--canvas);}
+  .pp-trend-box{display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:var(--radius-field); background:var(--canvas); cursor:pointer; transition:background-color .15s ease;}
+  .pp-trend-box:hover{background:var(--accent-50);}
   .pp-trend-box .arrow{width:28px; height:28px; border-radius:7px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
   .pp-trend-box .arrow svg{width:14px; height:14px;}
   .pp-trend-box .arrow.good{background:var(--green-50); color:var(--green-700);}
@@ -4218,19 +4219,21 @@ const ICON_TREND_FLAT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentCol
 // зафиксированным остаточным после мер реагирования. Снижение = риск
 // уменьшается (зелёная стрелка вниз), рост — оранжево-красная вверх, пока
 // остаточная оценка не зафиксирована — нейтральный «без изменений».
+// Тренд-бокс кликабелен — ведёт на вкладку «Остаточный риск» (там же, где
+// тренд и считается: свойственный RRA сравнивается с остаточным).
 function trendBoxHtml(r){
   if (!r.p || !r.iLevel){
-    return `<div class="pp-trend-box"><span class="arrow flat">${ICON_TREND_FLAT}</span><div class="txt"><span class="lbl">Тренд</span><span class="val">Нет оценки</span></div></div>`;
+    return `<div class="pp-trend-box" data-pp-goto="pp-sec-residual"><span class="arrow flat">${ICON_TREND_FLAT}</span><div class="txt"><span class="lbl">Тренд</span><span class="val">Нет оценки</span></div></div>`;
   }
   if (!r.residualP || !r.residualI){
-    return `<div class="pp-trend-box"><span class="arrow flat">${ICON_TREND_FLAT}</span><div class="txt"><span class="lbl">Тренд</span><span class="val">Без изменений</span><span class="date">остаточная оценка ещё не зафиксирована</span></div></div>`;
+    return `<div class="pp-trend-box" data-pp-goto="pp-sec-residual"><span class="arrow flat">${ICON_TREND_FLAT}</span><div class="txt"><span class="lbl">Тренд</span><span class="val">Без изменений</span><span class="date">остаточная оценка ещё не зафиксирована</span></div></div>`;
   }
   const inherentRra = rraOf(r.p, r.iLevel), residualRra = rraOf(r.residualP, r.residualI);
   const dir = residualRra < inherentRra ? 'down' : residualRra > inherentRra ? 'up' : 'flat';
   const icon = dir==='up' ? ICON_TREND_UP : dir==='down' ? ICON_TREND_DOWN : ICON_TREND_FLAT;
   const cls = dir==='up' ? 'bad' : dir==='down' ? 'good' : 'flat';
   const label = dir==='up' ? 'Риск вырос' : dir==='down' ? 'Риск снижен' : 'Без изменений';
-  return `<div class="pp-trend-box"><span class="arrow ${cls}">${icon}</span><div class="txt"><span class="lbl">Тренд</span><span class="val">${label}: RRA ${inherentRra} → ${residualRra}</span>${r.residualAcceptedDate?`<span class="date">на ${esc(r.residualAcceptedDate)}</span>`:''}</div></div>`;
+  return `<div class="pp-trend-box" data-pp-goto="pp-sec-residual"><span class="arrow ${cls}">${icon}</span><div class="txt"><span class="lbl">Тренд</span><span class="val">${label}: RRA ${inherentRra} → ${residualRra}</span>${r.residualAcceptedDate?`<span class="date">на ${esc(r.residualAcceptedDate)}</span>`:''}</div></div>`;
 }
 // Тип события Audit Trail — определяем эвристически по имеющимся полям
 // записи (fromStatus/toStatus/comment), т.к. отдельного risk.auditLog[].type
