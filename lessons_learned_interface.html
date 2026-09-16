@@ -1719,8 +1719,8 @@ function activateFonts(link){
     </div>
     <p class="modal-sub" id="confirmModalText" style="margin:-6px 0 16px;"></p>
     <div class="btn-row">
-      <button type="button" class="btn btn-text" data-close="confirmModalOverlay">Отмена</button>
-      <button type="button" class="btn btn-danger" id="confirmModalOkBtn" style="flex:2;">Удалить</button>
+      <button type="button" class="btn btn-secondary" data-close="confirmModalOverlay">Отмена</button>
+      <button type="button" class="btn btn-danger" id="confirmModalOkBtn">Удалить</button>
     </div>
    </div>
   </div>
@@ -5173,7 +5173,9 @@ function notesFor(y,m,d){ return state.dayNotes[dayKey(y,m,d)] || []; }
 // дня») — иконка на пилюле/карточке, с подтверждением (тот же нативный
 // confirm(), что и у «Сбросить демо-данные»).
 function deleteCalNote(y, m, d, noteId){
-  openConfirmModal('Удалить эту встречу из календаря?', () => {
+  const note = notesFor(y, m, d).find(n => n.id === noteId);
+  const text = note ? `«${note.text}» будет удалена из календаря без возможности восстановления.` : 'Действие необратимо.';
+  openConfirmModal(text, () => {
     const key = dayKey(y, m, d);
     state.dayNotes[key] = (state.dayNotes[key]||[]).filter(n => n.id !== noteId);
     saveState();
