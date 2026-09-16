@@ -3862,12 +3862,14 @@ function renderPassport(){
   const stepIdx = STATUSES.indexOf(r.status);
   const el = (r.expectedLoss = (r.quantProbabilityPct!=null && r.quantBudgetImpactMln!=null) ? (r.quantProbabilityPct/100*r.quantBudgetImpactMln) : null);
 
-  const controls = r.actions.filter(a => a.kind === 'existing_procedure');
-  const planActions = r.actions.filter(a => a.kind !== 'existing_procedure');
+  // «Существующая процедура» (бывшая отдельная секция КОНТРОЛИ) — теперь
+  // просто один из видов мероприятия в общем списке ниже, без дублирующей
+  // секции: физически это одна и та же сущность Action, разделять их на
+  // два списка было избыточно.
+  const planActions = r.actions;
   const strategies = Array.from(new Set(r.actions.map(a => a.strategy).filter(Boolean)));
   const decisionEntry = state.audit.find(a => a.riskId === r.id && a.toStatus === 'Управление');
   const decisionDate = r.committeeDecisionDate || (decisionEntry ? decisionEntry.timestamp : null);
-  const CONTROL_EFFECT = {done:'Эффективен — выполнено', in_progress:'Внедряется', planned:'Не начат', rejected:'Не применяется'};
   const canAcceptResidual = editable && r.p && r.iLevel && r.status !== 'Идентификация';
   const similarLesson = findBestLessonForRisk(r);
 
@@ -3875,6 +3877,24 @@ function renderPassport(){
     <div class="btn-row" style="justify-content:flex-end;margin-bottom:10px;">
       <button type="button" class="btn btn-text btn-sm" id="pAgendaBtn">📅 Добавить в повестку риск-сессии</button>
     </div>
+
+    <h3 class="pp-h">ЭСКАЛАЦИЯ И КОММУНИКАЦИЯ</h3>
+    <div class="passport-block" style="margin-bottom:12px;">
+      <div class="btn-row" style="margin:0 0 10px;">
+        ${editable && !r.committeeFlag ? `<button class="btn btn-secondary btn-sm" id="pEscalateBtn">Эскалировать риск-менеджеру / комитету</button>` : ''}
+        ${editable && r.ownerNames.length > 1 ? `<span class="badge-pill" style="background:var(--amber-50);color:var(--amber-700);">Кросс-функциональный риск — требуется согласование ${r.ownerNames.length} совладельцев</span>` : ''}
+      </div>
+      <div class="pp-h-row" style="margin:0 0 4px;padding-top:0;border-top:none;">
+        <div class="k" style="margin:0;">Лог комментариев и решений</div>
+        ${editable ? `<button type="button" class="btn btn-secondary btn-sm" id="pAddCommentBtn">+ Комментарий</button>` : ''}
+      </div>
+      <div class="v">${renderCommentLog(r.id)}</div>
+      ${editable ? `<div id="pCommentFormWrap" hidden style="margin-top:10px;">
+        <textarea id="pCommentText" placeholder="Комментарий или решение по риску..." style="width:100%;min-height:60px;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 12px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>
+        <div class="btn-row" style="margin-top:8px;"><button type="button" class="btn btn-text btn-sm" id="pCommentCancelBtn">Отмена</button><button type="button" class="btn btn-primary btn-sm" id="pCommentSaveBtn" style="flex:1;">Сохранить</button></div>
+      </div>` : ''}
+    </div>
+
     <div class="stepper" title="${esc(STATUSES.map((s,i)=>`${i+1}. ${s}`).join(' → '))}">${STATUSES.map((s,i) => {
       const isFilled = i < stepIdx, isCurrent = i === stepIdx;
       const dotHtml = isFilled ? ICON_SD_CHECK_SM : (i+1);
@@ -3959,14 +3979,6 @@ function renderPassport(){
       ${canAcceptResidual ? `<div class="btn-row" style="margin-top:8px;"><button class="btn btn-secondary btn-sm" id="pResidualBtn">${r.residualAcceptedBy?'Обновить остаточный риск':'Принять остаточный риск'}</button></div>` : ''}
     </div>
 
-    <div class="pp-h-row"><h3 class="pp-h">КОНТРОЛИ (существующие процедуры)</h3>${editable ? `<button type="button" class="btn btn-secondary btn-sm" id="pAddControlBtn">+ Контроль</button>` : ''}</div>
-    <p class="muted" style="font-size:11.5px;margin:-4px 0 8px;">Меры защиты, которые уже действовали ещё до того, как риск идентифицировали (регламенты, существующие процедуры контроля) — в отличие от новых мероприятий реагирования ниже, которые только планируются.</p>
-    ${controls.length ? `<div class="actions-table-wrap" style="margin-bottom:12px;"><table class="data-table"><thead><tr><th>Контроль</th><th>Эффективность</th><th>Ответственный оператор</th>${editable?'<th></th>':''}</tr></thead><tbody>
-      ${controls.map(a => `<tr><td>${esc(a.title)}</td><td>${CONTROL_EFFECT[a.status]}</td><td>${assigneeCellHtml(a, editable)}</td>${editable?`<td><button class="btn-sm" data-edit-action="${a.id}">✎</button></td>`:''}</tr>`).join('')}
-    </tbody></table></div>` : (editable
-      ? `<div class="risk-card-cta" id="pAddControlEmptyCta" style="min-height:64px;margin-bottom:12px;"><div class="risk-card-cta-inner" style="flex-direction:row;gap:8px;"><span class="risk-card-cta-icon" style="width:22px;height:22px;font-size:14px;">+</span><span class="risk-card-cta-lbl">Добавить контроль</span></div></div>`
-      : `<div class="empty-state" style="margin-bottom:12px;">Существующих процедур контроля пока не привязано.</div>`)}
-
     <div class="btn-row" style="margin-bottom:12px;">
       ${editable ? `<button class="btn btn-secondary btn-sm" id="pEditBtn">Редактировать карточку</button>` : ''}
       ${editable && (r.status==='Идентификация'||r.status==='Анализ и оценка') ? `<button class="btn btn-secondary btn-sm" id="pAssessBtn">Провести оценку (P/I)</button>` : ''}
@@ -3983,23 +3995,6 @@ function renderPassport(){
     </tbody></table></div>` : (editable
       ? `<div class="risk-card-cta" id="pAddActionEmptyCta" style="min-height:72px;"><div class="risk-card-cta-inner" style="flex-direction:row;gap:8px;"><span class="risk-card-cta-icon" style="width:24px;height:24px;font-size:15px;">+</span><span class="risk-card-cta-lbl">Добавить мероприятие</span></div></div>`
       : `<div class="empty-state">Мероприятий пока нет — светофор красный, пока не появится хотя бы одно.</div>`)}
-
-    <h3 class="pp-h">ЭСКАЛАЦИЯ И КОММУНИКАЦИЯ</h3>
-    <div class="passport-block" style="margin-bottom:12px;">
-      <div class="btn-row" style="margin:0 0 10px;">
-        ${editable && !r.committeeFlag ? `<button class="btn btn-secondary btn-sm" id="pEscalateBtn">Эскалировать риск-менеджеру / комитету</button>` : ''}
-        ${editable && r.ownerNames.length > 1 ? `<span class="badge-pill" style="background:var(--amber-50);color:var(--amber-700);">Кросс-функциональный риск — требуется согласование ${r.ownerNames.length} совладельцев</span>` : ''}
-      </div>
-      <div class="pp-h-row" style="margin:0 0 4px;padding-top:0;border-top:none;">
-        <div class="k" style="margin:0;">Лог комментариев и решений</div>
-        ${editable ? `<button type="button" class="btn btn-secondary btn-sm" id="pAddCommentBtn">+ Комментарий</button>` : ''}
-      </div>
-      <div class="v">${renderCommentLog(r.id)}</div>
-      ${editable ? `<div id="pCommentFormWrap" hidden style="margin-top:10px;">
-        <textarea id="pCommentText" placeholder="Комментарий или решение по риску..." style="width:100%;min-height:60px;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 12px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>
-        <div class="btn-row" style="margin-top:8px;"><button type="button" class="btn btn-text btn-sm" id="pCommentCancelBtn">Отмена</button><button type="button" class="btn btn-primary btn-sm" id="pCommentSaveBtn" style="flex:1;">Сохранить</button></div>
-      </div>` : ''}
-    </div>
 
     <h3 class="pp-h">AUDIT TRAIL — кто, когда и что менял</h3>
     ${renderAuditForRisk(r.id)}
@@ -4020,10 +4015,6 @@ function renderPassport(){
   if (addActBtn) addActBtn.addEventListener('click', () => openActionModal(r, null));
   const addActEmptyCta = document.getElementById('pAddActionEmptyCta');
   if (addActEmptyCta) addActEmptyCta.addEventListener('click', () => openActionModal(r, null));
-  const addControlBtn = document.getElementById('pAddControlBtn');
-  if (addControlBtn) addControlBtn.addEventListener('click', () => openControlModal(r));
-  const addControlEmptyCta = document.getElementById('pAddControlEmptyCta');
-  if (addControlEmptyCta) addControlEmptyCta.addEventListener('click', () => openControlModal(r));
   const addCommentBtn = document.getElementById('pAddCommentBtn');
   const commentFormWrap = document.getElementById('pCommentFormWrap');
   if (addCommentBtn) addCommentBtn.addEventListener('click', () => {
@@ -4300,17 +4291,6 @@ function openActionModal(r, action){
   enhanceSelectAsAutocomplete(document.getElementById('acKind'));
   enhanceSelectAsAutocomplete(document.getElementById('acStatus'));
   openModal('actionModalOverlay');
-}
-// «+ Контроль» в разделе КОНТРОЛИ — та же модалка мероприятия, что и
-// «+ Мероприятие», просто открывается сразу с видом «Существующая
-// процедура» (acKind=existing → сохранится как kind:'existing_procedure',
-// см. actionFormSubmit) — контроли и мероприятия физически одна и та же
-// сущность Action, различаются только этим полем.
-function openControlModal(r){
-  openActionModal(r, null);
-  const kindSel = document.getElementById('acKind');
-  kindSel.value = 'existing';
-  syncAc('acKind');
 }
 document.getElementById('actionFormSubmit').addEventListener('click', () => {
   const r = findRisk(actionCtx.riskId); if (!r) return;
