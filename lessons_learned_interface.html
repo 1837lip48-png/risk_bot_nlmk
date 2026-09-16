@@ -5,7 +5,42 @@
      до onload), иначе на медленной/заблокированной сети до шрифта каждая
      полная перезагрузка (в т.ч. выход из рабочего пространства) выглядит
      зависшей на пустом экране, хотя приложение уже готово. -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" media="print" onload="this.media='all'; window.__fontsReady=true; if(typeof markFontsReady==='function') markFontsReady(); if(typeof syncHeaderReserve==='function') syncHeaderReserve();">
+<script>
+// onload у <link media="print"> срабатывает, когда загрузился САМ CSS-файл
+// Google Fonts — но реальные файлы шрифта (@font-face внутри него) в этот
+// момент могут всё ещё догружаться (font-display:swap), и до их готовности
+// браузер продолжает рисовать текст запасным шрифтом. Поэтому window.
+// __fontsReady выставляем не сразу по onload, а после document.fonts.ready —
+// иначе .fonts-ready на <html> проставлялся преждевременно, и скачок
+// метрик при реальной подстановке шрифта всё равно оставался виден (в т.ч.
+// повторно — на каждый location.reload(), напр. «Выйти» из рабочего
+// пространства обратно на экран входа).
+function activateFonts(link){
+  link.media = 'all';
+  function done(){
+    window.__fontsReady = true;
+    if (typeof markFontsReady === 'function') markFontsReady();
+    if (typeof syncHeaderReserve === 'function') syncHeaderReserve();
+  }
+  if (document.fonts && document.fonts.load){
+    // document.fonts.ready один без явного load() иногда резолвится раньше,
+    // чем браузер вообще начал грузить Golos Text (т.к. только что
+    // подключённые @font-face ещё не считаются «использующимися» ни одним
+    // элементом) — поэтому сначала явно запрашиваем нужные начертания,
+    // и только потом ждём document.fonts.ready.
+    Promise.all([
+      document.fonts.load('400 16px "Golos Text"'),
+      document.fonts.load('700 16px "Golos Text"'),
+      document.fonts.load('800 16px "Golos Text"')
+    ]).catch(function(){}).then(function(){
+      document.fonts.ready.then(done, done);
+    });
+  } else {
+    done();
+  }
+}
+</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" media="print" onload="activateFonts(this)">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap"></noscript>
 <style>
   :root{
