@@ -805,6 +805,13 @@ function activateFonts(link){
   .rcm-title{font-family:var(--font-display); font-weight:700; font-size:14px; color:var(--ink-900); margin-bottom:10px; line-height:1.3;}
   .rcm-meta{display:flex; align-items:center; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--ink-600);}
   .rcm-due-overdue{color:var(--red-700); font-weight:600;}
+  .rcm-committee-badge{background:var(--gold-50); color:var(--gold-700); text-transform:uppercase; font-size:10.5px;}
+  .rcm-new-badge{background:var(--accent-50); color:var(--accent-600); font-size:10.5px; vertical-align:2px; margin-left:6px;}
+  .rcm-actions-bar{display:flex; align-items:center; gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid var(--line);}
+  .rcm-actions-label{font-size:11px; text-transform:uppercase; color:var(--ink-400); flex-shrink:0;}
+  .rcm-actions-track{display:flex; align-items:center; gap:3px; flex:1; min-width:0;}
+  .rcm-actions-seg{flex:1; height:5px; border-radius:3px; min-width:2px;}
+  .rcm-actions-count{font-size:11px; color:var(--ink-600); flex-shrink:0;}
   .risk-card-cta{display:flex; align-items:center; justify-content:center; min-height:140px; cursor:pointer;
     border:1.5px dashed var(--line); border-radius:var(--radius-field); background:transparent;
     transition:border-color .15s ease, background-color .15s ease;}
@@ -3284,6 +3291,37 @@ function dueStatusInfo(r){
   if (diffDays < 0) return {text:`просрочен на ${-diffDays} ${pluralRu(-diffDays,['день','дня','дней'])}`, icon:ICON_DUE_CLOCK, cls:'overdue'};
   return {text:`мероприятие через ${diffDays} ${pluralRu(diffDays,['день','дня','дней'])}`, icon:ICON_CALENDAR, cls:'upcoming'};
 }
+// Полоса прогресса мероприятий на компактной карточке — быстрый скан без
+// открытия паспорта. Больше ~8 мероприятий сегменты становятся нечитаемо
+// мелкими, поэтому свёртываем в агрегированный индикатор (цвет — тот же
+// trafficLight, что и в паспорте).
+function actionsProgressBarHtml(actions){
+  if (!actions.length) return '';
+  const total = actions.length;
+  const done = actions.filter(a => a.status === 'done').length;
+  if (total > 8){
+    const tl = trafficLight(actions);
+    return `<div class="rcm-actions-bar">
+      <span class="rcm-actions-label">Мероприятия</span>
+      <span style="display:flex; align-items:center; gap:6px; flex:1; min-width:0;">
+        <span style="width:8px; height:8px; border-radius:50%; background:${tl.color}; flex-shrink:0;"></span>
+        <span style="font-size:11px; color:var(--ink-600);">${done} из ${total} выполнено</span>
+      </span>
+    </div>`;
+  }
+  const segColor = a => {
+    if (a.status === 'done') return 'var(--green-700)';
+    const d = parseRuShortDate(a.plannedDate);
+    if (a.status !== 'rejected' && d && d < TODAY) return 'var(--red-700)';
+    if (a.status === 'in_progress') return 'var(--accent-600)';
+    return 'var(--line)';
+  };
+  return `<div class="rcm-actions-bar">
+    <span class="rcm-actions-label">Мероприятия</span>
+    <span class="rcm-actions-track">${actions.map(a => `<span class="rcm-actions-seg" style="background:${segColor(a)};"></span>`).join('')}</span>
+    <span class="rcm-actions-count">${done}/${total}</span>
+  </div>`;
+}
 function riskCardHtml(r){
   const zone = zoneOf(rraOf(r.p, r.iLevel));
   const due = dueStatusInfo(r);
@@ -3292,15 +3330,17 @@ function riskCardHtml(r){
     <div class="rcm-top">
       <span class="rcm-id mono">${esc(r.id)}</span>
       <span class="rcm-top-right">
-        ${zone ? `<span class="badge-pill ${ZONE_BADGE[zone]}">${ZONE_LABEL[zone]}</span>` : `<span class="rcm-unrated">Не оценён</span>`}
+        ${r.committeeFlag ? `<span class="badge-pill rcm-committee-badge">Комитет</span>` : ''}
+        ${zone ? `<span class="badge-pill ${ZONE_BADGE[zone]}">${ZONE_LABEL[zone]} · RRA ${rraOf(r.p,r.iLevel)}</span>` : `<span class="rcm-unrated">Не оценён</span>`}
         ${editable ? `<button type="button" class="icon-btn-del" data-del-risk="${r.id}" title="Удалить риск из реестра" aria-label="Удалить риск из реестра"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>` : ''}
       </span>
     </div>
-    <div class="rcm-title">${esc(r.title)}</div>
+    <div class="rcm-title">${esc(r.title)}${r.isNew ? `<span class="badge-pill rcm-new-badge">NEW</span>` : ''}</div>
     <div class="rcm-meta">
       <span>${ICON_OWNER}${esc(r.ownerNames.join(', ')||'не назначен')}</span>
       <span class="rcm-due rcm-due-${due.cls}">${due.icon}${due.text}</span>
     </div>
+    ${actionsProgressBarHtml(r.actions)}
   </div>`;
 }
 const PLEVEL_LABEL = {1:'Низкая',2:'Средняя',3:'Высокая'};
