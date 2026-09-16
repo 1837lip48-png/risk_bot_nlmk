@@ -508,8 +508,15 @@ function activateFonts(link){
   /* Страница «Детали встречи» (Блок 3b) — отдельная ws-page, не модалка;
      переиспользует .session-badge/.session-ai-box из попапа сводки. */
   .sd-breadcrumb{display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-600); margin-bottom:14px;}
-  .sd-breadcrumb a{color:var(--accent-600); font-weight:600; text-decoration:none; cursor:pointer;}
-  .sd-breadcrumb a:hover{text-decoration:underline;}
+  /* Раньше это была просто ссылка мелким текстом — легко было не заметить,
+     что это единственный путь назад к календарю со страницы «Детали
+     встречи» (не модалка, а отдельная страница). Теперь — явная кнопка
+     со стрелкой, как обычный «назад». */
+  .sd-back-btn{display:inline-flex; align-items:center; gap:6px; padding:6px 12px 6px 8px; border:1px solid var(--line);
+    border-radius:var(--radius-pill); background:var(--paper-0); color:var(--ink-700); font-weight:600; font-size:12.5px;
+    text-decoration:none; cursor:pointer;}
+  .sd-back-btn:hover{background:var(--canvas); border-color:var(--accent-600); color:var(--accent-600);}
+  .sd-back-btn svg{width:14px; height:14px; flex-shrink:0;}
   .sd-topbar{display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:10px;}
   .sd-badges{display:flex; align-items:center; gap:8px;}
   .sd-actions-row{display:flex; gap:8px; flex-shrink:0;}
@@ -5790,12 +5797,7 @@ function wireDayNotesForm(y,m,d){
     toast('Приглашение на сессию направлено', {body: dnAttendeeSelection.length ? 'Участники: '+dnAttendeeSelection.join(', ') : undefined});
     dnAttendeeSelection = [];
     dnRiskSelection = [];
-    // Модалка не закрывается — на один день часто нужно завести несколько
-    // активностей подряд (риск-сессия + семинар и т.п.); форма просто
-    // перерисовывается с уже добавленной заметкой в списке и чистыми
-    // полями, готовыми для следующей записи (как и после удаления заметки).
-    document.getElementById('chartModalMount').innerHTML = dayNotesBodyHtml(y,m,d);
-    wireDayNotesForm(y,m,d);
+    closeModal('chartModalOverlay');
     renderCalendar();
   });
 }
@@ -6023,7 +6025,7 @@ function renderSessionDetailPage(){
   ];
 
   mount.innerHTML = `
-    <div class="sd-breadcrumb"><a id="sdBackLink">Календарь</a><span>›</span><span>Риск-сессия — ${risks.length} ${pluralRu(risks.length,['риск','риска','рисков'])}</span></div>
+    <div class="sd-breadcrumb"><a id="sdBackLink" class="sd-back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Календарь</a><span>›</span><span>Риск-сессия — ${risks.length} ${pluralRu(risks.length,['риск','риска','рисков'])}</span></div>
     <div class="sd-topbar">
       <div>
         <div class="sd-badges">
