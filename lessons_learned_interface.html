@@ -3874,25 +3874,10 @@ function renderPassport(){
   const similarLesson = findBestLessonForRisk(r);
 
   mount.innerHTML = `
-    <div class="btn-row" style="justify-content:flex-end;margin-bottom:10px;">
+    <div class="btn-row" style="margin-bottom:12px;">
       <button type="button" class="btn btn-text btn-sm" id="pAgendaBtn">📅 Добавить в повестку риск-сессии</button>
-    </div>
-
-    <h3 class="pp-h">ЭСКАЛАЦИЯ И КОММУНИКАЦИЯ</h3>
-    <div class="passport-block" style="margin-bottom:12px;">
-      <div class="btn-row" style="margin:0 0 10px;">
-        ${editable && !r.committeeFlag ? `<button class="btn btn-secondary btn-sm" id="pEscalateBtn">Эскалировать риск-менеджеру / комитету</button>` : ''}
-        ${editable && r.ownerNames.length > 1 ? `<span class="badge-pill" style="background:var(--amber-50);color:var(--amber-700);">Кросс-функциональный риск — требуется согласование ${r.ownerNames.length} совладельцев</span>` : ''}
-      </div>
-      <div class="pp-h-row" style="margin:0 0 4px;padding-top:0;border-top:none;">
-        <div class="k" style="margin:0;">Лог комментариев и решений</div>
-        ${editable ? `<button type="button" class="btn btn-secondary btn-sm" id="pAddCommentBtn">+ Комментарий</button>` : ''}
-      </div>
-      <div class="v">${renderCommentLog(r.id)}</div>
-      ${editable ? `<div id="pCommentFormWrap" hidden style="margin-top:10px;">
-        <textarea id="pCommentText" placeholder="Комментарий или решение по риску..." style="width:100%;min-height:60px;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 12px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>
-        <div class="btn-row" style="margin-top:8px;"><button type="button" class="btn btn-text btn-sm" id="pCommentCancelBtn">Отмена</button><button type="button" class="btn btn-primary btn-sm" id="pCommentSaveBtn" style="flex:1;">Сохранить</button></div>
-      </div>` : ''}
+      ${editable && !r.committeeFlag ? `<button class="btn btn-secondary btn-sm" id="pEscalateBtn">Эскалировать риск-менеджеру / комитету</button>` : ''}
+      ${editable && r.ownerNames.length > 1 ? `<span class="badge-pill" style="background:var(--amber-50);color:var(--amber-700);">Кросс-функциональный риск — требуется согласование ${r.ownerNames.length} совладельцев</span>` : ''}
     </div>
 
     <div class="stepper" title="${esc(STATUSES.map((s,i)=>`${i+1}. ${s}`).join(' → '))}">${STATUSES.map((s,i) => {
@@ -3998,6 +3983,13 @@ function renderPassport(){
 
     <h3 class="pp-h">AUDIT TRAIL — кто, когда и что менял</h3>
     ${renderAuditForRisk(r.id)}
+
+    <div class="pp-h-row"><h3 class="pp-h">ЛОГ КОММЕНТАРИЕВ И РЕШЕНИЙ</h3>${editable ? `<button type="button" class="btn btn-secondary btn-sm" id="pAddCommentBtn">+ Комментарий</button>` : ''}</div>
+    <div class="v">${renderCommentLog(r.id)}</div>
+    ${editable ? `<div id="pCommentFormWrap" hidden style="margin-top:10px;">
+      <textarea id="pCommentText" placeholder="Комментарий или решение по риску..." style="width:100%;min-height:60px;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 12px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>
+      <div class="btn-row" style="margin-top:8px;"><button type="button" class="btn btn-text btn-sm" id="pCommentCancelBtn">Отмена</button><button type="button" class="btn btn-primary btn-sm" id="pCommentSaveBtn" style="flex:1;">Сохранить</button></div>
+    </div>` : ''}
   `;
 
   mount.querySelectorAll('.stepper .step').forEach(stepEl => stepEl.addEventListener('click', () => {
