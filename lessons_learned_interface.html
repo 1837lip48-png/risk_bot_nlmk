@@ -746,12 +746,20 @@ function activateFonts(link){
   .risk-card[data-zone="low"]{border-left-color:var(--green-700);}
   .risk-card[data-zone="unrated"]{border-left-color:var(--ink-400); opacity:.75;}
   .risk-card[data-zone="unrated"]:hover{opacity:1;}
-  /* Сетка карточек 2 колонки — только для «Мои риски» владельца
-     (#registerList.owner-grid); у риск-менеджера реестр — тот же список
-     карточек одной колонкой, как и раньше (много рисков + пагинация). */
+  /* Сетка карточек 2 колонки (адаптивно) — единый формат реестра рисков
+     и у риск-менеджера, и у владельца риска. */
   #registerList.owner-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px; align-items:start;}
   #registerList.owner-grid .risk-card{margin-bottom:0;}
   @media (max-width:860px){#registerList.owner-grid{grid-template-columns:1fr;}}
+  /* Компактная карточка риска — ID + бейдж уровня, название, владелец +
+     статус срока. Полная детализация — в паспорте по клику. */
+  .risk-card-mini{padding:14px 16px;}
+  .rcm-top{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;}
+  .rcm-id{font-size:11.5px; color:var(--ink-400); font-weight:600;}
+  .rcm-unrated{font-size:11px; color:var(--ink-400); font-weight:700;}
+  .rcm-title{font-family:var(--font-display); font-weight:700; font-size:14px; color:var(--ink-900); margin-bottom:10px; line-height:1.3;}
+  .rcm-meta{display:flex; align-items:center; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--ink-600);}
+  .rcm-due-overdue{color:var(--red-700); font-weight:600;}
   .risk-card-cta{display:flex; align-items:center; justify-content:center; min-height:140px; cursor:pointer;
     border:1.5px dashed var(--line); border-radius:var(--radius-field); background:transparent;
     transition:border-color .15s ease, background-color .15s ease;}
@@ -2618,14 +2626,14 @@ const PAGE_META = {
   lessons:{title:'Реестр уроков', desc:'База знаний по прошлым проектам.'},
   calendar:{title:'Календарь', desc:'Список мероприятий и плановые даты.'},
   map:{title:'Карта взаимосвязей', desc:'Ручное построение связей между рисками и объединение дублей.'},
-  reports:{title:'Privacy Reports & Analytics', desc:'Executive Summary и AI-подсказки связей — считаются из текущих данных.'},
+  reports:{title:'Privacy Reports & Analytics', desc:''},
   premortem:{title:'PreMortem Analysis', desc:'Заблаговременный разбор «представим, что проект провалился — что стало причиной»: сценарии, чек-листы, перенос в реестр рисков.'},
 };
 // Заголовки вкладок для владельца риска — то же пространство физически
 // (одни и те же контейнеры и функции рендера), но подписи и описания честно
 // отражают, что видно только подмножество, ограниченное его рисками.
 const PAGE_META_OWNER_OVERRIDE = {
-  register:{title:'Мои риски', desc:'Риски, где вы указаны владельцем — плюс возможность предложить новый.'},
+  register:{title:'Мои риски', desc:'Риски, где вы указаны владельцем.'},
   calendar:{title:'Календарь', desc:'Только сроки мероприятий по вашим рискам.'},
 };
 function gotoPage(key){
@@ -3079,73 +3087,45 @@ function maybeAdvanceOnActionChange(r){
 // черновик-заглушка с призывом заполнить и отправить его через ту же
 // форму «+ Предложить риск».
 function ownerTemplateCardHtml(){
-  return `<div class="risk-card" style="border-style:dashed; cursor:pointer;" data-open-template>
-    <div class="rc-head">
-      <div class="rc-head-left">
-        <div class="risk-card-top" style="margin-bottom:6px;">
-          <span class="risk-card-title" style="color:var(--ink-400);">Название риска — пока не заполнено</span>
-          <span class="badge-pill" style="background:var(--canvas);color:var(--ink-400);border:1px dashed var(--line);">Шаблон</span>
-        </div>
-        <div class="rc-desc">У вас пока нет ни одного риска. Заполните пустой шаблон, чтобы предложить первый.</div>
-      </div>
-      <div class="rc-head-actions">
-        <button type="button" class="btn btn-primary btn-sm" data-open-template>Заполнить</button>
-      </div>
+  return `<div class="risk-card risk-card-mini" style="border-style:dashed; cursor:pointer; grid-column:1/-1;" data-open-template>
+    <div class="rcm-top">
+      <span class="rcm-id mono" style="color:var(--ink-400);">Новый риск</span>
+      <span class="badge-pill" style="background:var(--canvas);color:var(--ink-400);border:1px dashed var(--line);">Шаблон</span>
     </div>
-    <div class="rc-meta4">
-      <div><div class="k">Причина</div><div class="v muted">—</div></div>
-      <div><div class="k">Категория</div><div class="v muted">—</div></div>
-      <div><div class="k">Оценка риска</div><div class="v muted">нужна оценка P/I</div></div>
-      <div><div class="k">ID риска</div><div class="v muted">присвоится при создании</div></div>
-    </div>
-    <div class="rc-mitigation">
-      <div class="k">Прямое следствие</div><div class="v muted" style="margin-bottom:6px;">—</div>
-      <div class="k">Мероприятия</div><div class="v muted">появятся после создания риска</div>
+    <div class="rcm-title" style="color:var(--ink-400);">Название риска — пока не заполнено</div>
+    <div class="rcm-meta" style="justify-content:space-between;">
+      <span class="muted">У вас пока нет ни одного риска. Заполните пустой шаблон, чтобы предложить первый.</span>
+      <button type="button" class="btn btn-primary btn-sm" data-open-template>Заполнить</button>
     </div>
   </div>`;
 }
-function riskCardHtml(r){
-  const tl = trafficLight(r.actions);
-  const rra = rraOf(r.p, r.iLevel), zone = zoneOf(rra);
-  const editable = canManage(r);
+// Компактный формат карточки риска в реестре (риск-менеджер и владелец
+// риска — единый вид): ID/уровень сверху, название, строка «владелец +
+// статус срока» снизу. Полная детализация (причина/следствие/мероприятия/
+// статус/эскалация) — в паспорте по клику, не дублируется в списке.
+const ICON_DUE_CLOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" style="vertical-align:-2px;margin-right:4px;flex-shrink:0;"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>';
+function dueStatusInfo(r){
+  if (!r.p || !r.iLevel) return {text:'нужна оценка P/I', icon:ICON_ATTENTION, cls:'unrated'};
   const nearestAction = r.actions.filter(a => a.status!=='done' && a.status!=='rejected')
-    .map(a => ({a, d: parseRuShortDate(a.plannedDate)})).sort((x,y) => (x.d||9e15)-(y.d||9e15))[0];
-  return `<div class="risk-card" data-risk-id="${r.id}" data-zone="${zone||'unrated'}" style="cursor:pointer;">
-    <div class="rc-head">
-      <div class="rc-head-left">
-        <div class="risk-card-top" style="margin-bottom:6px;">
-          ${r.isNew ? `<span class="badge-pill badge-new">NEW</span>` : ''}
-          <span class="risk-card-title">${esc(r.title)}</span>
-          ${state.session.role === 'riskowner' && isMyInitiated(r) && !isMyRisk(r) ? `<span class="badge-pill badge-initiator" title="Вы предложили этот риск — владелец назначается риск-менеджером">Я инициатор</span>` : ''}
-          ${zone ? `<span class="badge-pill ${ZONE_BADGE[zone]}">${ZONE_LABEL[zone]}</span>` : `<span class="badge-pill" style="background:var(--canvas);color:var(--ink-400);" title="Требует внимания — нужна оценка P/I">${ICON_ATTENTION}Не оценён</span>`}
-          ${r.committeeFlag ? `<span class="badge-pill badge-esc">Эскалация комитету</span>` : ''}
-          <span class="badge-pill ${r.status==='Закрыт'?'badge-status-closed':(r.status==='Идентификация'?'badge-status-ident':(r.status==='Архивирован'?'badge-status-archived':'badge-status-progress'))}">${esc(r.status)}</span>
-        </div>
-        <div class="rc-desc">${esc(r.event)}</div>
-      </div>
-      <div class="rc-head-actions">
-        ${editable ? `<button class="btn btn-secondary btn-sm" data-edit-risk="${r.id}">Изменить</button>` : ''}
-        <button class="btn btn-sm" data-open-risk="${r.id}">Детали</button>
-        ${editable ? `<button type="button" class="icon-btn-del" data-del-risk="${r.id}" title="Удалить риск из реестра" aria-label="Удалить риск из реестра"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>` : ''}
-      </div>
+    .map(a => ({a, d: parseRuShortDate(a.plannedDate)})).filter(x=>x.d).sort((x,y) => x.d-y.d)[0];
+  if (!nearestAction) return {text:'плановых сроков нет', icon:ICON_DUE_CLOCK, cls:'neutral'};
+  const diffDays = Math.round((nearestAction.d - TODAY) / 86400000);
+  if (diffDays < 0) return {text:`просрочен на ${-diffDays} ${pluralRu(-diffDays,['день','дня','дней'])}`, icon:ICON_DUE_CLOCK, cls:'overdue'};
+  return {text:`мероприятие через ${diffDays} ${pluralRu(diffDays,['день','дня','дней'])}`, icon:ICON_CALENDAR, cls:'upcoming'};
+}
+function riskCardHtml(r){
+  const zone = zoneOf(rraOf(r.p, r.iLevel));
+  const due = dueStatusInfo(r);
+  return `<div class="risk-card risk-card-mini" data-risk-id="${r.id}" data-zone="${zone||'unrated'}" style="cursor:pointer;">
+    <div class="rcm-top">
+      <span class="rcm-id mono">${esc(r.id)}</span>
+      ${zone ? `<span class="badge-pill ${ZONE_BADGE[zone]}">${ZONE_LABEL[zone]}</span>` : `<span class="rcm-unrated">Не оценён</span>`}
     </div>
-    <div class="rc-meta4">
-      <div><div class="k">Причина</div><div class="v">${esc(r.cause)||'<span class="muted">не заполнено</span>'}</div></div>
-      <div><div class="k">Категория</div><div class="v">${esc(r.category)}</div></div>
-      <div><div class="k">Оценка риска</div><div class="v">${r.p&&r.iLevel ? `P=${PLEVEL_LABEL[r.p]} · I=${PLEVEL_LABEL[r.iLevel]} (RRA=${rra})` : 'нужна оценка P/I'}</div></div>
-      <div><div class="k">ID риска</div><div class="v mono">${r.id} · №${r.displayNumber||'—'}</div></div>
+    <div class="rcm-title">${esc(r.title)}</div>
+    <div class="rcm-meta">
+      <span>${ICON_OWNER}${esc(r.ownerNames.join(', ')||'не назначен')}</span>
+      <span class="rcm-due rcm-due-${due.cls}">${due.icon}${due.text}</span>
     </div>
-    <div class="rc-icon-row">
-      <span>${ICON_OWNER}${esc(r.ownerNames.join(', ')||'—')}</span>
-      <span>${ICON_CALENDAR}${nearestAction ? `Ближайший срок: ${esc(nearestAction.a.plannedDate)}` : 'Плановых сроков нет'}</span>
-      <span>${ICON_STATUS}<span class="status-dot" style="background:${tl.color}"></span> ${tl.label}</span>
-    </div>
-    <div class="rc-mitigation">
-      <div class="k">Прямое следствие</div><div class="v" style="margin-bottom:6px;">${esc(r.consequence)}</div>
-      <div class="k">${nearestAction ? 'Ближайшее мероприятие' : 'Мероприятия'}</div>
-      <div class="v">${nearestAction ? esc(nearestAction.a.title) : (r.actions.length ? `${r.actions.length} мероприятий, все завершены/отклонены` : 'Мероприятий пока нет')}</div>
-    </div>
-    <div class="risk-card-foot"><span>${r.actions.length} мероприятий</span>${r.sourceLessonId?`<span>· из урока <code class="mono">${r.sourceLessonId}</code></span>`:''}<button class="link-btn" data-open-risk="${r.id}">Открыть паспорт →</button></div>
   </div>`;
 }
 const PLEVEL_LABEL = {1:'Низкая',2:'Средняя',3:'Высокая'};
@@ -3155,7 +3135,6 @@ const PLEVEL_LABEL = {1:'Низкая',2:'Средняя',3:'Высокая'};
 const ICON_ATTENTION = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:3px;flex-shrink:0;"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>';
 const ICON_OWNER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" style="vertical-align:-2px;margin-right:4px;"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>';
 const ICON_CALENDAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" style="vertical-align:-2px;margin-right:4px;"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>';
-const ICON_STATUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" style="vertical-align:-2px;margin-right:4px;"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>';
 // Быстрый фильтр из виджетов Дэшборда/Матрицы (например, клик по KPI
 // «Просрочено мероприятий») — накладывается поверх обычных фильтров реестра
 // и показывается снимаемым чипом, а не отдельной страницей.
@@ -3281,7 +3260,9 @@ function renderRegister(){
   document.getElementById('regCount').textContent = `${list.length} из ${state.risks.filter(r=>r.status!=='Архивирован').length}`;
 
   const registerListEl = document.getElementById('registerList');
-  registerListEl.classList.toggle('owner-grid', ownerLocked);
+  // Сетка карточек 2 колонки (адаптивно) — единый формат и у риск-менеджера,
+  // и у владельца риска, не только у «Мои риски».
+  registerListEl.classList.add('owner-grid');
   const legendMount = document.getElementById('regLevelLegend');
 
   if (ownerHasNoRisks){
@@ -3297,38 +3278,26 @@ function renderRegister(){
     registerPaging.page = Math.min(Math.max(1, registerPaging.page), pageCount);
     const pageList = list.slice((registerPaging.page-1)*registerPaging.pageSize, registerPaging.page*registerPaging.pageSize);
     const cardsHtml = pageList.length ? pageList.map(riskCardHtml).join('') : `<div class="empty-state">Ничего не найдено по заданным фильтрам.</div>`;
-    // CTA-карточка «+ Добавить риск» последним элементом сетки — только в
-    // сетчатом виде владельца (в списке риск-менеджера это отдельная
-    // кнопка над таблицей, там она была бы лишней среди десятков карточек).
-    registerListEl.innerHTML = cardsHtml + (ownerLocked && pageList.length ? `<div class="risk-card-cta" data-open-template><div class="risk-card-cta-inner"><span class="risk-card-cta-icon">+</span><span class="risk-card-cta-lbl">Добавить риск</span></div></div>` : '');
+    // CTA-карточка «+ Добавить риск» последним элементом сетки.
+    registerListEl.innerHTML = cardsHtml + (pageList.length ? `<div class="risk-card-cta" data-open-template><div class="risk-card-cta-inner"><span class="risk-card-cta-icon">+</span><span class="risk-card-cta-lbl">${ownerLocked?'Предложить риск':'Добавить риск'}</span></div></div>` : '');
     renderPagination('registerPaginationWrap', registerPaging, total, renderRegister, 'риск(ов)');
     document.querySelectorAll('#registerList .risk-card, #registerList [data-open-risk]').forEach(c => {
       c.addEventListener('click', (e) => { e.stopPropagation(); openPassport(c.dataset.riskId || c.dataset.openRisk); });
-    });
-    document.querySelectorAll('#registerList [data-edit-risk]').forEach(b => {
-      b.addEventListener('click', (e) => { e.stopPropagation(); openRiskEditModal(findRisk(b.dataset.editRisk)); });
-    });
-    document.querySelectorAll('#registerList [data-del-risk]').forEach(b => {
-      b.addEventListener('click', (e) => { e.stopPropagation(); deleteRisk(b.dataset.delRisk); });
     });
     document.querySelectorAll('#registerList [data-open-template]').forEach(b => {
       b.addEventListener('click', (e) => { e.stopPropagation(); openRiskCreateModal(); });
     });
     // Легенда — сводка по всему отфильтрованному списку (list), не только
-    // по текущей странице, чтобы отражать портфель владельца целиком.
+    // по текущей странице.
     if (legendMount){
-      if (ownerLocked){
-        const counts = {high:0, medium:0, low:0, unrated:0};
-        list.forEach(r => { const z = zoneOf(rraOf(r.p, r.iLevel)); counts[z||'unrated']++; });
-        legendMount.innerHTML = `<div class="risk-level-legend">
-          <span><i style="background:var(--red-700)"></i>Высокий — ${counts.high}</span>
-          <span><i style="background:var(--amber-700)"></i>Средний — ${counts.medium}</span>
-          <span><i style="background:var(--green-700)"></i>Низкий — ${counts.low}</span>
-          <span><i style="background:var(--ink-400)"></i>Не оценён — ${counts.unrated}</span>
-        </div>`;
-      } else {
-        legendMount.innerHTML = '';
-      }
+      const counts = {high:0, medium:0, low:0, unrated:0};
+      list.forEach(r => { const z = zoneOf(rraOf(r.p, r.iLevel)); counts[z||'unrated']++; });
+      legendMount.innerHTML = `<div class="risk-level-legend">
+        <span><i style="background:var(--red-700)"></i>Высокий — ${counts.high}</span>
+        <span><i style="background:var(--amber-700)"></i>Средний — ${counts.medium}</span>
+        <span><i style="background:var(--green-700)"></i>Низкий — ${counts.low}</span>
+        <span><i style="background:var(--ink-400)"></i>Не оценён — ${counts.unrated}</span>
+      </div>`;
     }
   }
 
@@ -4359,6 +4328,10 @@ function renderMatrix(){
 let lessonTagFilter = new Set();
 let lessonAiQuery = '';
 function allTags(){ const s = new Set(); state.lessons.forEach(l => l.hashtags.forEach(t=>s.add(t))); return Array.from(s); }
+// Теги хранятся с «#» (обратная совместимость с исходным «Хештеги» —
+// jaccard/tokenize по ним не меняются), но в интерфейсе решётка перед
+// тегом больше не показывается — только при отображении текста.
+function tagLabel(t){ return String(t).replace(/^#/, ''); }
 function renderLessons(){
   const mount = document.getElementById('lessonsMount');
   mount.innerHTML = `
@@ -4368,7 +4341,7 @@ function renderLessons(){
       <div class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2M20 14h2M9 13v2M15 13v2"/></svg>
         <input type="text" id="lesAiAsk" placeholder="Спросить AI..."></div>
       <div class="ds-ms tag-ms" id="tagMs" style="width:230px;">
-        <button type="button" class="btn btn-secondary" id="btnTagPicker" style="width:100%;">Хештеги${lessonTagFilter.size?` (${lessonTagFilter.size})`:''}</button>
+        <button type="button" class="btn btn-secondary" id="btnTagPicker" style="width:100%;">Поиск по тегам${lessonTagFilter.size?` (${lessonTagFilter.size})`:''}</button>
         <div class="ds-ms-menu" id="tagMsMenu" hidden>
           <input type="text" id="tagMsSearch" class="tag-ms-search" placeholder="Поиск тега...">
           <div class="ds-ms-chips" id="tagMsChips"></div>
@@ -4397,7 +4370,7 @@ function renderLessons(){
     lessonTagSearch = '';
     toggleTagMenu(false);
     const btn = document.getElementById('btnTagPicker');
-    if (btn) btn.textContent = 'Хештеги';
+    if (btn) btn.textContent = 'Поиск по тегам';
     lessonsPaging.page = 1;
     renderLessonsTable();
   });
@@ -4418,7 +4391,7 @@ function renderTagMenuList(){
   const chips = document.getElementById('tagMsChips');
   if (!list || !chips) return;
   chips.innerHTML = Array.from(lessonTagFilter).map(t =>
-    `<span class="ds-chip">${esc(t)}<button type="button" data-remove-tag="${esc(t)}" aria-label="Убрать">×</button></span>`).join('');
+    `<span class="ds-chip">${esc(tagLabel(t))}<button type="button" data-remove-tag="${esc(t)}" aria-label="Убрать">×</button></span>`).join('');
   chips.querySelectorAll('[data-remove-tag]').forEach(b => b.addEventListener('click', (e) => {
     e.stopPropagation();
     lessonTagFilter.delete(b.dataset.removeTag);
@@ -4427,7 +4400,7 @@ function renderTagMenuList(){
   const q = lessonTagSearch.trim().toLowerCase();
   const tags = allTags().filter(t => !q || t.toLowerCase().includes(q));
   list.innerHTML = tags.length ? tags.map(t =>
-    `<div class="ds-ms-item${lessonTagFilter.has(t)?' active':''}" data-tag="${esc(t)}">${lessonTagFilter.has(t)?'✓ ':''}${esc(t)}</div>`).join('')
+    `<div class="ds-ms-item${lessonTagFilter.has(t)?' active':''}" data-tag="${esc(t)}">${lessonTagFilter.has(t)?'✓ ':''}${esc(tagLabel(t))}</div>`).join('')
     : '<div class="ds-ms-empty">Тегов не найдено</div>';
   list.querySelectorAll('[data-tag]').forEach(el => el.addEventListener('click', () => {
     const t = el.dataset.tag;
@@ -4440,7 +4413,7 @@ function onTagFilterChange(){
   lessonsPaging.page = 1;
   renderLessonsTable();
   const btn = document.getElementById('btnTagPicker');
-  if (btn) btn.textContent = `Хештеги${lessonTagFilter.size?` (${lessonTagFilter.size})`:''}`;
+  if (btn) btn.textContent = `Поиск по тегам${lessonTagFilter.size?` (${lessonTagFilter.size})`:''}`;
 }
 document.addEventListener('click', (e) => { if (!e.target.closest('#tagMs')) toggleTagMenu(false); });
 // «Спросить AI» — та же демо-эвристика (пересечение токенов), что и для
@@ -4615,7 +4588,7 @@ function lessonCardHtml(l){
     </div>
     ${l.lessonLearned ? `<div class="lesson-preview-quote"><span class="k">Выученный урок</span> ${esc(truncate(l.lessonLearned, 160))}</div>` : ''}
     ${l.recommendation ? `<div class="lesson-preview-quote"><span class="k">Рекомендация</span> ${esc(truncate(l.recommendation, 160))}</div>` : ''}
-    <div style="margin-bottom:10px;">${l.hashtags.map(t=>`<span class="lesson-tag-pill">${t}</span>`).join('')}</div>
+    <div style="margin-bottom:10px;">${l.hashtags.map(t=>`<span class="lesson-tag-pill">${esc(tagLabel(t))}</span>`).join('')}</div>
     <div class="risk-card-foot">${l.sourceRiskId?`<span>источник — риск <code class="mono">${l.sourceRiskId}</code></span>`:'<span></span>'}<button class="link-btn btn-sm" data-create-risk="${l.id}">Создать риск на основе урока →</button></div>
   </div>`;
 }
@@ -4673,7 +4646,7 @@ function openLessonModal(id, createNew){
     ${lessonFieldBlock('Стратегия реагирования', l.strategy)}
     ${lessonFieldBlock('Выученный урок', l.lessonLearned)}
     ${lessonFieldBlock('Рекомендация / Действие', l.recommendation)}
-    <div style="margin-bottom:14px;">${l.hashtags.map(t=>`<span class="lesson-tag-pill">${t}</span>`).join('') || '<span class="muted" style="font-size:12.5px;">Хештегов нет</span>'}</div>
+    <div style="margin-bottom:14px;">${l.hashtags.map(t=>`<span class="lesson-tag-pill">${esc(tagLabel(t))}</span>`).join('') || '<span class="muted" style="font-size:12.5px;">Тегов нет</span>'}</div>
     ${l.sourceRiskId?`<div class="field-hint" style="margin-bottom:10px;">Источник: риск <code class="mono">${l.sourceRiskId}</code></div>`:''}
     <div class="btn-row">
       <button class="btn btn-secondary" id="addLessonToRisksBtn" style="flex:1;" title="Быстро добавить черновик риска в реестр без заполнения формы">Добавить урок в риски</button>
@@ -4723,7 +4696,7 @@ function lessonFormHtml(){
     <div class="row2"><div class="field"><label>Влияние</label><input id="lfImpact" placeholder="напр. 120 млн ₽ / 3 мес."></div><div class="field"><label>Триггер / индикатор</label><input id="lfTrigger"></div></div>
     <div class="field"><label>Выученный урок</label><textarea id="lfLearned"></textarea></div>
     <div class="field"><label>Рекомендация / действие</label><textarea id="lfRec"></textarea></div>
-    <div class="field"><label>Хештеги (через запятую)</label><input id="lfTags" placeholder="#тендер, #закупки"></div>
+    <div class="field"><label>Хештеги (через запятую)</label><input id="lfTags" placeholder="тендер, закупки"></div>
   </form>
   <div class="btn-row"><button type="button" class="btn btn-text" data-close="lessonModalOverlay">Отмена</button><button type="button" class="btn btn-primary" id="lessonSaveBtn" style="flex:2;">Сохранить урок</button></div>`;
 }
@@ -6449,9 +6422,7 @@ function renderReports(){
   });
   suggestions.sort((a,b)=>b.score-a.score);
 
-  document.getElementById('wsHeaderExtra').innerHTML = `
-    <span class="dash-freshness"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Данные актуальны на: <b>${TODAY.toLocaleDateString('ru-RU')}</b></span>
-    <button type="button" class="btn btn-secondary btn-sm" id="btnExportReportPpt"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M3 17v2a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/></svg>Экспорт AI-отчёта в PPT</button>`;
+  document.getElementById('wsHeaderExtra').innerHTML = '';
   document.getElementById('reportsMount').innerHTML = `
     <div class="panel">
       <h3>Executive Summary</h3>
@@ -6514,7 +6485,6 @@ function renderReports(){
   document.querySelectorAll('[data-view-l]').forEach(b=>b.addEventListener('click', ()=>openLessonModal(b.dataset.viewL)));
   document.querySelectorAll('#reportsMount [data-open-risk]').forEach(a=>a.addEventListener('click', e=>{ e.preventDefault(); openPassport(a.dataset.openRisk); }));
   document.querySelectorAll('#reportsMount [data-goto-register]').forEach(a=>a.addEventListener('click', ()=> goToRegisterWithFilter(a.dataset.gotoRegister)));
-  document.getElementById('btnExportReportPpt').addEventListener('click', () => toast('Экспорт AI-отчёта в PPT', {body:'Демо-прототип: формирование презентации недоступно в этой версии.', duration:4000}));
   document.getElementById('btnManageTemplates').addEventListener('click', () => toast('Управление шаблонами', {body:'Демо-прототип: раздел недоступен в этой версии.', duration:4000}));
   document.querySelectorAll('[data-download-template]').forEach(b => b.addEventListener('click', () => toast(templates[b.dataset.downloadTemplate].title, {body:'Демо-прототип: скачивание недоступно в этой версии.', duration:4000})));
   document.querySelectorAll('[data-generate-template]').forEach(b => b.addEventListener('click', () => toast(templates[b.dataset.generateTemplate].title, {body:'Демо-прототип: генерация недоступна в этой версии.', duration:4000})));
