@@ -3059,8 +3059,18 @@ function renderNotifDrawer(){
   </div>`;
   const markAllBtn = document.getElementById('notifMarkAllBtn');
   if (markAllBtn) markAllBtn.addEventListener('click', () => {
+    // notifUnreadOnly по умолчанию true — если оставить его включённым,
+    // все карточки, которые мы только что отметили прочитанными, тут же
+    // отфильтровываются и весь список схлопывается в пустое состояние
+    // («Уведомлений нет»), что и выглядит как «текст скачет наверх».
+    // Выключаем фильтр, чтобы отмеченные карточки остались на месте (уже
+    // в «прочитанном» виде), плюс подстраховка scrollTop на случай
+    // длинного списка без фильтра.
+    const scrollPos = body.scrollTop;
     items.forEach(i => notifReadIds.add(i.id));
+    notifUnreadOnly = false;
     renderNotifDrawer();
+    body.scrollTop = scrollPos;
     renderNotifBell();
   });
   body.querySelectorAll('[data-notif-id]').forEach(el => el.addEventListener('click', () => {
@@ -3990,28 +4000,29 @@ function renderPassport(){
   mount.innerHTML = `
     ${r.committeeFlag ? `<div class="rcm-committee-banner" style="margin:-22px -22px 12px;">${ICON_ATTENTION}Требует решения комитета${r.committeeDecision ? ` · решение: ${esc(r.committeeDecision)}` : ''}</div>` : ''}
     ${ppNavHtml(r)}
-    <div class="btn-row" style="margin-bottom:12px;">
-      <button type="button" class="btn btn-text btn-sm" id="pAgendaBtn">📅 Добавить в повестку риск-сессии</button>
-      ${editable && !r.committeeFlag ? `<button class="btn btn-secondary btn-sm" id="pEscalateBtn">Эскалировать риск-менеджеру / комитету</button>` : ''}
-      ${editable && r.ownerNames.length > 1 ? `<span class="badge-pill" style="background:var(--amber-50);color:var(--amber-700);">Кросс-функциональный риск — требуется согласование ${r.ownerNames.length} совладельцев</span>` : ''}
-    </div>
-
-    <div class="stepper" title="${esc(STATUSES.map((s,i)=>`${i+1}. ${s}`).join(' → '))}">${STATUSES.map((s,i) => {
-      const isFilled = i < stepIdx, isCurrent = i === stepIdx;
-      const dotHtml = isFilled ? ICON_SD_CHECK_SM : (i+1);
-      const curStyle = isCurrent ? ` style="--stepper-current:${zone ? severityColor(zone).fg : 'var(--navy-900)'}"` : '';
-      const sectionLabel = PP_SECTIONS.find(sec => sec.id === STAGE_TO_SECTION[s])?.label || s;
-      return `<span class="step ${isFilled?'filled':''} ${isCurrent?'current':''}" data-step-idx="${i}"${curStyle} aria-label="Перейти к разделу: ${esc(sectionLabel)}"><span class="dot">${dotHtml}</span><span class="lbl">${s}</span></span>${i<STATUSES.length-1?'<span class="bar"></span>':''}`;
-    }).join('')}</div>
-
-    <div class="btn-row" style="margin-bottom:16px;">
-      ${editable ? `<button class="btn btn-secondary btn-sm" id="pEditBtn">Редактировать карточку</button>` : ''}
-      ${editable && (r.status==='Идентификация'||r.status==='Анализ и оценка') ? `<button class="btn btn-secondary btn-sm" id="pAssessBtn">Провести оценку (P/I)</button>` : ''}
-      ${editable ? advanceButtonHtml(r) : ''}
-      ${editable && r.status!=='Архивирован' ? `<button class="btn btn-text btn-sm" id="pMergeBtn">Объединить как дубль…</button>` : ''}
-    </div>
 
     <div class="pp-tab-panel${ppActive('pp-sec-ident')}" id="pp-sec-ident">
+      <div class="btn-row" style="margin-bottom:12px;">
+        <button type="button" class="btn btn-text btn-sm" id="pAgendaBtn">📅 Добавить в повестку риск-сессии</button>
+        ${editable && !r.committeeFlag ? `<button class="btn btn-secondary btn-sm" id="pEscalateBtn">Эскалировать риск-менеджеру / комитету</button>` : ''}
+        ${editable && r.ownerNames.length > 1 ? `<span class="badge-pill" style="background:var(--amber-50);color:var(--amber-700);">Кросс-функциональный риск — требуется согласование ${r.ownerNames.length} совладельцев</span>` : ''}
+      </div>
+
+      <div class="stepper" title="${esc(STATUSES.map((s,i)=>`${i+1}. ${s}`).join(' → '))}">${STATUSES.map((s,i) => {
+        const isFilled = i < stepIdx, isCurrent = i === stepIdx;
+        const dotHtml = isFilled ? ICON_SD_CHECK_SM : (i+1);
+        const curStyle = isCurrent ? ` style="--stepper-current:${zone ? severityColor(zone).fg : 'var(--navy-900)'}"` : '';
+        const sectionLabel = PP_SECTIONS.find(sec => sec.id === STAGE_TO_SECTION[s])?.label || s;
+        return `<span class="step ${isFilled?'filled':''} ${isCurrent?'current':''}" data-step-idx="${i}"${curStyle} aria-label="Перейти к разделу: ${esc(sectionLabel)}"><span class="dot">${dotHtml}</span><span class="lbl">${s}</span></span>${i<STATUSES.length-1?'<span class="bar"></span>':''}`;
+      }).join('')}</div>
+
+      <div class="btn-row" style="margin-bottom:16px;">
+        ${editable ? `<button class="btn btn-secondary btn-sm" id="pEditBtn">Редактировать карточку</button>` : ''}
+        ${editable && (r.status==='Идентификация'||r.status==='Анализ и оценка') ? `<button class="btn btn-secondary btn-sm" id="pAssessBtn">Провести оценку (P/I)</button>` : ''}
+        ${editable ? advanceButtonHtml(r) : ''}
+        ${editable && r.status!=='Архивирован' ? `<button class="btn btn-text btn-sm" id="pMergeBtn">Объединить как дубль…</button>` : ''}
+      </div>
+
       <h3 class="pp-h">ИДЕНТИФИКАЦИЯ</h3>
       <div class="passport-grid passport-grid-2">
         <div class="passport-block">
