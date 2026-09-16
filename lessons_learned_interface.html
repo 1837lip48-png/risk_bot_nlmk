@@ -4680,7 +4680,7 @@ function renderCalendarWeek(){
         const sessSd = isSession ? computeSessionData(d.getFullYear(), d.getMonth(), d.getDate()) : null;
         const attendeeCount = sessSd ? sessSd.attendeeNames.length : (n.attendees ? n.attendees.length : null);
         const metaParts = [];
-        if (n.time || n.durationMin) metaParts.push(`<span>${ICON_SD_CLOCK}${n.time?esc(n.time):''}${n.durationMin?' · '+n.durationMin+' мин':''}</span>`);
+        if (n.time || n.durationMin) metaParts.push(`<span>${ICON_SD_CLOCK}${n.time?esc(n.time)+(n.timeTo?'–'+esc(n.timeTo):''):''}${(n.durationMin && !n.timeTo)?' · '+n.durationMin+' мин':''}</span>`);
         if (attendeeCount != null) metaParts.push(`<span>${ICON_SD_PEOPLE}${attendeeCount}</span>`);
         metaParts.push(`<span>${isPastDay?ICON_SD_CHECK_SM:ICON_SD_CLOCK}${isPastDay?'проведено':'план'}</span>`);
         return `<div class="calw-card calw-card--del" style="background:${t.bg};color:${t.color};border-color:${t.color}33;"${isSession?` data-open-session="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}"`:''}>
@@ -4722,7 +4722,7 @@ function dayNotesBodyHtml(y,m,d){
   const sessionRiskCount = notes.filter(n => n.type === 'session' && n.riskId).length;
   return `${sessionRiskCount ? `<button type="button" class="btn btn-secondary btn-sm" id="dnOpenSessionSummary" style="width:100%;margin-bottom:10px;">Открыть сводку риск-сессии (${sessionRiskCount})</button>` : ''}
     <div id="dayNotesList">${notes.map(n => { const t=noteType(n.type); return `
-    <div class="cal-note-row"><div style="flex:1;"><div class="cal-note-type" style="color:${t.color}">${esc(t.label)}</div><div style="font-size:13px;margin-top:2px;">${esc(n.text)}</div>${n.time?`<div class="muted cal-note-time-row" style="font-size:11px;margin-top:2px;">${ICON_SD_CLOCK}Время: ${esc(n.time)}</div>`:''}${n.attendees && n.attendees.length ? `<div class="muted" style="font-size:11px;margin-top:2px;">Участники: ${esc(n.attendees.join(', '))}</div>` : ''}${n.author?`<div class="muted" style="font-size:11px;margin-top:2px;">${esc(n.author)}</div>`:''}${n.riskId?`<a href="#" data-open-risk-from-note="${n.riskId}" style="font-size:11px;font-weight:600;">Открыть риск →</a>`:''}</div>
+    <div class="cal-note-row"><div style="flex:1;"><div class="cal-note-type" style="color:${t.color}">${esc(t.label)}</div><div style="font-size:13px;margin-top:2px;">${esc(n.text)}</div>${n.time?`<div class="muted cal-note-time-row" style="font-size:11px;margin-top:2px;">${ICON_SD_CLOCK}${esc(n.time)}${n.timeTo?'–'+esc(n.timeTo):''}</div>`:''}${n.attendees && n.attendees.length ? `<div class="muted" style="font-size:11px;margin-top:2px;">Участники: ${esc(n.attendees.join(', '))}</div>` : ''}${n.author?`<div class="muted" style="font-size:11px;margin-top:2px;">${esc(n.author)}</div>`:''}${n.riskId?`<a href="#" data-open-risk-from-note="${n.riskId}" style="font-size:11px;font-weight:600;">Открыть риск →</a>`:''}</div>
       <button type="button" class="cal-note-del" data-del-note="${n.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`; }).join('')}</div>
     <div class="field" style="margin:12px 0 8px;"><label>Участники</label>
       <div class="ds-ms" id="dnAttendeeMs">
@@ -4733,7 +4733,13 @@ function dayNotesBodyHtml(y,m,d){
     </div>
     <div class="btn-row" style="margin-bottom:8px;gap:8px;">
       <select id="dnType" style="flex:1;">${NOTE_TYPES.map(t=>`<option value="${t.key}">${t.label}</option>`).join('')}</select>
-      <input type="time" id="dnTime" title="Назначить время" style="flex:0 0 108px;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 10px;font-size:13px;font-family:inherit;color:var(--ink-900);">
+    </div>
+    <div class="field" style="margin-bottom:8px;"><label>Время сессии</label>
+      <div class="btn-row" style="gap:8px;">
+        <input type="time" id="dnTimeFrom" title="Время начала" aria-label="Время начала" style="flex:1;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 10px;font-size:13px;font-family:inherit;color:var(--ink-900);">
+        <span class="muted" style="align-self:center;">–</span>
+        <input type="time" id="dnTimeTo" title="Время окончания" aria-label="Время окончания" style="flex:1;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 10px;font-size:13px;font-family:inherit;color:var(--ink-900);">
+      </div>
     </div>
     <textarea id="dnText" placeholder="Что запланировано на этот день..." style="width:100%;min-height:52px;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 12px;font-size:13.5px;font-family:inherit;resize:vertical;"></textarea>
     <div class="btn-row" style="margin-top:10px;"><button type="button" class="btn btn-primary" id="dnAdd" style="flex:1;">Направить приглашение на сессию</button></div>`;
@@ -4786,14 +4792,25 @@ function wireDayNotesForm(y,m,d){
   document.getElementById('dnAdd').addEventListener('click', () => {
     const text = document.getElementById('dnText').value.trim();
     if (!text){ toast('Опишите повестку сессии', {tone:'warning'}); return; }
+    const timeFrom = document.getElementById('dnTimeFrom').value;
+    const timeTo = document.getElementById('dnTimeTo').value;
+    if (timeFrom && timeTo && timeTo <= timeFrom){ toast('Время окончания должно быть позже времени начала', {tone:'warning'}); return; }
     const key = dayKey(y,m,d);
-    const time = document.getElementById('dnTime').value;
-    (state.dayNotes[key] = state.dayNotes[key]||[]).push({id:uid('note'), type:document.getElementById('dnType').value, text, time: time||undefined, attendees: dnAttendeeSelection.slice(), author:sessionName(), createdAt:nowStr()});
+    (state.dayNotes[key] = state.dayNotes[key]||[]).push({id:uid('note'), type:document.getElementById('dnType').value, text,
+      time: timeFrom||undefined, timeTo: timeTo||undefined, durationMin: timeRangeMinutes(timeFrom, timeTo),
+      attendees: dnAttendeeSelection.slice(), author:sessionName(), createdAt:nowStr()});
     saveState();
     toast('Приглашение на сессию направлено', {body: dnAttendeeSelection.length ? 'Участники: '+dnAttendeeSelection.join(', ') : undefined});
     dnAttendeeSelection = [];
-    document.getElementById('chartModalMount').innerHTML = dayNotesBodyHtml(y,m,d); wireDayNotesForm(y,m,d); renderCalendar();
+    closeModal('chartModalOverlay');
+    renderCalendar();
   });
+}
+function timeRangeMinutes(from, to){
+  if (!from || !to) return undefined;
+  const [h1,m1] = from.split(':').map(Number), [h2,m2] = to.split(':').map(Number);
+  const diff = (h2*60+m2) - (h1*60+m1);
+  return diff > 0 ? diff : undefined;
 }
 
 // Сводка риск-сессии дня — карточка по образцу референса «Sprint Planning»
