@@ -401,6 +401,18 @@ function activateFonts(link){
      модалки, как и панель-навигация .pp-nav сразу под ним. */
   #passportModalOverlay .modal-head{position:sticky; top:-22px; z-index:3; background:var(--paper-0);
     margin:-22px -22px 16px; padding:22px 22px 0;}
+  /* Вкладки паспорта сильно различаются по высоте контента (напр. короткая
+     «Оценка» vs длинная таблица «Мероприятия»/список «История») — с обычным
+     content-driven max-height модалка при каждом переключении вкладки
+     заметно сжималась/растягивалась и «прыгала» на экране (плюс
+     перецентровка через align-items:center у .modal-overlay). Фиксированная
+     height (не max-height) держит модалку на одном размере всегда — контент
+     каждой вкладки, что короче, что длиннее, скроллится внутри одной и той
+     же видимой области. .modal-card-scroll получает flex:1, чтобы
+     растягиваться на всю фиксированную высоту (по умолчанию flex-элементы
+     не растут, а сжимаются под контент). */
+  #passportModalOverlay .modal-card{height:min(700px, 82vh); max-height:82vh;}
+  #passportModalOverlay .modal-card-scroll{flex:1;}
   .pp-nav{display:flex; gap:4px; padding:8px 22px; margin:0 -22px 12px;
     border-bottom:1px solid var(--line); overflow-x:auto; position:sticky; top:46px; z-index:2; background:var(--paper-0);}
   .pp-nav-pill{font-size:12px; padding:5px 10px; border-radius:var(--radius-field);
@@ -3773,7 +3785,6 @@ function openPassport(riskId){
 const PP_SECTIONS = [
   {id:'pp-sec-ident',    label:'Идентификация'},
   {id:'pp-sec-assess',   label:'Оценка'},
-  {id:'pp-sec-residual', label:'Остаточный риск'},
   {id:'pp-sec-actions',  label:'Мероприятия'},
   {id:'pp-sec-audit',    label:'История'},
 ];
@@ -3800,7 +3811,7 @@ const STAGE_TO_SECTION = {
   'Анализ и оценка':        'pp-sec-assess',
   'Управление':             'pp-sec-actions',
   'Мониторинг и Контроль':  'pp-sec-actions',
-  'Закрыт':                 'pp-sec-residual',
+  'Закрыт':                 'pp-sec-audit',
 };
 function severityColor(zone){ return zone==='high'?{bg:'var(--red-50)',fg:'var(--red-700)'}:zone==='medium'?{bg:'var(--amber-50)',fg:'var(--amber-700)'}:zone==='low'?{bg:'var(--green-50)',fg:'var(--green-700)'}:{bg:'var(--canvas)',fg:'var(--ink-400)'}; }
 function canManage(r){
@@ -3953,6 +3964,32 @@ function openAddToAgendaModal(r){
     toast('Риск добавлен в повестку риск-сессии', {body: new Date(y,m,d).toLocaleDateString('ru-RU') + ', ' + time, duration:4000});
   });
 }
+// Просмотр остаточного риска — раньше была отдельная вкладка паспорта,
+// теперь всплывающее окно (открывается кликом по блоку «Тренд» на вкладке
+// «Оценка») с той же миграцией P×I и кнопкой перейти к вводу/обновлению
+// остаточной оценки (openResidualModal ниже).
+function openResidualViewModal(r){
+  const canAccept = canManage(r) && r.p && r.iLevel && r.status !== 'Идентификация';
+  const body = `
+    ${r.p && r.iLevel ? `
+      <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
+        <div>
+          <div class="k" style="margin-bottom:8px;">Миграция риска при мерах реагирования</div>
+          ${migrationMatrixHtml(r.p, r.iLevel, r.residualP, r.residualI)}
+        </div>
+        <div style="flex:1; min-width:180px;">
+          <div class="migration-legend-row"><span class="migration-dot-sw inherent"></span>свойственный (P${r.p}×I${r.iLevel})</div>
+          ${r.residualP ? `<div class="migration-legend-row"><span class="migration-dot-sw residual"></span>остаточный (P${r.residualP}×I${r.residualI})</div>` : `<div class="migration-legend-row muted">остаточный — ещё не зафиксирован</div>`}
+        </div>
+      </div>
+    ` : `<div class="muted" style="font-size:12.5px;">Нужна оценка P/I, чтобы увидеть миграцию риска.</div>`}
+    ${r.residualAcceptedBy ? `<div class="k" style="margin-top:12px;">Кто и когда принял</div><div class="v">${esc(r.residualAcceptedBy)} · ${r.residualAcceptedDate}${r.residualComment?' — '+esc(r.residualComment):''}</div>` : ''}
+    ${canAccept ? `<div class="btn-row" style="margin-top:12px;"><button type="button" class="btn btn-primary" id="pResidualEditBtn" style="flex:1;">${r.residualAcceptedBy?'Обновить остаточный риск':'Принять остаточный риск'}</button></div>` : ''}
+  `;
+  openChartModal('Остаточный риск', `Риск: «${r.title}»`, body, {maxWidth:'420px'});
+  const editBtn = document.getElementById('pResidualEditBtn');
+  if (editBtn) editBtn.addEventListener('click', () => openResidualModal(r));
+}
 // Остаточный риск — отдельная оценка P×I ПОСЛЕ мероприятий (не копия
 // текущей свойственной оценки), чтобы на мини-матрице миграции были две
 // реально разные точки, когда меры реагирования снизили уровень риска.
@@ -4009,7 +4046,6 @@ function renderPassport(){
   // секции: физически это одна и та же сущность Action, разделять их на
   // два списка было избыточно.
   const planActions = r.actions;
-  const canAcceptResidual = editable && r.p && r.iLevel && r.status !== 'Идентификация';
   const similarLesson = findBestLessonForRisk(r);
 
   const ppActive = id => currentPassportTab === id ? ' active' : '';
@@ -4096,26 +4132,6 @@ function renderPassport(){
       </div>
     </div>
 
-    <div class="pp-tab-panel${ppActive('pp-sec-residual')}" id="pp-sec-residual">
-      <h3 class="pp-h">ОСТАТОЧНЫЙ РИСК</h3>
-      <div class="passport-block" style="margin-bottom:12px;">
-        ${r.p && r.iLevel ? `
-          <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
-            <div>
-              <div class="k" style="margin-bottom:8px;">Миграция риска при мерах реагирования</div>
-              ${migrationMatrixHtml(r.p, r.iLevel, r.residualP, r.residualI)}
-            </div>
-            <div style="flex:1; min-width:180px;">
-              <div class="migration-legend-row"><span class="migration-dot-sw inherent"></span>свойственный (P${r.p}×I${r.iLevel})</div>
-              ${r.residualP ? `<div class="migration-legend-row"><span class="migration-dot-sw residual"></span>остаточный (P${r.residualP}×I${r.residualI})</div>` : `<div class="migration-legend-row muted">остаточный — ещё не зафиксирован</div>`}
-            </div>
-          </div>
-        ` : `<div class="muted" style="font-size:12.5px;">Нужна оценка P/I, чтобы увидеть миграцию риска.</div>`}
-        ${r.residualAcceptedBy ? `<div class="k" style="margin-top:12px;">Кто и когда принял</div><div class="v">${esc(r.residualAcceptedBy)} · ${r.residualAcceptedDate}${r.residualComment?' — '+esc(r.residualComment):''}</div>` : ''}
-        ${canAcceptResidual ? `<div class="btn-row" style="margin-top:8px;"><button class="btn btn-secondary btn-sm" id="pResidualBtn">${r.residualAcceptedBy?'Обновить остаточный риск':'Принять остаточный риск'}</button></div>` : ''}
-      </div>
-    </div>
-
     <div class="pp-tab-panel${ppActive('pp-sec-actions')}" id="pp-sec-actions">
       <div class="pp-h-row"><h3 class="pp-h">МЕРОПРИЯТИЯ (${planActions.length})</h3>${editable && r.p && r.iLevel ? `<button type="button" class="btn btn-secondary btn-sm" id="pAddActionBtn">+ Добавить мероприятие</button>` : ''}</div>
       ${planActions.length ? `<div class="actions-table-wrap"><table class="data-table"><thead><tr><th>Стратегия</th><th>Мероприятие</th><th>Вид</th><th>Ответственный</th><th>План</th><th>Прогноз/факт</th><th>Стоимость</th><th>Статус</th></tr></thead><tbody>
@@ -4195,8 +4211,8 @@ function renderPassport(){
   if (agendaBtn) agendaBtn.addEventListener('click', () => openAddToAgendaModal(r));
   const openSimilarBtn = document.getElementById('pOpenSimilarLesson');
   if (openSimilarBtn) openSimilarBtn.addEventListener('click', () => openLessonModal(similarLesson.lesson.id));
-  const residualBtn = document.getElementById('pResidualBtn');
-  if (residualBtn) residualBtn.addEventListener('click', () => openResidualModal(r));
+  const trendBox = document.getElementById('pTrendBox');
+  if (trendBox) trendBox.addEventListener('click', () => openResidualViewModal(r));
   const escalateBtn = document.getElementById('pEscalateBtn');
   if (escalateBtn) escalateBtn.addEventListener('click', () => {
     const comment = prompt('Комментарий к эскалации (необязательно):') || '';
@@ -4223,17 +4239,17 @@ const ICON_TREND_FLAT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentCol
 // тренд и считается: свойственный RRA сравнивается с остаточным).
 function trendBoxHtml(r){
   if (!r.p || !r.iLevel){
-    return `<div class="pp-trend-box" data-pp-goto="pp-sec-residual"><span class="arrow flat">${ICON_TREND_FLAT}</span><div class="txt"><span class="lbl">Тренд</span><span class="val">Нет оценки</span></div></div>`;
+    return `<div class="pp-trend-box" id="pTrendBox"><span class="arrow flat">${ICON_TREND_FLAT}</span><div class="txt"><span class="lbl">Тренд</span><span class="val">Нет оценки</span></div></div>`;
   }
   if (!r.residualP || !r.residualI){
-    return `<div class="pp-trend-box" data-pp-goto="pp-sec-residual"><span class="arrow flat">${ICON_TREND_FLAT}</span><div class="txt"><span class="lbl">Тренд</span><span class="val">Без изменений</span><span class="date">остаточная оценка ещё не зафиксирована</span></div></div>`;
+    return `<div class="pp-trend-box" id="pTrendBox"><span class="arrow flat">${ICON_TREND_FLAT}</span><div class="txt"><span class="lbl">Тренд</span><span class="val">Без изменений</span><span class="date">остаточная оценка ещё не зафиксирована</span></div></div>`;
   }
   const inherentRra = rraOf(r.p, r.iLevel), residualRra = rraOf(r.residualP, r.residualI);
   const dir = residualRra < inherentRra ? 'down' : residualRra > inherentRra ? 'up' : 'flat';
   const icon = dir==='up' ? ICON_TREND_UP : dir==='down' ? ICON_TREND_DOWN : ICON_TREND_FLAT;
   const cls = dir==='up' ? 'bad' : dir==='down' ? 'good' : 'flat';
   const label = dir==='up' ? 'Риск вырос' : dir==='down' ? 'Риск снижен' : 'Без изменений';
-  return `<div class="pp-trend-box" data-pp-goto="pp-sec-residual"><span class="arrow ${cls}">${icon}</span><div class="txt"><span class="lbl">Тренд</span><span class="val">${label}: RRA ${inherentRra} → ${residualRra}</span>${r.residualAcceptedDate?`<span class="date">на ${esc(r.residualAcceptedDate)}</span>`:''}</div></div>`;
+  return `<div class="pp-trend-box" id="pTrendBox"><span class="arrow ${cls}">${icon}</span><div class="txt"><span class="lbl">Тренд</span><span class="val">${label}: RRA ${inherentRra} → ${residualRra}</span>${r.residualAcceptedDate?`<span class="date">на ${esc(r.residualAcceptedDate)}</span>`:''}</div></div>`;
 }
 // Тип события Audit Trail — определяем эвристически по имеющимся полям
 // записи (fromStatus/toStatus/comment), т.к. отдельного risk.auditLog[].type
