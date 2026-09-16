@@ -305,6 +305,9 @@
   .btn-secondary{background:var(--accent-50); border-color:var(--accent-50); color:var(--accent-600);}
   .btn-secondary:hover{background:var(--accent-100); border-color:var(--accent-100); color:var(--accent-600);}
   .btn-secondary:active{background:var(--accent-100); border-color:var(--accent-100); color:var(--accent-600); transform:scale(.96); filter:brightness(.94);}
+  .btn-danger{background:var(--red-700); border-color:var(--red-700); color:#fff;}
+  .btn-danger:hover{background:var(--red-700); border-color:var(--red-700); color:#fff; filter:brightness(1.1);}
+  .btn-danger:active{background:var(--red-700); border-color:var(--red-700); color:#fff; transform:scale(.96); filter:brightness(.85);}
   .btn-text{font-weight:600;}
   .btn-text:hover{background:var(--red-50); color:var(--red-700);}
   .btn-text:active{background:var(--red-50); color:var(--red-700); transform:scale(.96);}
@@ -1408,6 +1411,21 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="confirmModalOverlay">
+  <div class="modal-card" role="alertdialog" aria-modal="true">
+   <div class="modal-card-scroll">
+    <div class="modal-head"><span id="confirmModalTitle">Подтверждение</span>
+      <button type="button" class="modal-close" data-close="confirmModalOverlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <p class="modal-sub" id="confirmModalText" style="margin:-6px 0 16px;"></p>
+    <div class="btn-row">
+      <button type="button" class="btn btn-text" data-close="confirmModalOverlay">Отмена</button>
+      <button type="button" class="btn btn-danger" id="confirmModalOkBtn" style="flex:2;">Удалить</button>
+    </div>
+   </div>
+  </div>
+</div>
+
 <div class="toast" id="toast">
   <span class="notif-card-icon" id="toastIcon"></span>
   <div class="toast-body">
@@ -2109,6 +2127,25 @@ function closeModal(id){
 }
 document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.close)));
 document.querySelectorAll('.modal-overlay').forEach(ov => ov.addEventListener('click', e => { if (e.target === ov) closeModal(ov.id); }));
+
+// Небольшая модалка подтверждения по центру экрана — замена нативному
+// confirm() для всех операций удаления (риск, встреча/заметка в календаре,
+// сброс демо-данных), т.к. браузерный confirm() не соответствует дизайну
+// приложения и на части платформ может быть заблокирован/скрыт.
+let _confirmModalCb = null;
+function openConfirmModal(text, onConfirm, opts){
+  document.getElementById('confirmModalTitle').textContent = (opts && opts.title) || 'Подтверждение';
+  document.getElementById('confirmModalText').textContent = text;
+  document.getElementById('confirmModalOkBtn').textContent = (opts && opts.okLabel) || 'Удалить';
+  _confirmModalCb = onConfirm;
+  openModal('confirmModalOverlay');
+}
+document.getElementById('confirmModalOkBtn').addEventListener('click', () => {
+  const cb = _confirmModalCb;
+  _confirmModalCb = null;
+  closeModal('confirmModalOverlay');
+  if (cb) cb();
+});
 
 // ===================================================================
 // ВХОД
@@ -2862,7 +2899,9 @@ function renderDashboard(){
     openChartModal('Мероприятия по плановым месяцам', 'AI Insights рассчитаны детерминированно из реальных плановых дат мероприятий', body);
   });
 
-  document.getElementById('btnResetDemo').addEventListener('click', () => { if (confirm('Сбросить все изменения и вернуться к исходным seed-данным?')) resetDemoData(); });
+  document.getElementById('btnResetDemo').addEventListener('click', () => {
+    openConfirmModal('Сбросить все изменения и вернуться к исходным seed-данным?', resetDemoData, {title:'Сбросить демо-данные?', okLabel:'Сбросить'});
+  });
   document.getElementById('btnExportPpt').addEventListener('click', () => toast('Экспорт в PPT', {body:'Демо-прототип: формирование презентации недоступно в этой версии.', duration:4000}));
 }
 
@@ -3286,12 +3325,13 @@ function submitNewRisk(){
 function deleteRisk(id){
   const r = findRisk(id);
   if (!r) return;
-  if (!confirm(`Удалить риск «${r.title}» (${r.id}) из реестра?\n\nДействие необратимо.`)) return;
-  state.risks = state.risks.filter(x => x.id !== id);
-  state.deps = state.deps.filter(d => d.fromId !== id && d.toId !== id);
-  saveState();
-  toast('Риск удалён из реестра', {tone:'success'});
-  renderAll();
+  openConfirmModal(`Удалить риск «${r.title}» (${r.id}) из реестра? Действие необратимо.`, () => {
+    state.risks = state.risks.filter(x => x.id !== id);
+    state.deps = state.deps.filter(d => d.fromId !== id && d.toId !== id);
+    saveState();
+    toast('Риск удалён из реестра', {tone:'success'});
+    renderAll();
+  }, {title:'Удалить риск?'});
 }
 
 // ===================================================================
@@ -4486,12 +4526,13 @@ function notesFor(y,m,d){ return state.dayNotes[dayKey(y,m,d)] || []; }
 // дня») — иконка на пилюле/карточке, с подтверждением (тот же нативный
 // confirm(), что и у «Сбросить демо-данные»).
 function deleteCalNote(y, m, d, noteId){
-  if (!confirm('Удалить эту встречу из календаря?')) return;
-  const key = dayKey(y, m, d);
-  state.dayNotes[key] = (state.dayNotes[key]||[]).filter(n => n.id !== noteId);
-  saveState();
-  toast('Встреча удалена из календаря', {tone:'success'});
-  renderCalendar();
+  openConfirmModal('Удалить эту встречу из календаря?', () => {
+    const key = dayKey(y, m, d);
+    state.dayNotes[key] = (state.dayNotes[key]||[]).filter(n => n.id !== noteId);
+    saveState();
+    toast('Встреча удалена из календаря', {tone:'success'});
+    renderCalendar();
+  }, {title:'Удалить встречу?'});
 }
 function renderCalendar(){
   const mount = document.getElementById('calendarMount');
@@ -4678,9 +4719,9 @@ function dayNotesBodyHtml(y,m,d){
   const notes = notesFor(y,m,d);
   const sessionRiskCount = notes.filter(n => n.type === 'session' && n.riskId).length;
   return `${sessionRiskCount ? `<button type="button" class="btn btn-secondary btn-sm" id="dnOpenSessionSummary" style="width:100%;margin-bottom:10px;">Открыть сводку риск-сессии (${sessionRiskCount})</button>` : ''}
-    <div id="dayNotesList">${notes.length ? notes.map(n => { const t=noteType(n.type); return `
-    <div class="cal-note-row"><div style="flex:1;"><div class="cal-note-type" style="color:${t.color}">${esc(t.label)}</div><div style="font-size:13px;margin-top:2px;">${esc(n.text)}</div>${n.attendees && n.attendees.length ? `<div class="muted" style="font-size:11px;margin-top:2px;">Участники: ${esc(n.attendees.join(', '))}</div>` : ''}${n.author?`<div class="muted" style="font-size:11px;margin-top:2px;">${esc(n.author)}</div>`:''}${n.riskId?`<a href="#" data-open-risk-from-note="${n.riskId}" style="font-size:11px;font-weight:600;">Открыть риск →</a>`:''}</div>
-      <button type="button" class="cal-note-del" data-del-note="${n.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`; }).join('') : '<p class="muted" style="font-size:12.5px;">Заметок пока нет.</p>'}</div>
+    <div id="dayNotesList">${notes.map(n => { const t=noteType(n.type); return `
+    <div class="cal-note-row"><div style="flex:1;"><div class="cal-note-type" style="color:${t.color}">${esc(t.label)}</div><div style="font-size:13px;margin-top:2px;">${esc(n.text)}</div>${n.time?`<div class="muted" style="font-size:11px;margin-top:2px;">${ICON_SD_CLOCK}Время: ${esc(n.time)}</div>`:''}${n.attendees && n.attendees.length ? `<div class="muted" style="font-size:11px;margin-top:2px;">Участники: ${esc(n.attendees.join(', '))}</div>` : ''}${n.author?`<div class="muted" style="font-size:11px;margin-top:2px;">${esc(n.author)}</div>`:''}${n.riskId?`<a href="#" data-open-risk-from-note="${n.riskId}" style="font-size:11px;font-weight:600;">Открыть риск →</a>`:''}</div>
+      <button type="button" class="cal-note-del" data-del-note="${n.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`; }).join('')}</div>
     <div class="field" style="margin:12px 0 8px;"><label>Участники</label>
       <div class="ds-ms" id="dnAttendeeMs">
         <div class="ds-ms-chips" id="dnAttendeeChips"></div>
@@ -4690,9 +4731,10 @@ function dayNotesBodyHtml(y,m,d){
     </div>
     <div class="btn-row" style="margin-bottom:8px;gap:8px;">
       <select id="dnType" style="flex:1;">${NOTE_TYPES.map(t=>`<option value="${t.key}">${t.label}</option>`).join('')}</select>
+      <input type="time" id="dnTime" title="Назначить время" style="flex:0 0 108px;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 10px;font-size:13px;font-family:inherit;color:var(--ink-900);">
     </div>
     <textarea id="dnText" placeholder="Что запланировано на этот день..." style="width:100%;min-height:52px;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 12px;font-size:13.5px;font-family:inherit;resize:vertical;"></textarea>
-    <div class="btn-row" style="margin-top:10px;"><button type="button" class="btn btn-primary" id="dnAdd" style="flex:1;">Добавить заметку</button></div>`;
+    <div class="btn-row" style="margin-top:10px;"><button type="button" class="btn btn-primary" id="dnAdd" style="flex:1;">Направить приглашение на сессию</button></div>`;
 }
 function dnRenderAttendeeChips(){
   const chipsEl = document.getElementById('dnAttendeeChips');
@@ -4733,16 +4775,20 @@ function wireDayNotesForm(y,m,d){
     openPassport(a.dataset.openRiskFromNote);
   }));
   document.querySelectorAll('[data-del-note]').forEach(b => b.addEventListener('click', () => {
-    const key = dayKey(y,m,d);
-    state.dayNotes[key] = (state.dayNotes[key]||[]).filter(n=>n.id!==b.dataset.delNote);
-    saveState(); document.getElementById('chartModalMount').innerHTML = dayNotesBodyHtml(y,m,d); wireDayNotesForm(y,m,d); renderCalendar();
+    openConfirmModal('Удалить эту заметку?', () => {
+      const key = dayKey(y,m,d);
+      state.dayNotes[key] = (state.dayNotes[key]||[]).filter(n=>n.id!==b.dataset.delNote);
+      saveState(); document.getElementById('chartModalMount').innerHTML = dayNotesBodyHtml(y,m,d); wireDayNotesForm(y,m,d); renderCalendar();
+    }, {title:'Удалить заметку?'});
   }));
   document.getElementById('dnAdd').addEventListener('click', () => {
     const text = document.getElementById('dnText').value.trim();
-    if (!text){ toast('Введите текст заметки', {tone:'warning'}); return; }
+    if (!text){ toast('Опишите повестку сессии', {tone:'warning'}); return; }
     const key = dayKey(y,m,d);
-    (state.dayNotes[key] = state.dayNotes[key]||[]).push({id:uid('note'), type:document.getElementById('dnType').value, text, attendees: dnAttendeeSelection.slice(), author:sessionName(), createdAt:nowStr()});
-    saveState(); toast('Заметка добавлена');
+    const time = document.getElementById('dnTime').value;
+    (state.dayNotes[key] = state.dayNotes[key]||[]).push({id:uid('note'), type:document.getElementById('dnType').value, text, time: time||undefined, attendees: dnAttendeeSelection.slice(), author:sessionName(), createdAt:nowStr()});
+    saveState();
+    toast('Приглашение на сессию направлено', {body: dnAttendeeSelection.length ? 'Участники: '+dnAttendeeSelection.join(', ') : undefined});
     dnAttendeeSelection = [];
     document.getElementById('chartModalMount').innerHTML = dayNotesBodyHtml(y,m,d); wireDayNotesForm(y,m,d); renderCalendar();
   });
