@@ -868,7 +868,7 @@ function activateFonts(link){
   table.data-table tbody tr:last-child td{border-bottom:none;}
   table.data-table tbody tr:hover td{background:var(--canvas);}
   .mono{font-family:var(--font-mono);}
-  .status-dot-row{display:inline-flex; align-items:center; gap:6px;}
+  .status-dot-row{display:inline-flex; align-items:center; gap:6px; white-space:nowrap;}
   .status-dot{width:7px; height:7px; border-radius:50%; display:inline-block; flex-shrink:0;}
 
   /* ===== Матрица ===== */
@@ -1176,6 +1176,12 @@ function activateFonts(link){
   .pp-h{font-family:var(--font-display); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px;
     color:var(--accent-600); margin:14px 0 6px; padding-top:10px; border-top:1px solid var(--line);}
   .pp-h:first-of-type{margin-top:0; border-top:none; padding-top:0;}
+  /* Заголовок секции + кнопка действия на одной строке (напр. «Мероприятия»
+     + «+ Добавить мероприятие») — divider переезжает на обёртку, у
+     вложенного .pp-h он сбрасывается, чтобы не задваивался. */
+  .pp-h-row{display:flex; align-items:center; justify-content:space-between; gap:10px;
+    margin:14px 0 6px; padding-top:10px; border-top:1px solid var(--line);}
+  .pp-h-row .pp-h{margin:0; padding-top:0; border-top:none;}
   /* Степпер — узлы (кружок+подпись) фиксированного размера, соединительные
      линии между ними резиновые (flex:1, ужимаются до 8px) — весь путь из
      5 стадий помещается по ширине паспорта на любом экране без горизонтального
@@ -1515,7 +1521,7 @@ function activateFonts(link){
 
 <!-- Action (мероприятие) modal -->
 <div class="modal-overlay" id="actionModalOverlay">
-  <div class="modal-card" role="dialog" aria-modal="true">
+  <div class="modal-card modal-card--wide" role="dialog" aria-modal="true">
    <div class="modal-card-scroll">
     <div class="modal-head"><span id="actionModalTitle">Новое мероприятие</span>
       <button type="button" class="modal-close" data-close="actionModalOverlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -3952,12 +3958,11 @@ function renderPassport(){
     <div class="btn-row" style="margin-bottom:12px;">
       ${editable ? `<button class="btn btn-secondary btn-sm" id="pEditBtn">Редактировать карточку</button>` : ''}
       ${editable && (r.status==='Идентификация'||r.status==='Анализ и оценка') ? `<button class="btn btn-secondary btn-sm" id="pAssessBtn">Провести оценку (P/I)</button>` : ''}
-      ${editable && r.p && r.iLevel ? `<button class="btn btn-secondary btn-sm" id="pAddActionBtn">+ Мероприятие</button>` : ''}
       ${editable ? advanceButtonHtml(r) : ''}
       ${editable && r.status!=='Архивирован' ? `<button class="btn btn-text btn-sm" id="pMergeBtn">Объединить как дубль…</button>` : ''}
     </div>
 
-    <h3 class="pp-h">МЕРОПРИЯТИЯ (${planActions.length})</h3>
+    <div class="pp-h-row"><h3 class="pp-h">МЕРОПРИЯТИЯ (${planActions.length})</h3>${editable && r.p && r.iLevel ? `<button type="button" class="btn btn-secondary btn-sm" id="pAddActionBtn">+ Добавить мероприятие</button>` : ''}</div>
     ${planActions.length ? `<div class="actions-table-wrap"><table class="data-table"><thead><tr><th>Стратегия</th><th>Мероприятие</th><th>Вид</th><th>Ответственный</th><th>План</th><th>Прогноз/факт</th><th>Стоимость</th><th>Статус</th>${editable?'<th></th>':''}</tr></thead><tbody>
       ${planActions.map(a => `<tr><td>${esc(a.strategy)}</td><td>${esc(a.title)}${a.triggerCondition?`<div class="muted" style="font-size:11px;margin-top:2px;">Запасной план: ${esc(a.triggerCondition)}</div>`:''}</td><td>${ACTION_KIND_LABEL[a.kind]}</td><td>${assigneeCellHtml(a, editable)}</td>
         <td class="mono">${esc(a.plannedDate||'—')}${a.plannedDate && a.status!=='done' && a.status!=='rejected' && parseRuShortDate(a.plannedDate) && parseRuShortDate(a.plannedDate) < TODAY ? ' <span style="color:var(--red-700);">⚠ просрочено</span>' : ''}</td><td class="mono">${esc(a.forecastActualDate||'—')}</td><td class="mono">${esc(a.cost||'—')}</td>
