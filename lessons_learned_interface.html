@@ -5755,7 +5755,12 @@ function wireDayNotesForm(y,m,d){
     toast('Приглашение на сессию направлено', {body: dnAttendeeSelection.length ? 'Участники: '+dnAttendeeSelection.join(', ') : undefined});
     dnAttendeeSelection = [];
     dnRiskSelection = [];
-    closeModal('chartModalOverlay');
+    // Модалка не закрывается — на один день часто нужно завести несколько
+    // активностей подряд (риск-сессия + семинар и т.п.); форма просто
+    // перерисовывается с уже добавленной заметкой в списке и чистыми
+    // полями, готовыми для следующей записи (как и после удаления заметки).
+    document.getElementById('chartModalMount').innerHTML = dayNotesBodyHtml(y,m,d);
+    wireDayNotesForm(y,m,d);
     renderCalendar();
   });
 }
