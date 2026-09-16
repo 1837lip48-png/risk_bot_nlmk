@@ -612,19 +612,57 @@ function activateFonts(link){
   .topbar-user-name{font-size:13px; font-weight:700; color:var(--ink-900); white-space:nowrap;}
   .topbar-user-role{font-size:11px; color:var(--ink-600); white-space:nowrap;}
   .topbar-user-chevron{width:14px; height:14px; color:var(--ink-400); flex-shrink:0;}
-  .notif-panel{position:absolute; top:46px; right:0; width:340px; max-height:420px; overflow-y:auto; background:var(--paper-0);
-    border:1px solid var(--line); border-radius:var(--radius-card); box-shadow:var(--shadow-pop); padding:8px; z-index:60;}
-  /* Единая карточка уведомления (Блок 5, п.2) — иконка-кружок + заголовок +
-     текст, один и тот же шаблон и типографика для колокольчика (notif-item)
-     и всплывающих toast — различается только цвет/иконка по типу события. */
+  /* Единая карточка уведомления — иконка-кружок + заголовок + текст, один и
+     тот же шаблон и типографика для карточек в дровере колокольчика
+     (notif-card) и всплывающих toast — различается только цвет/иконка по
+     типу события. */
   .notif-card-icon{width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
   .notif-card-icon svg{width:15px; height:15px;}
-  .notif-item{display:flex; gap:10px; align-items:flex-start; padding:9px 10px; border-radius:var(--radius-field); cursor:pointer; text-decoration:none; color:inherit;}
-  .notif-item:hover{background:var(--canvas);}
-  .notif-item .nt-body{flex:1; min-width:0;}
-  .notif-item .nt-t{font-family:var(--font-display); font-size:var(--fs-body2); line-height:var(--lh-body2); font-weight:700; color:var(--ink-900);}
-  .notif-item .nt-d{font-size:var(--fs-caption); line-height:var(--lh-caption); color:var(--ink-600); margin-top:2px;}
-  .notif-empty{padding:16px; text-align:center; font-size:12.5px; color:var(--ink-400);}
+  .notif-empty{padding:24px 16px; text-align:center; font-size:12.5px; color:var(--ink-400);}
+
+  /* ===== Дровер уведомлений (колокольчик) ===== */
+  .notif-drawer-overlay{position:fixed; inset:0; background:rgba(0,23,41,.45); z-index:95; opacity:0; pointer-events:none; transition:opacity .2s ease;}
+  .notif-drawer-overlay.show{opacity:1; pointer-events:auto;}
+  .notif-drawer{position:absolute; top:0; right:0; bottom:0; width:440px; max-width:92vw; background:var(--paper-0);
+    box-shadow:var(--shadow-modal); display:flex; flex-direction:column; transform:translateX(100%);
+    transition:transform .25s cubic-bezier(.16,1,.3,1);}
+  .notif-drawer-overlay.show .notif-drawer{transform:translateX(0);}
+  .notif-drawer-head{display:flex; align-items:center; justify-content:space-between; padding:24px 24px 16px; flex-shrink:0;}
+  .notif-drawer-tabs{display:flex; gap:22px; padding:0 24px; border-bottom:1px solid var(--line); flex-shrink:0;}
+  .notif-tab{position:relative; border:none; background:none; padding:0 0 12px; font-size:13px; font-weight:600;
+    color:var(--ink-600); cursor:pointer; display:flex; align-items:center; gap:6px;}
+  .notif-tab.active{color:var(--accent-600); box-shadow:inset 0 -2px 0 var(--accent-600);}
+  .notif-tab-badge{min-width:18px; height:18px; padding:0 5px; border-radius:999px; font-size:10.5px; font-weight:800;
+    color:#fff; display:flex; align-items:center; justify-content:center;}
+  .notif-tab-badge.error{background:var(--red-700);}
+  .notif-tab-badge.brand{background:var(--accent-600);}
+  .notif-drawer-toggle{display:flex; align-items:center; justify-content:flex-end; gap:8px; padding:14px 24px;
+    font-size:12.5px; color:var(--ink-700); cursor:pointer; flex-shrink:0;}
+  .notif-switch{position:relative; display:inline-block; width:34px; height:20px; flex-shrink:0;}
+  .notif-switch input{position:absolute; opacity:0; width:100%; height:100%; margin:0; cursor:pointer;}
+  .notif-switch-track{position:absolute; inset:0; background:var(--line); border-radius:999px; transition:background-color .15s ease;}
+  .notif-switch-thumb{position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff;
+    box-shadow:0 1px 3px rgba(17,37,66,.3); transition:transform .15s ease;}
+  .notif-switch input:checked + .notif-switch-track{background:var(--accent-600);}
+  .notif-switch input:checked + .notif-switch-track .notif-switch-thumb{transform:translateX(14px);}
+  .notif-drawer-body{flex:1; overflow-y:auto; padding:4px 24px 24px;}
+  .notif-group{margin-bottom:24px;}
+  .notif-group:last-child{margin-bottom:0;}
+  .notif-group-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;}
+  .notif-group-label{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; color:var(--ink-400);}
+  .notif-mark-all{background:none; border:none; color:var(--accent-600); font-size:11.5px; font-weight:700; cursor:pointer; padding:0;}
+  .notif-mark-all:hover{text-decoration:underline;}
+  .notif-card{display:flex; gap:10px; align-items:flex-start; padding:12px; border-radius:var(--radius-field);
+    cursor:pointer; border:1px solid var(--line); margin-bottom:8px; background:var(--paper-0);
+    transition:background-color .15s ease, border-color .15s ease;}
+  .notif-card:hover{background:var(--canvas);}
+  .notif-card.unread{background:var(--accent-50); border-color:var(--accent-100);}
+  .notif-card.unread:hover{background:var(--accent-100);}
+  .notif-card .nt-body{flex:1; min-width:0;}
+  .notif-card .nt-t{display:flex; align-items:center; gap:6px; font-family:var(--font-display); font-size:13px; font-weight:700; color:var(--ink-900);}
+  .notif-card .nt-d{font-size:12px; line-height:1.4; color:var(--ink-600); margin-top:3px;}
+  .notif-card .nt-time{font-size:11px; color:var(--ink-400); margin-top:5px;}
+  .notif-unread-dot{width:7px; height:7px; border-radius:50%; background:var(--accent-600); flex-shrink:0;}
 
   .profile-panel{position:absolute; top:46px; right:0; width:264px; background:var(--paper-0);
     border:1px solid var(--line); border-radius:var(--radius-card); box-shadow:var(--shadow-pop); padding:8px; z-index:60;}
@@ -1190,7 +1228,6 @@ function activateFonts(link){
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       <span class="notif-dot" id="notifDot" hidden></span>
     </button>
-    <div class="notif-panel" id="notifPanel" hidden></div>
   </div>
   <div class="topbar-user" id="topbarUser" hidden>
     <div class="topbar-user-trigger" id="topbarUserTrigger">
@@ -1574,6 +1611,21 @@ function activateFonts(link){
       <button type="button" class="btn btn-danger" id="confirmModalOkBtn" style="flex:2;">Удалить</button>
     </div>
    </div>
+  </div>
+</div>
+
+<div class="notif-drawer-overlay" id="notifDrawerOverlay">
+  <div class="notif-drawer" role="dialog" aria-modal="true" aria-label="Уведомления">
+    <div class="notif-drawer-head">
+      <span class="t-h2">Уведомления</span>
+      <button type="button" class="modal-close" id="notifDrawerClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="notif-drawer-tabs" id="notifTabs"></div>
+    <label class="notif-drawer-toggle">
+      <span class="notif-switch"><input type="checkbox" id="notifUnreadToggle" checked><span class="notif-switch-track"><span class="notif-switch-thumb"></span></span></span>
+      <span>Только непрочитанные</span>
+    </label>
+    <div class="notif-drawer-body" id="notifDrawerBody"></div>
   </div>
 </div>
 
@@ -2447,9 +2499,8 @@ document.addEventListener('keydown', e => {
   const openModals = document.querySelectorAll('.modal-overlay.show');
   if (openModals.length){ closeModal(openModals[openModals.length - 1].id); return; }
   const profilePanel = document.getElementById('profilePanel');
-  const notifPanel = document.getElementById('notifPanel');
   if (profilePanel && !profilePanel.hidden){ profilePanel.hidden = true; return; }
-  if (notifPanel && !notifPanel.hidden){ notifPanel.hidden = true; return; }
+  if (document.getElementById('notifDrawerOverlay').classList.contains('show')){ closeNotifDrawer(); return; }
   if (!state.session) return;
   if (state.session.role === 'initiator') returnToRoleSelect(); else signOut();
 });
@@ -2531,7 +2582,7 @@ function renderProfilePanel(roleColors){
   document.getElementById('profileTasksBtn').addEventListener('click', (e) => {
     e.stopPropagation();
     document.getElementById('profilePanel').hidden = true;
-    document.getElementById('notifPanel').hidden = false;
+    openNotifDrawer();
   });
   document.getElementById('profileSettingsBtn').addEventListener('click', () => {
     document.getElementById('profilePanel').hidden = true;
@@ -2842,40 +2893,132 @@ function aiInsightsBlock(lines){
   return `<div class="ai-insights-block"><div class="ai-insights-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg>AI Insights</div>${lines.map(t=>aiInsightRow(t)).join('')}</div>`;
 }
 
-// ===== Колокольчик уведомлений — реальные данные: просроченные мероприятия,
-// риски на эскалации, риски без оценки P/I дольше всего в очереди =====
-function renderNotifBell(){
-  if (!state.session || state.session.role === 'initiator') return;
+// ===== Колокольчик уведомлений — дровер справа (референс @nlmk/ds-2.0:
+// Header + Drawer + Tabs + NotificationGroup/NotificationCard), на реальных
+// данных: просроченные мероприятия, риски на эскалации без решения
+// комитета, последние изменения статуса (AuditLog) в скоупе пользователя.
+// Прочитанные — notifReadIds, сессионное UI-состояние (не персистится в
+// state, как и остальные фильтры/выборы списков) — по клику на карточку
+// уведомление помечается прочитанным и больше не считается новым.
+let notifReadIds = new Set();
+let notifTab = 0;
+let notifUnreadOnly = true;
+const NOTIF_TABS = [
+  {label:'Требуется сделать', badge:'error', groupLabel:'Просроченные мероприятия'},
+  {label:'Важно ознакомиться', badge:'error', groupLabel:'Решения комитета'},
+  {label:'Для информации', badge:'brand', groupLabel:'Последние изменения'},
+];
+function buildNotifications(){
+  if (!state.session || state.session.role === 'initiator') return [[], [], []];
   const risks = scopedRisks();
-  const items = [];
-  risks.forEach(r => {
-    r.actions.forEach(a => {
-      if (a.status==='done' || a.status==='rejected') return;
-      const d = parseRuShortDate(a.plannedDate);
-      if (d && d < TODAY) items.push({t:`Просрочено: ${a.title.slice(0,40)}`, d:`${r.id} · план ${a.plannedDate}`, riskId:r.id, sort:0, tone:'error'});
+  const action = [];
+  risks.forEach(r => r.actions.forEach(a => {
+    if (a.status==='done' || a.status==='rejected') return;
+    const d = parseRuShortDate(a.plannedDate);
+    if (d && d < TODAY) action.push({
+      id:`overdue-${a.id}`, riskId:r.id, tone:'error',
+      title:`Просрочено: ${a.title.slice(0,50)}`,
+      body:`${r.id} · «${r.title.slice(0,50)}» · план ${a.plannedDate}`,
+      timestamp: a.plannedDate,
     });
-    if (r.committeeFlag && !r.committeeDecision) items.push({t:`Требует решения комитета`, d:r.title.slice(0,60), riskId:r.id, sort:1, tone:'warning'});
+  }));
+  const review = [];
+  risks.forEach(r => {
+    if (r.committeeFlag && !r.committeeDecision) review.push({
+      id:`escalation-${r.id}`, riskId:r.id, tone:'warning',
+      title:'Требует решения комитета',
+      body:`${r.id} · «${r.title.slice(0,60)}»`,
+      timestamp:'',
+    });
   });
-  items.sort((a,b)=>a.sort-b.sort);
-  const dot = document.getElementById('notifDot');
-  if (dot){ dot.hidden = items.length === 0; dot.textContent = items.length > 9 ? '9+' : String(items.length); }
-  const panel = document.getElementById('notifPanel');
-  if (!panel) return;
-  panel.innerHTML = items.length
-    ? items.slice(0,12).map(i => { const tn = NOTIF_TONES[i.tone] || NOTIF_TONES.info;
-        return `<a href="#" class="notif-item" data-open-risk="${i.riskId}"><span class="notif-card-icon" style="background:${tn.bg};color:${tn.fg};">${tn.icon}</span><div class="nt-body"><div class="nt-t">${esc(i.t)}</div><div class="nt-d">${esc(i.d)}</div></div></a>`;
-      }).join('')
-    : '<div class="notif-empty">Новых уведомлений нет</div>';
-  panel.querySelectorAll('[data-open-risk]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); panel.hidden = true; openPassport(a.dataset.openRisk); }));
+  const info = [];
+  risks.forEach(r => state.audit.filter(a=>a.riskId===r.id).forEach(a => info.push({
+    id:`audit-${a.id}`, riskId:r.id, tone:'info',
+    title: a.fromStatus ? `Статус изменён: ${a.fromStatus} → ${a.toStatus}` : `Риск создан — статус «${a.toStatus}»`,
+    body:`${r.id} · «${r.title.slice(0,50)}» · ${a.actorName}`,
+    timestamp: a.timestamp,
+  })));
+  info.sort((a,b) => (b.timestamp||'').localeCompare(a.timestamp||''));
+  return [action, review, info.slice(0,30)];
 }
-document.getElementById('notifBell').addEventListener('click', () => {
-  const panel = document.getElementById('notifPanel');
-  panel.hidden = !panel.hidden;
-});
-document.addEventListener('click', e => {
-  const wrap = document.getElementById('notifBell').closest('.notif-wrap');
-  if (!wrap.contains(e.target)) document.getElementById('notifPanel').hidden = true;
-});
+function renderNotifBell(){
+  const dot = document.getElementById('notifDot');
+  if (!dot) return;
+  if (!state.session || state.session.role === 'initiator'){ dot.hidden = true; return; }
+  const tabsData = buildNotifications();
+  const unreadTotal = tabsData.reduce((n, items) => n + items.filter(i => !notifReadIds.has(i.id)).length, 0);
+  dot.hidden = unreadTotal === 0;
+  dot.textContent = unreadTotal > 9 ? '9+' : String(unreadTotal);
+}
+function openNotifDrawer(){
+  renderNotifDrawer();
+  document.getElementById('notifDrawerOverlay').classList.add('show');
+  openModalCount++;
+  if (openModalCount === 1) document.body.classList.add('modal-open');
+}
+function closeNotifDrawer(){
+  document.getElementById('notifDrawerOverlay').classList.remove('show');
+  openModalCount = Math.max(0, openModalCount - 1);
+  if (openModalCount === 0) document.body.classList.remove('modal-open');
+}
+function renderNotifDrawer(){
+  const tabsData = buildNotifications();
+  const tabsEl = document.getElementById('notifTabs');
+  tabsEl.innerHTML = NOTIF_TABS.map((t, i) => {
+    const unread = tabsData[i].filter(x => !notifReadIds.has(x.id)).length;
+    return `<button type="button" class="notif-tab${notifTab===i?' active':''}" data-notif-tab="${i}">${esc(t.label)}${unread ? `<span class="notif-tab-badge ${t.badge}">${unread>99?'99+':unread}</span>` : ''}</button>`;
+  }).join('');
+  tabsEl.querySelectorAll('[data-notif-tab]').forEach(b => b.addEventListener('click', () => {
+    notifTab = Number(b.dataset.notifTab);
+    renderNotifDrawer();
+  }));
+  document.getElementById('notifUnreadToggle').checked = notifUnreadOnly;
+
+  const tabDef = NOTIF_TABS[notifTab];
+  let items = tabsData[notifTab];
+  if (notifUnreadOnly) items = items.filter(i => !notifReadIds.has(i.id));
+
+  const body = document.getElementById('notifDrawerBody');
+  if (!items.length){
+    body.innerHTML = '<div class="notif-empty">Уведомлений нет</div>';
+    return;
+  }
+  const hasUnread = items.some(i => !notifReadIds.has(i.id));
+  body.innerHTML = `<div class="notif-group">
+    <div class="notif-group-head">
+      <span class="notif-group-label">${esc(tabDef.groupLabel)}</span>
+      ${hasUnread ? `<button type="button" class="notif-mark-all" id="notifMarkAllBtn">Отметить все как прочитанные</button>` : ''}
+    </div>
+    ${items.map(i => {
+      const tn = NOTIF_TONES[i.tone] || NOTIF_TONES.info;
+      const unread = !notifReadIds.has(i.id);
+      return `<div class="notif-card${unread?' unread':''}" data-notif-id="${esc(i.id)}" data-open-risk="${esc(i.riskId)}">
+        <span class="notif-card-icon" style="background:${tn.bg};color:${tn.fg};">${tn.icon}</span>
+        <div class="nt-body">
+          <div class="nt-t">${unread?'<span class="notif-unread-dot"></span>':''}${esc(i.title)}</div>
+          <div class="nt-d">${esc(i.body)}</div>
+          ${i.timestamp ? `<div class="nt-time">${esc(i.timestamp)}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+  const markAllBtn = document.getElementById('notifMarkAllBtn');
+  if (markAllBtn) markAllBtn.addEventListener('click', () => {
+    items.forEach(i => notifReadIds.add(i.id));
+    renderNotifDrawer();
+    renderNotifBell();
+  });
+  body.querySelectorAll('[data-notif-id]').forEach(el => el.addEventListener('click', () => {
+    notifReadIds.add(el.dataset.notifId);
+    closeNotifDrawer();
+    renderNotifBell();
+    openPassport(el.dataset.openRisk);
+  }));
+}
+document.getElementById('notifBell').addEventListener('click', () => openNotifDrawer());
+document.getElementById('notifDrawerClose').addEventListener('click', closeNotifDrawer);
+document.getElementById('notifDrawerOverlay').addEventListener('click', e => { if (e.target.id === 'notifDrawerOverlay') closeNotifDrawer(); });
+document.getElementById('notifUnreadToggle').addEventListener('change', e => { notifUnreadOnly = e.target.checked; renderNotifDrawer(); });
 
 function renderDashboard(){
   const risks = state.risks.filter(r => r.status !== 'Архивирован');
