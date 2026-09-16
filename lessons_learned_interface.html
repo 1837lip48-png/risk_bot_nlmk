@@ -119,15 +119,16 @@
      а не порознь (один — position:fixed, другой — в потоке страницы), иначе
      при любой раскладке они оказываются на разных уровнях по высоте. */
   /* Шрифт Golos Text грузится асинхронно (см. комментарий у <link> в <head>),
-     поэтому текст в этой области (имя/роль пользователя, аватар) первый раз
-     рисуется запасным шрифтом и слегка меняет метрики при подстановке
-     Golos Text — заметно как «скачок» размера иконок рядом с ним, особенно
-     при location.reload() (напр. «Выйти»). Плавно проявляем блок вместо
-     мгновенного показа не готовым шрифтом — glitch остаётся скрытым за
-     fade-in, а не виден как резкий скачок. */
+     поэтому текст в затронутых блоках первый раз рисуется запасным шрифтом
+     и слегка меняет метрики (в т.ч. перенос строк в подписях role-card-desc)
+     при подстановке Golos Text — заметно как «скачок»/переразмер иконок и
+     карточек рядом с текстом, особенно при location.reload() (напр.
+     «Выйти» — снова экран логина). Плавно проявляем такие блоки (класс
+     fonts-ready на <html>, см. markFontsReady()) вместо мгновенного показа
+     не готовым шрифтом — сам скачок метрик остаётся скрытым за fade-in. */
   .topbar-fixed{position:fixed; top:14px; right:14px; z-index:80; display:flex; align-items:center; gap:10px;
     opacity:0; transition:opacity .15s ease;}
-  .topbar-fixed.fonts-ready{opacity:1;}
+  :root.fonts-ready .topbar-fixed{opacity:1;}
   .theme-toggle{width:38px; height:38px; border-radius:50%;
     border:1px solid var(--line); background:var(--paper-0); cursor:pointer; padding:0; position:relative;
     display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-pop);}
@@ -143,7 +144,9 @@
   /* Шаг 1 (выбор роли) — без белой карточки-контейнера: бренд и роли лежат
      прямо на фоне страницы. Заголовочный блок оформлен по образцу референса
      (крупный заголовок / акцентный подзаголовок / серая подсказка). */
-  .role-select-shell{width:100%; max-width:840px; display:flex; flex-direction:column; align-items:center; gap:22px;}
+  .role-select-shell{width:100%; max-width:840px; display:flex; flex-direction:column; align-items:center; gap:22px;
+    opacity:0; transition:opacity .15s ease;}
+  :root.fonts-ready .role-select-shell{opacity:1;}
   .role-select-header{display:flex; flex-direction:column; align-items:center; gap:8px;}
   .brand.brand--lg{display:flex; align-items:center; gap:14px; border-bottom:none; padding:0; margin:0;}
   .brand--lg .brand-mark{width:50px; height:28px;}
@@ -2495,8 +2498,7 @@ window.addEventListener('resize', syncHeaderReserve);
 // (офлайн/заблокирован Google Fonts): иконки не должны остаться невидимыми
 // навсегда.
 function markFontsReady(){
-  const tb = document.querySelector('.topbar-fixed');
-  if (tb) tb.classList.add('fonts-ready');
+  document.documentElement.classList.add('fonts-ready');
 }
 if (window.__fontsReady) markFontsReady();
 setTimeout(markFontsReady, 2000);
