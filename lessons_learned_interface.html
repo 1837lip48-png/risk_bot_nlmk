@@ -1135,8 +1135,16 @@ function activateFonts(link){
 
   /* ===== Паспорт риска ===== */
   .passport-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:12px;}
-  .passport-grid.passport-grid-2{grid-template-columns:1fr 1fr;}
-  @media (max-width:700px){.passport-grid{grid-template-columns:1fr;}}
+  /* ИДЕНТИФИКАЦИЯ: слева — короткие поля (ID/категория/владелец/светофор),
+     справа — связный текст (причина/событие/следствие). Ровное 1fr 1fr
+     оставляло слева много пустого места при коротких значениях, из-за чего
+     блок выглядел непропорционально — отдаём правой колонке больше места
+     и разделяем колонки вертикальной линией, чтобы асимметрия читалась
+     как осознанная структура, а не как случайный разнобой. */
+  .passport-grid.passport-grid-2{grid-template-columns:0.82fr 1.18fr;}
+  .passport-grid.passport-grid-2 .passport-block:last-child{padding-left:20px; border-left:1px solid var(--line);}
+  @media (max-width:700px){.passport-grid{grid-template-columns:1fr;}
+    .passport-grid.passport-grid-2 .passport-block:last-child{padding-left:0; border-left:none;}}
   .passport-block .k{font-size:var(--fs-additional); text-transform:uppercase; letter-spacing:.2px; color:var(--ink-400); margin-bottom:4px;}
   .passport-block .v{font-size:13px; line-height:1.4;}
   .severity-box{border-radius:var(--radius-field); padding:10px; text-align:center;}
