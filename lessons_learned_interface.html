@@ -388,6 +388,16 @@ function activateFonts(link){
   .modal-card--xwide{max-width:820px;}
   .modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; gap:12px;}
   .modal-head span{font-family:var(--font-display); font-size:var(--fs-sub3); line-height:var(--lh-sub3); font-weight:700;}
+  /* Заголовок паспорта риска обновляется динамически (ID/уровень/название
+     риска — см. renderPassport()) и остаётся видимым при скролле длинной
+     модалки, как и панель-навигация .pp-nav сразу под ним. */
+  #passportModalOverlay .modal-head{position:sticky; top:0; z-index:3; background:var(--paper-0);}
+  .pp-nav{display:flex; gap:4px; padding:8px 0; margin-bottom:12px; border-bottom:1px solid var(--line);
+    overflow-x:auto; position:sticky; top:56px; z-index:2; background:var(--paper-0);}
+  .pp-nav-pill{font-size:12px; padding:5px 10px; border-radius:var(--radius-field);
+    color:var(--ink-600); white-space:nowrap; cursor:pointer; flex-shrink:0;}
+  .pp-nav-pill.active{background:var(--accent-50); color:var(--accent-600); font-weight:600;}
+  .pp-nav-count{opacity:.55;}
   .modal-close{border:none; background:none; width:26px; height:26px; border-radius:50%; color:var(--ink-600);
     cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
   .modal-close:hover{background:var(--canvas); color:var(--ink-900);}
@@ -3706,13 +3716,46 @@ function deleteRisk(id){
 // ПАСПОРТ РИСКА
 // ===================================================================
 let currentPassportId = null;
+let auditExpanded = false, commentsExpanded = false;
 function openPassport(riskId){
   currentPassportId = riskId;
+  auditExpanded = false; commentsExpanded = false;
   const r = findRisk(riskId);
   if (r && r.isNew){ r.isNew = false; saveState(); }
   renderPassport();
   openModal('passportModalOverlay');
 }
+// Sticky-навигация по секциям паспорта — быстрый переход без ручного
+// скролла по длинной модалке; счётчики (мероприятия/история) видны сразу
+// в пилюле, не нужно листать, чтобы узнать «сколько там записей».
+const PP_SECTIONS = [
+  {id:'pp-sec-ident',    label:'Идентификация'},
+  {id:'pp-sec-assess',   label:'Оценка'},
+  {id:'pp-sec-treat',    label:'Обработка'},
+  {id:'pp-sec-residual', label:'Остаточный риск'},
+  {id:'pp-sec-actions',  label:'Мероприятия'},
+  {id:'pp-sec-audit',    label:'История'},
+];
+function ppNavHtml(r){
+  const auditCount = state.audit.filter(a=>a.riskId===r.id).length;
+  const counts = {'pp-sec-actions': r.actions.length, 'pp-sec-audit': auditCount};
+  return `<div class="pp-nav" id="ppNavBar">${PP_SECTIONS.map(s =>
+    `<span class="pp-nav-pill" data-pp-goto="${s.id}">${s.label}${counts[s.id]?` <span class="pp-nav-count">${counts[s.id]}</span>`:''}</span>`
+  ).join('')}</div>`;
+}
+function ppScrollTo(id){
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+// Соответствие стадии степпера и релевантной секции паспорта — клик по
+// шагу должен вести туда, где эта стадия на самом деле отражена в данных.
+const STAGE_TO_SECTION = {
+  'Идентификация':          'pp-sec-ident',
+  'Анализ и оценка':        'pp-sec-assess',
+  'Управление':             'pp-sec-treat',
+  'Мониторинг и Контроль':  'pp-sec-actions',
+  'Закрыт':                 'pp-sec-residual',
+};
 function severityColor(zone){ return zone==='high'?{bg:'var(--red-50)',fg:'var(--red-700)'}:zone==='medium'?{bg:'var(--amber-50)',fg:'var(--amber-700)'}:zone==='low'?{bg:'var(--green-50)',fg:'var(--green-700)'}:{bg:'var(--canvas)',fg:'var(--ink-400)'}; }
 function canManage(r){
   if (!state.session) return false;
@@ -3898,6 +3941,19 @@ function renderPassport(){
   const mount = document.getElementById('passportMount');
   if (!r){ mount.innerHTML = '<div class="empty-state">Риск не найден.</div>'; return; }
   const rra = rraOf(r.p, r.iLevel), zone = zoneOf(rra), sc = severityColor(zone);
+  document.querySelector('#passportModalOverlay .modal-head').innerHTML = `
+    <div style="min-width:0;flex:1;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;flex-wrap:wrap;">
+        <span class="mono" style="font-size:11px;color:var(--ink-400);font-weight:600;">${esc(r.id)}</span>
+        ${zone ? `<span class="badge-pill ${ZONE_BADGE[zone]}" style="font-size:11px;">${ZONE_LABEL[zone]} · RRA ${rra}</span>`
+               : `<span class="rcm-unrated" style="font-size:11px;">Не оценён</span>`}
+        ${r.committeeFlag ? `<span class="badge-pill" style="background:var(--gold-50);color:var(--gold-700);font-size:10.5px;text-transform:uppercase;">Комитет</span>` : ''}
+      </div>
+      <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(r.title)}</div>
+    </div>
+    <button type="button" class="modal-close" data-close="passportModalOverlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  `;
+  document.querySelector('#passportModalOverlay .modal-close').addEventListener('click', () => closeModal('passportModalOverlay'));
   const tl = trafficLight(r.actions);
   const editable = canManage(r);
   const stepIdx = STATUSES.indexOf(r.status);
@@ -3915,6 +3971,7 @@ function renderPassport(){
   const similarLesson = findBestLessonForRisk(r);
 
   mount.innerHTML = `
+    ${ppNavHtml(r)}
     <div class="btn-row" style="margin-bottom:12px;">
       <button type="button" class="btn btn-text btn-sm" id="pAgendaBtn">📅 Добавить в повестку риск-сессии</button>
       ${editable && !r.committeeFlag ? `<button class="btn btn-secondary btn-sm" id="pEscalateBtn">Эскалировать риск-менеджеру / комитету</button>` : ''}
@@ -3925,10 +3982,11 @@ function renderPassport(){
       const isFilled = i < stepIdx, isCurrent = i === stepIdx;
       const dotHtml = isFilled ? ICON_SD_CHECK_SM : (i+1);
       const curStyle = isCurrent ? ` style="--stepper-current:${zone ? severityColor(zone).fg : 'var(--navy-900)'}"` : '';
-      return `<span class="step ${isFilled?'filled':''} ${isCurrent?'current':''}" data-step-idx="${i}"${curStyle}><span class="dot">${dotHtml}</span><span class="lbl">${s}</span></span>${i<STATUSES.length-1?'<span class="bar"></span>':''}`;
+      const sectionLabel = PP_SECTIONS.find(sec => sec.id === STAGE_TO_SECTION[s])?.label || s;
+      return `<span class="step ${isFilled?'filled':''} ${isCurrent?'current':''}" data-step-idx="${i}"${curStyle} aria-label="Перейти к разделу: ${esc(sectionLabel)}"><span class="dot">${dotHtml}</span><span class="lbl">${s}</span></span>${i<STATUSES.length-1?'<span class="bar"></span>':''}`;
     }).join('')}</div>
 
-    <h3 class="pp-h">ИДЕНТИФИКАЦИЯ</h3>
+    <h3 class="pp-h" id="pp-sec-ident">ИДЕНТИФИКАЦИЯ</h3>
     <div class="passport-grid passport-grid-2">
       <div class="passport-block">
         <div class="k">ID / № паспорта</div><div class="v">${r.id}<br>№ ${r.displayNumber||'—'}</div>
@@ -3959,7 +4017,7 @@ function renderPassport(){
       ` : `<div class="muted" style="font-size:12.5px;">Похожих уроков в базе знаний не найдено.</div>`}
     </div>
 
-    <h3 class="pp-h">ОЦЕНКА</h3>
+    <h3 class="pp-h" id="pp-sec-assess">ОЦЕНКА</h3>
     <div class="pp-assess-row">
       <div class="pp-assess-matrix">
         ${migrationMatrixHtml(r.p, r.iLevel, null, null, 148)}
@@ -3982,7 +4040,7 @@ function renderPassport(){
       </div>
     </div>
 
-    <h3 class="pp-h">ОБРАБОТКА</h3>
+    <h3 class="pp-h" id="pp-sec-treat">ОБРАБОТКА</h3>
     <div class="passport-block" style="margin-bottom:12px;">
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px 20px;">
         <div><div class="k">Стратегия(и) по мероприятиям</div><div class="v">${strategies.length?esc(strategies.join(', ')):'<span class="muted">пока не выбрана — появится вместе с первым мероприятием</span>'}</div></div>
@@ -3991,7 +4049,7 @@ function renderPassport(){
       <div style="margin-top:8px;"><div class="k">Обоснование выбора</div><div class="v">${esc(r.strategyRationale)||'<span class="muted">не заполнено</span>'}</div></div>
     </div>
 
-    <h3 class="pp-h">ОСТАТОЧНЫЙ РИСК</h3>
+    <h3 class="pp-h" id="pp-sec-residual">ОСТАТОЧНЫЙ РИСК</h3>
     <div class="passport-block" style="margin-bottom:12px;">
       ${r.p && r.iLevel ? `
         <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
@@ -4016,7 +4074,7 @@ function renderPassport(){
       ${editable && r.status!=='Архивирован' ? `<button class="btn btn-text btn-sm" id="pMergeBtn">Объединить как дубль…</button>` : ''}
     </div>
 
-    <div class="pp-h-row"><h3 class="pp-h">МЕРОПРИЯТИЯ (${planActions.length})</h3>${editable && r.p && r.iLevel ? `<button type="button" class="btn btn-secondary btn-sm" id="pAddActionBtn">+ Добавить мероприятие</button>` : ''}</div>
+    <div class="pp-h-row"><h3 class="pp-h" id="pp-sec-actions">МЕРОПРИЯТИЯ (${planActions.length})</h3>${editable && r.p && r.iLevel ? `<button type="button" class="btn btn-secondary btn-sm" id="pAddActionBtn">+ Добавить мероприятие</button>` : ''}</div>
     ${planActions.length ? `<div class="actions-table-wrap"><table class="data-table"><thead><tr><th>Стратегия</th><th>Мероприятие</th><th>Вид</th><th>Ответственный</th><th>План</th><th>Прогноз/факт</th><th>Стоимость</th><th>Статус</th>${editable?'<th></th>':''}</tr></thead><tbody>
       ${planActions.map(a => `<tr${editable?` data-action-row="${a.id}" style="cursor:pointer;"`:''}><td>${esc(a.strategy)}</td><td>${esc(a.title)}${a.triggerCondition?`<div class="muted" style="font-size:11px;margin-top:2px;">Запасной план: ${esc(a.triggerCondition)}</div>`:''}</td><td>${ACTION_KIND_LABEL[a.kind]}</td><td>${assigneeCellHtml(a, editable)}</td>
         <td class="mono">${esc(a.plannedDate||'—')}${a.plannedDate && a.status!=='done' && a.status!=='rejected' && parseRuShortDate(a.plannedDate) && parseRuShortDate(a.plannedDate) < TODAY ? ' <span style="color:var(--red-700);">⚠ просрочено</span>' : ''}</td><td class="mono">${esc(a.forecastActualDate||'—')}</td><td class="mono">${esc(a.cost||'—')}</td>
@@ -4026,11 +4084,11 @@ function renderPassport(){
       ? `<div class="risk-card-cta" id="pAddActionEmptyCta" style="min-height:72px;"><div class="risk-card-cta-inner" style="flex-direction:row;gap:8px;"><span class="risk-card-cta-icon" style="width:24px;height:24px;font-size:15px;">+</span><span class="risk-card-cta-lbl">Добавить мероприятие</span></div></div>`
       : `<div class="empty-state">Мероприятий пока нет — светофор красный, пока не появится хотя бы одно.</div>`)}
 
-    <h3 class="pp-h">AUDIT TRAIL — кто, когда и что менял</h3>
-    ${renderAuditForRisk(r.id)}
+    <h3 class="pp-h" id="pp-sec-audit">AUDIT TRAIL — кто, когда и что менял</h3>
+    ${renderAuditForRisk(r.id, auditExpanded)}
 
     <div class="pp-h-row"><h3 class="pp-h">ЛОГ КОММЕНТАРИЕВ И РЕШЕНИЙ</h3>${editable ? `<button type="button" class="btn btn-secondary btn-sm" id="pAddCommentBtn">+ Комментарий</button>` : ''}</div>
-    <div class="v">${renderCommentLog(r.id)}</div>
+    <div class="v">${renderCommentLog(r.id, commentsExpanded)}</div>
     ${editable ? `<div id="pCommentFormWrap" hidden style="margin-top:10px;">
       <textarea id="pCommentText" placeholder="Комментарий или решение по риску..." style="width:100%;min-height:60px;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 12px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>
       <div class="btn-row" style="margin-top:8px;"><button type="button" class="btn btn-text btn-sm" id="pCommentCancelBtn">Отмена</button><button type="button" class="btn btn-primary btn-sm" id="pCommentSaveBtn" style="flex:1;">Сохранить</button></div>
@@ -4039,9 +4097,29 @@ function renderPassport(){
 
   mount.querySelectorAll('.stepper .step').forEach(stepEl => stepEl.addEventListener('click', () => {
     const i = Number(stepEl.dataset.stepIdx);
+    const stageName = STATUSES[i];
     const stageState = i < stepIdx ? 'пройден' : i === stepIdx ? 'текущий' : 'предстоит';
-    toast(`${i+1}. ${STATUSES[i]}`, {body:`Стадия ${stageState}`});
+    const targetId = STAGE_TO_SECTION[stageName];
+    if (targetId) ppScrollTo(targetId);
+    toast(`${i+1}. ${stageName}`, {body:`Стадия ${stageState}`, duration:2000});
   }));
+  mount.parentElement.querySelectorAll('[data-pp-goto]').forEach(el =>
+    el.addEventListener('click', () => ppScrollTo(el.dataset.ppGoto)));
+  const ppNavBar = document.getElementById('ppNavBar');
+  if (ppNavBar){
+    const ppSectionEls = PP_SECTIONS.map(s => document.getElementById(s.id)).filter(Boolean);
+    const ppObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const pill = ppNavBar.querySelector(`[data-pp-goto="${entry.target.id}"]`);
+        if (pill) pill.classList.toggle('active', entry.isIntersecting);
+      });
+    }, {root: mount.closest('.modal-card-scroll'), rootMargin: '-40% 0px -55% 0px', threshold: 0});
+    ppSectionEls.forEach(el => ppObserver.observe(el));
+  }
+  const auditExpandBtn = document.getElementById('pAuditExpandBtn');
+  if (auditExpandBtn) auditExpandBtn.addEventListener('click', () => { auditExpanded = true; renderPassport(); });
+  const commentExpandBtn = document.getElementById('pCommentExpandBtn');
+  if (commentExpandBtn) commentExpandBtn.addEventListener('click', () => { commentsExpanded = true; renderPassport(); });
   const editBtn = document.getElementById('pEditBtn');
   if (editBtn) editBtn.addEventListener('click', () => openRiskEditModal(r));
   const assessBtn = document.getElementById('pAssessBtn');
@@ -4156,18 +4234,33 @@ function auditTimelineHtml(rows, withRiskLink){
     </div>`;
   }).join('')}</div>`;
 }
-function renderAuditForRisk(riskId){
+// Длинную историю (Audit Trail / лог комментариев) по умолчанию обрезаем
+// до последних 5 записей — паспорт активного риска в работе может
+// накопить десятки переходов и комментариев, все они не нужны на экране
+// сразу, полный список доступен по клику «Показать всю историю».
+function renderAuditForRisk(riskId, showAll){
   const rows = state.audit.filter(a => a.riskId === riskId);
   if (!rows.length) return '<p class="muted" style="font-size:12.5px;">История переходов появится здесь после первого изменения статуса.</p>';
-  return auditTimelineHtml(rows);
+  const visible = showAll ? rows : rows.slice(-5);
+  const hint = !showAll && rows.length > 5
+    ? `<p class="muted" style="font-size:11px;margin:0 0 8px;">Показаны последние 5 из ${rows.length}</p>` : '';
+  const expandBtn = !showAll && rows.length > 5
+    ? `<button type="button" class="link-btn btn-sm" id="pAuditExpandBtn" style="margin-top:8px;">Показать всю историю (${rows.length}) ↓</button>` : '';
+  return hint + auditTimelineHtml(visible) + expandBtn;
 }
 // Лог комментариев/решений — тот же AuditLog, но только записи с текстом
 // (эскалации, принятие остаточного риска, комментарии к переходам статуса),
 // без «технических» переходов без пояснений.
-function renderCommentLog(riskId){
+function renderCommentLog(riskId, showAll){
   const rows = state.audit.filter(a => a.riskId === riskId && a.comment);
   if (!rows.length) return '<p class="muted" style="font-size:12.5px;">Комментариев и решений по риску пока нет.</p>';
-  return `<div class="audit-list">${rows.map(a => `<div class="audit-row"><span class="t">${a.timestamp}</span><span class="desc">${esc(a.actorName)}: ${esc(a.comment)}</span></div>`).join('')}</div>`;
+  const visible = showAll ? rows : rows.slice(-5);
+  const hint = !showAll && rows.length > 5
+    ? `<p class="muted" style="font-size:11px;margin:0 0 8px;">Показаны последние 5 из ${rows.length}</p>` : '';
+  const expandBtn = !showAll && rows.length > 5
+    ? `<button type="button" class="link-btn btn-sm" id="pCommentExpandBtn" style="margin-top:8px;">Показать все комментарии (${rows.length}) ↓</button>` : '';
+  const list = `<div class="audit-list">${visible.map(a => `<div class="audit-row"><span class="t">${a.timestamp}</span><span class="desc">${esc(a.actorName)}: ${esc(a.comment)}</span></div>`).join('')}</div>`;
+  return hint + list + expandBtn;
 }
 function advanceButtonHtml(r){
   const idx = STATUSES.indexOf(r.status);
