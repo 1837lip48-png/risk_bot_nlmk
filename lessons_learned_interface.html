@@ -1746,6 +1746,27 @@ function activateFonts(link){
   </div>
 </div>
 
+<!-- Выбор участников риск-сессии/встречи (Заметки дня) — та же модалка-чеклист,
+     что и у выбора рисков, плюс свободный ввод для внешнего участника
+     (имя или email), которого нет в каталоге пользователей ALL_USERS. -->
+<div class="modal-overlay" id="attendeePickerModalOverlay">
+  <div class="modal-card modal-card--wide" role="dialog" aria-modal="true">
+   <div class="modal-card-scroll">
+    <div class="modal-head"><span>Выбрать участников</span>
+      <button type="button" class="modal-close" data-close="attendeePickerModalOverlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="search-box" style="margin-bottom:10px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input type="text" id="attendeePickerSearch" placeholder="Поиск по имени..."></div>
+    <input type="text" id="attendeePickerCustomInput" placeholder="Внешний участник — имя или email, затем Enter" style="width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 12px;font-size:13px;font-family:inherit;margin-bottom:10px;">
+    <div id="attendeePickerList" style="max-height:360px;overflow-y:auto;"></div>
+    <div class="btn-row" style="margin-top:14px;">
+      <button type="button" class="btn btn-text" data-close="attendeePickerModalOverlay">Отмена</button>
+      <button type="button" class="btn btn-primary" id="attendeePickerDoneBtn" style="flex:2;">Готово</button>
+    </div>
+   </div>
+  </div>
+</div>
+
 <!-- Lesson view/create modal -->
 <div class="modal-overlay" id="lessonModalOverlay">
   <div class="modal-card modal-card--wide" role="dialog" aria-modal="true">
@@ -5627,11 +5648,8 @@ function dayNotesBodyHtml(y,m,d){
     <div class="cal-note-row"><div style="flex:1;"><div class="cal-note-type" style="color:${t.color}">${esc(t.label)}</div><div style="font-size:13px;margin-top:2px;">${esc(n.text)}</div>${n.time?`<div class="muted cal-note-time-row" style="font-size:11px;margin-top:2px;">${ICON_SD_CLOCK}${esc(n.time)}${n.timeTo?'–'+esc(n.timeTo):''}</div>`:''}${n.attendees && n.attendees.length ? `<div class="muted" style="font-size:11px;margin-top:2px;">Участники: ${esc(n.attendees.join(', '))}</div>` : ''}${n.author?`<div class="muted" style="font-size:11px;margin-top:2px;">${esc(n.author)}</div>`:''}${n.riskId?`<a href="#" data-open-risk-from-note="${n.riskId}" style="font-size:11px;font-weight:600;">Открыть риск →</a>`:''}</div>
       <button type="button" class="cal-note-del" data-del-note="${n.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`; }).join('')}</div>
     <div class="field" style="margin:12px 0 8px;"><label>Участники</label>
-      <div class="ds-ms" id="dnAttendeeMs">
-        <div class="ds-ms-chips" id="dnAttendeeChips"></div>
-        <button type="button" class="ds-ms-addbtn" id="dnAttendeeAddBtn">+ Добавить участника</button>
-        <div class="ds-ms-menu" id="dnAttendeeMenu" hidden></div>
-      </div>
+      <div class="ds-ms-chips" id="dnAttendeeChips" style="margin-bottom:8px;"></div>
+      <button type="button" class="ds-ms-addbtn" id="dnAttendeeAddBtn" style="width:100%;">+ Выбрать участников…</button>
     </div>
     <div class="btn-row" style="margin-bottom:8px;gap:8px;">
       <select id="dnType" style="flex:1;">${NOTE_TYPES.map(t=>`<option value="${t.key}">${t.label}</option>`).join('')}</select>
@@ -5665,37 +5683,52 @@ function dnRenderAttendeeChips(){
     dnRenderAttendeeChips();
   }));
 }
-function dnToggleAttendeeMenu(show){
-  const menu = document.getElementById('dnAttendeeMenu');
-  if (!menu) return;
-  if (show){
-    const rest = ALL_USERS.filter(n => !dnAttendeeSelection.includes(n));
-    menu.innerHTML = `<div style="padding:6px 8px;border-bottom:1px solid var(--line);">
-      <input type="text" id="dnAttendeeCustomInput" placeholder="Введите имя или email и нажмите Enter" style="width:100%;border:1px solid var(--line);border-radius:var(--radius-field);padding:6px 8px;font-size:12.5px;font-family:inherit;">
-    </div>` + (rest.length ? rest.map(n => `<div class="ds-ms-item" data-dn-add-attendee="${esc(n)}">${esc(n)}</div>`).join('')
-      : '<div class="ds-ms-empty">Все пользователи уже добавлены</div>');
-    menu.querySelectorAll('[data-dn-add-attendee]').forEach(el => el.addEventListener('click', () => {
-      dnAttendeeSelection.push(el.dataset.dnAddAttendee);
-      dnRenderAttendeeChips();
-      dnToggleAttendeeMenu(false);
-    }));
-    // Свободный ввод — приглашённый может не быть в списке пользователей
-    // системы (внешний участник по имени или email).
-    const customInput = document.getElementById('dnAttendeeCustomInput');
-    customInput.addEventListener('keydown', e => {
-      if (e.key !== 'Enter') return;
-      e.preventDefault();
-      const val = customInput.value.trim();
-      if (!val || dnAttendeeSelection.includes(val)) return;
-      dnAttendeeSelection.push(val);
-      dnRenderAttendeeChips();
-      dnToggleAttendeeMenu(true);
-    });
-    customInput.focus();
-  }
-  menu.hidden = !show;
+// Модалка выбора участников (чек-лист, тот же паттерн, что и у выбора
+// рисков) — вместо одного-за-раз добавления из инлайн-выпадайки; плюс
+// свободный ввод для внешнего участника (имя/email), которого нет в
+// каталоге ALL_USERS.
+let dnAttendeePickerDraft = [];
+function openAttendeePickerModal(){
+  dnAttendeePickerDraft = dnAttendeeSelection.slice();
+  document.getElementById('attendeePickerSearch').value = '';
+  document.getElementById('attendeePickerCustomInput').value = '';
+  renderAttendeePickerList('');
+  openModal('attendeePickerModalOverlay');
 }
-document.addEventListener('click', (e) => { if (!e.target.closest('#dnAttendeeMs')) dnToggleAttendeeMenu(false); });
+function renderAttendeePickerList(q){
+  const listEl = document.getElementById('attendeePickerList');
+  const query = q.trim().toLowerCase();
+  // Внешние участники, добавленные свободным вводом, не входят в ALL_USERS —
+  // показываем их в списке тоже, чтобы их можно было снять галочкой, а не
+  // только крестиком на пилюле.
+  const customExtras = dnAttendeePickerDraft.filter(n => !ALL_USERS.includes(n));
+  const names = [...ALL_USERS, ...customExtras].filter(n => !query || n.toLowerCase().includes(query));
+  listEl.innerHTML = names.length ? names.map(n => `<label class="ds-ms-item" style="display:flex; align-items:center; gap:9px; cursor:pointer;">
+      <input type="checkbox" data-attendee-picker-item="${esc(n)}" ${dnAttendeePickerDraft.includes(n)?'checked':''}>
+      <span>${esc(n)}</span>
+    </label>`).join('')
+    : '<div class="ds-ms-empty">Ничего не найдено</div>';
+  listEl.querySelectorAll('[data-attendee-picker-item]').forEach(cb => cb.addEventListener('change', () => {
+    const n = cb.dataset.attendeePickerItem;
+    dnAttendeePickerDraft = cb.checked ? [...dnAttendeePickerDraft, n] : dnAttendeePickerDraft.filter(x => x !== n);
+  }));
+}
+document.getElementById('attendeePickerSearch').addEventListener('input', (e) => renderAttendeePickerList(e.target.value));
+document.getElementById('attendeePickerCustomInput').addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  const input = e.target;
+  const val = input.value.trim();
+  if (!val || dnAttendeePickerDraft.includes(val)) return;
+  dnAttendeePickerDraft.push(val);
+  input.value = '';
+  renderAttendeePickerList(document.getElementById('attendeePickerSearch').value);
+});
+document.getElementById('attendeePickerDoneBtn').addEventListener('click', () => {
+  dnAttendeeSelection = dnAttendeePickerDraft.slice();
+  dnRenderAttendeeChips();
+  closeModal('attendeePickerModalOverlay');
+});
 let dnAttendeeSelection = [];
 // Риски, обсуждаемые на сессии (только для типа «Риск-сессия») — без
 // привязанного риска computeSessionData() не находит данных и карточка
@@ -5771,7 +5804,7 @@ function wireDayNotesForm(y,m,d){
   enhanceSelectAsAutocomplete(document.getElementById('dnDuration'));
   dnRenderTimePicker();
   dnRenderAttendeeChips();
-  document.getElementById('dnAttendeeAddBtn').addEventListener('click', (e) => { e.stopPropagation(); dnToggleAttendeeMenu(document.getElementById('dnAttendeeMenu').hidden); });
+  document.getElementById('dnAttendeeAddBtn').addEventListener('click', openAttendeePickerModal);
   dnRenderRiskChips();
   document.getElementById('dnRisksAddBtn').addEventListener('click', openRiskPickerModal);
   const dnTypeSel = document.getElementById('dnType');
@@ -5796,20 +5829,19 @@ function wireDayNotesForm(y,m,d){
     const text = document.getElementById('dnText').value.trim();
     if (!text){ toast('Опишите повестку сессии', {tone:'warning'}); return; }
     const type = document.getElementById('dnType').value;
-    // «Риск-сессия» без привязанного риска не находится computeSessionData()
-    // и карточка сводки («Sprint Planning») не открывается по клику — поэтому
-    // хотя бы один риск обязателен именно для этого типа заметки.
-    if (type === 'session' && !dnRiskSelection.length){ toast('Выберите хотя бы один обсуждаемый риск', {tone:'warning'}); return; }
     const pad = n => String(n).padStart(2,'0');
     const time = `${pad(dnHour)}:${pad(dnMin)}`;
     const durationMin = parseInt(document.getElementById('dnDuration').value, 10) || 60;
     const key = dayKey(y,m,d);
     const base = {type, text, time, durationMin, attendees: dnAttendeeSelection.slice(), author:sessionName(), createdAt:nowStr()};
     const list = (state.dayNotes[key] = state.dayNotes[key]||[]);
-    // Один риск — одна заметка dayNotes (та же модель, что и у «Добавить в
-    // повестку риск-сессии» из карточки риска); computeSessionData() сама
-    // объединяет все session-заметки одного дня в одну общую сводку.
-    if (type === 'session') dnRiskSelection.forEach(riskId => list.push({...base, id:uid('note'), riskId}));
+    // Риск не обязателен — «Риск-сессия» без него просто заметка без
+    // карточки сводки («Sprint Planning», см. computeSessionData): её
+    // можно привязать позже. Один риск — одна заметка dayNotes (та же
+    // модель, что и у «Добавить в повестку риск-сессии» из карточки
+    // риска); computeSessionData() сама объединяет все session-заметки
+    // одного дня в одну общую сводку.
+    if (type === 'session' && dnRiskSelection.length) dnRiskSelection.forEach(riskId => list.push({...base, id:uid('note'), riskId}));
     else list.push({...base, id:uid('note')});
     saveState();
     toast('Приглашение на сессию направлено', {body: dnAttendeeSelection.length ? 'Участники: '+dnAttendeeSelection.join(', ') : undefined});
