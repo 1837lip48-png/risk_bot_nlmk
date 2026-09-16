@@ -838,8 +838,6 @@ function activateFonts(link){
   .toolbar-row select{border:1px solid var(--line); border-radius:var(--radius-field); padding:8px 30px 8px 12px; font-size:12.5px;
     background:var(--paper-0); color:var(--ink-900); cursor:pointer; appearance:none; background-repeat:no-repeat; background-position:right 10px center; background-size:13px;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2399a2a9' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");}
-  .result-count{font-size:12px; color:var(--ink-400); white-space:nowrap;}
-
   .owner-counters{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px;}
   .owner-counter{background:var(--paper-0); border:1px solid var(--line); border-radius:var(--radius-field);
     padding:12px 14px; cursor:pointer; transition:border-color .15s ease, background-color .15s ease;}
@@ -1094,6 +1092,12 @@ function activateFonts(link){
   .dt-picker-time-col::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
   .dt-picker-time-col::-webkit-scrollbar-button{display:none; height:0; width:0;}
   .dt-picker-time-col--sm{max-height:130px;}
+  /* Селект «Длительность» рядом с колонками часов/минут — как и .ds-ac
+     в .toolbar-row/.map-link-picker, внутри flex-строки ему нужна
+     фиксированная ширина: без неё width:100% по умолчанию у .ds-ac
+     считался от всей строки .dt-picker-time целиком, обёртка «наезжала»
+     сама на себя, а шеврон съезжал за пределы видимого поля. */
+  .dt-picker-time .ds-ac{width:132px; flex-shrink:0; align-self:flex-start;}
   .dt-picker-time-col-head{font-size:10.5px; color:var(--ink-400); font-weight:700; margin-bottom:2px; position:sticky; top:0; background:var(--paper-0); width:100%; text-align:center;}
   .dt-time-item{width:32px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12.5px; cursor:pointer; flex-shrink:0;}
   .dt-time-item:hover{background:var(--accent-50);}
@@ -1505,7 +1509,6 @@ function activateFonts(link){
         <button type="button" class="filter-reset-btn" id="regFilterReset" title="Сбросить все фильтры" aria-label="Сбросить все фильтры">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
         </button>
-        <span class="result-count" id="regCount"></span>
       </div>
       <div id="regQuickChip"></div>
       <div id="regAiChip"></div>
@@ -3603,8 +3606,6 @@ function renderRegister(){
   const clearBtn = document.getElementById('regQuickChipClear');
   if (clearBtn) clearBtn.addEventListener('click', () => { registerQuickFilter = null; renderRegister(); });
 
-  document.getElementById('regCount').textContent = `${list.length} из ${state.risks.filter(r=>r.status!=='Архивирован').length}`;
-
   const registerListEl = document.getElementById('registerList');
   // Сетка карточек 2 колонки (адаптивно) — единый формат и у риск-менеджера,
   // и у владельца риска, не только у «Мои риски».
@@ -4818,7 +4819,6 @@ function renderLessons(){
       <button type="button" class="filter-reset-btn" id="lesFilterReset" title="Сбросить все фильтры" aria-label="Сбросить все фильтры">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
       </button>
-      <span class="result-count" id="lesCount"></span>
       <button type="button" class="btn btn-secondary" id="btnImportLessons" title="Импортировать уроки" aria-label="Импортировать уроки"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 21h16"/></svg> Импортировать</button>
       <button type="button" class="btn btn-primary" id="btnAddLesson">+ Добавить урок</button>
     </div>
@@ -4910,7 +4910,6 @@ function renderLessonsTable(){
   document.getElementById('lesQuickChip').innerHTML = aiNote;
   const aiClear = document.getElementById('lesAiClear');
   if (aiClear) aiClear.addEventListener('click', () => { lessonAiQuery=''; document.getElementById('lesAiAsk').value=''; lessonsPaging.page = 1; renderLessonsTable(); });
-  document.getElementById('lesCount').textContent = `${list.length} из ${state.lessons.length}`;
   const total = list.length;
   const pageCount = Math.max(1, Math.ceil(total / lessonsPaging.pageSize));
   lessonsPaging.page = Math.min(Math.max(1, lessonsPaging.page), pageCount);
@@ -5558,7 +5557,7 @@ function dayNotesBodyHtml(y,m,d){
   const sessionRiskCount = notes.filter(n => n.type === 'session' && n.riskId).length;
   return `${sessionRiskCount ? `<button type="button" class="btn btn-secondary btn-sm" id="dnOpenSessionSummary" style="width:100%;margin-bottom:10px;">Открыть сводку риск-сессии (${sessionRiskCount})</button>` : ''}
     <div id="dayNotesList">${notes.map(n => { const t=noteType(n.type); return `
-    <div class="cal-note-row"><div style="flex:1;"><div class="cal-note-type" style="color:${t.color}">${esc(t.label)}</div><div style="font-size:13px;margin-top:2px;">${esc(n.text)}</div>${n.time?`<div class="muted cal-note-time-row" style="font-size:11px;margin-top:2px;">${ICON_SD_CLOCK}${esc(n.time)}${n.timeTo?'–'+esc(n.timeTo):''}</div>`:''}${n.attendees && n.attendees.length ? `<div class="muted" style="font-size:11px;margin-top:2px;">Участники: ${esc(n.attendees.join(', '))}</div>` : ''}${n.author?`<div class="muted" style="font-size:11px;margin-top:2px;">${esc(n.author)}</div>`:''}${n.riskId?`<a href="#" data-open-risk-from-note="${n.riskId}" style="font-size:11px;font-weight:600;">Открыть риск →</a>`:''}</div>
+    <div class="cal-note-row"><div style="flex:1;"><div class="cal-note-type" style="color:${t.color}">${esc(t.label)}</div><div style="font-size:13px;margin-top:2px;">${esc(n.text)}</div>${n.time?`<div class="muted cal-note-time-row" style="font-size:11px;margin-top:2px;">${ICON_SD_CLOCK}${esc(n.time)}${n.timeTo?'–'+esc(n.timeTo):''}</div>`:''}${n.phase?`<div class="muted" style="font-size:11px;margin-top:2px;">${esc(n.phase)}</div>`:''}${n.attendees && n.attendees.length ? `<div class="muted" style="font-size:11px;margin-top:2px;">Участники: ${esc(n.attendees.join(', '))}</div>` : ''}${n.author?`<div class="muted" style="font-size:11px;margin-top:2px;">${esc(n.author)}</div>`:''}${n.riskId?`<a href="#" data-open-risk-from-note="${n.riskId}" style="font-size:11px;font-weight:600;">Открыть риск →</a>`:''}</div>
       <button type="button" class="cal-note-del" data-del-note="${n.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`; }).join('')}</div>
     <div class="field" style="margin:12px 0 8px;"><label>Участники</label>
       <div class="ds-ms" id="dnAttendeeMs">
@@ -5574,13 +5573,23 @@ function dayNotesBodyHtml(y,m,d){
       <div class="dt-picker-time" style="border-left:none;padding-left:0;">
         <div class="dt-picker-time-col dt-picker-time-col--sm" id="dnHourCol"></div>
         <div class="dt-picker-time-col dt-picker-time-col--sm" id="dnMinCol"></div>
-        <select id="dnDuration" style="align-self:flex-start;margin-left:6px;">
+        <select id="dnDuration">
           <option value="30">30 минут</option>
           <option value="60" selected>60 минут</option>
           <option value="90">90 минут</option>
           <option value="120">120 минут</option>
         </select>
       </div>
+    </div>
+    <div class="field" style="margin-bottom:8px;"><label>Фаза проекта</label>
+      <select id="dnPhase">
+        <option value="">Не указана</option>
+        <option value="Фаза 1">Фаза 1</option>
+        <option value="Фаза 2">Фаза 2</option>
+        <option value="Фаза 3">Фаза 3</option>
+        <option value="Фаза 4">Фаза 4</option>
+        <option value="Фаза 5">Фаза 5</option>
+      </select>
     </div>
     <textarea id="dnText" placeholder="Что запланировано на этот день..." style="width:100%;min-height:52px;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 12px;font-size:13.5px;font-family:inherit;resize:vertical;"></textarea>
     <div class="btn-row" style="margin-top:10px;"><button type="button" class="btn btn-primary" id="dnAdd" style="flex:1;">Направить приглашение на сессию</button></div>`;
@@ -5642,6 +5651,7 @@ function dnRenderTimePicker(){
 function wireDayNotesForm(y,m,d){
   enhanceSelectAsAutocomplete(document.getElementById('dnType'));
   enhanceSelectAsAutocomplete(document.getElementById('dnDuration'));
+  enhanceSelectAsAutocomplete(document.getElementById('dnPhase'));
   dnRenderTimePicker();
   dnRenderAttendeeChips();
   document.getElementById('dnAttendeeAddBtn').addEventListener('click', (e) => { e.stopPropagation(); dnToggleAttendeeMenu(document.getElementById('dnAttendeeMenu').hidden); });
@@ -5665,9 +5675,10 @@ function wireDayNotesForm(y,m,d){
     const pad = n => String(n).padStart(2,'0');
     const time = `${pad(dnHour)}:${pad(dnMin)}`;
     const durationMin = parseInt(document.getElementById('dnDuration').value, 10) || 60;
+    const phase = document.getElementById('dnPhase').value;
     const key = dayKey(y,m,d);
     (state.dayNotes[key] = state.dayNotes[key]||[]).push({id:uid('note'), type:document.getElementById('dnType').value, text,
-      time, durationMin,
+      time, durationMin, phase: phase || undefined,
       attendees: dnAttendeeSelection.slice(), author:sessionName(), createdAt:nowStr()});
     saveState();
     toast('Приглашение на сессию направлено', {body: dnAttendeeSelection.length ? 'Участники: '+dnAttendeeSelection.join(', ') : undefined});
