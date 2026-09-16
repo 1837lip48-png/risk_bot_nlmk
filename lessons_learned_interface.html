@@ -1071,6 +1071,7 @@ function activateFonts(link){
   .dt-picker-cal{width:224px; flex-shrink:0;}
   .dt-picker-time{display:flex; gap:4px; border-left:1px solid var(--line); padding-left:14px;}
   .dt-picker-time-col{display:flex; flex-direction:column; align-items:center; gap:3px; max-height:216px; overflow-y:auto; width:38px;}
+  .dt-picker-time-col--sm{max-height:130px;}
   .dt-picker-time-col-head{font-size:10.5px; color:var(--ink-400); font-weight:700; margin-bottom:2px; position:sticky; top:0; background:var(--paper-0); width:100%; text-align:center;}
   .dt-time-item{width:32px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12.5px; cursor:pointer; flex-shrink:0;}
   .dt-time-item:hover{background:var(--accent-50);}
@@ -5459,7 +5460,8 @@ function agendaRowHtml(n){
 function openDayNotesModal(y, m, d){
   const title = `${d} ${CAL_MONTH_NAMES[m].toLowerCase()} ${y}`;
   dnAttendeeSelection = [];
-  openChartModal('Заметки дня — ' + title, '', dayNotesBodyHtml(y,m,d));
+  dnHour = 10; dnMin = 0;
+  openChartModal('Заметки дня — ' + title, '', dayNotesBodyHtml(y,m,d), {maxWidth:'440px'});
   wireDayNotesForm(y,m,d);
 }
 // «Что запланировано на день» — список без max-height/overflow: при
@@ -5483,10 +5485,15 @@ function dayNotesBodyHtml(y,m,d){
       <select id="dnType" style="flex:1;">${NOTE_TYPES.map(t=>`<option value="${t.key}">${t.label}</option>`).join('')}</select>
     </div>
     <div class="field" style="margin-bottom:8px;"><label>Время сессии</label>
-      <div class="btn-row" style="gap:8px;">
-        <input type="time" id="dnTimeFrom" title="Время начала" aria-label="Время начала" style="flex:1;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 10px;font-size:13px;font-family:inherit;color:var(--ink-900);">
-        <span class="muted" style="align-self:center;">–</span>
-        <input type="time" id="dnTimeTo" title="Время окончания" aria-label="Время окончания" style="flex:1;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 10px;font-size:13px;font-family:inherit;color:var(--ink-900);">
+      <div class="dt-picker-time" style="border-left:none;padding-left:0;">
+        <div class="dt-picker-time-col dt-picker-time-col--sm" id="dnHourCol"></div>
+        <div class="dt-picker-time-col dt-picker-time-col--sm" id="dnMinCol"></div>
+        <select id="dnDuration" style="align-self:flex-start;margin-left:6px;">
+          <option value="30">30 минут</option>
+          <option value="60" selected>60 минут</option>
+          <option value="90">90 минут</option>
+          <option value="120">120 минут</option>
+        </select>
       </div>
     </div>
     <textarea id="dnText" placeholder="Что запланировано на этот день..." style="width:100%;min-height:52px;border:1px solid var(--line);border-radius:var(--radius-field);padding:9px 12px;font-size:13.5px;font-family:inherit;resize:vertical;"></textarea>
@@ -5507,20 +5514,49 @@ function dnToggleAttendeeMenu(show){
   if (!menu) return;
   if (show){
     const rest = ALL_USERS.filter(n => !dnAttendeeSelection.includes(n));
-    menu.innerHTML = rest.length ? rest.map(n => `<div class="ds-ms-item" data-dn-add-attendee="${esc(n)}">${esc(n)}</div>`).join('')
-      : '<div class="ds-ms-empty">Все пользователи уже добавлены</div>';
+    menu.innerHTML = `<div style="padding:6px 8px;border-bottom:1px solid var(--line);">
+      <input type="text" id="dnAttendeeCustomInput" placeholder="Введите имя или email и нажмите Enter" style="width:100%;border:1px solid var(--line);border-radius:var(--radius-field);padding:6px 8px;font-size:12.5px;font-family:inherit;">
+    </div>` + (rest.length ? rest.map(n => `<div class="ds-ms-item" data-dn-add-attendee="${esc(n)}">${esc(n)}</div>`).join('')
+      : '<div class="ds-ms-empty">Все пользователи уже добавлены</div>');
     menu.querySelectorAll('[data-dn-add-attendee]').forEach(el => el.addEventListener('click', () => {
       dnAttendeeSelection.push(el.dataset.dnAddAttendee);
       dnRenderAttendeeChips();
       dnToggleAttendeeMenu(false);
     }));
+    // Свободный ввод — приглашённый может не быть в списке пользователей
+    // системы (внешний участник по имени или email).
+    const customInput = document.getElementById('dnAttendeeCustomInput');
+    customInput.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      const val = customInput.value.trim();
+      if (!val || dnAttendeeSelection.includes(val)) return;
+      dnAttendeeSelection.push(val);
+      dnRenderAttendeeChips();
+      dnToggleAttendeeMenu(true);
+    });
+    customInput.focus();
   }
   menu.hidden = !show;
 }
 document.addEventListener('click', (e) => { if (!e.target.closest('#dnAttendeeMs')) dnToggleAttendeeMenu(false); });
 let dnAttendeeSelection = [];
+let dnHour = 10, dnMin = 0;
+function dnRenderTimePicker(){
+  const hourCol = document.getElementById('dnHourCol');
+  const minCol = document.getElementById('dnMinCol');
+  if (!hourCol || !minCol) return;
+  hourCol.innerHTML = '<div class="dt-picker-time-col-head">чч</div>' + Array.from({length:24},(_,h)=>`<div class="dt-time-item${h===dnHour?' selected':''}" data-dn-hour="${h}">${String(h).padStart(2,'0')}</div>`).join('');
+  hourCol.querySelectorAll('[data-dn-hour]').forEach(el => el.addEventListener('click', () => { dnHour = parseInt(el.dataset.dnHour,10); dnRenderTimePicker(); }));
+  minCol.innerHTML = '<div class="dt-picker-time-col-head">мм</div>' + Array.from({length:60},(_,mn)=>`<div class="dt-time-item${mn===dnMin?' selected':''}" data-dn-min="${mn}">${String(mn).padStart(2,'0')}</div>`).join('');
+  minCol.querySelectorAll('[data-dn-min]').forEach(el => el.addEventListener('click', () => { dnMin = parseInt(el.dataset.dnMin,10); dnRenderTimePicker(); }));
+  const selHour = hourCol.querySelector('.selected'); if (selHour) selHour.scrollIntoView({block:'center'});
+  const selMin = minCol.querySelector('.selected'); if (selMin) selMin.scrollIntoView({block:'center'});
+}
 function wireDayNotesForm(y,m,d){
   enhanceSelectAsAutocomplete(document.getElementById('dnType'));
+  enhanceSelectAsAutocomplete(document.getElementById('dnDuration'));
+  dnRenderTimePicker();
   dnRenderAttendeeChips();
   document.getElementById('dnAttendeeAddBtn').addEventListener('click', (e) => { e.stopPropagation(); dnToggleAttendeeMenu(document.getElementById('dnAttendeeMenu').hidden); });
   const summaryBtn = document.getElementById('dnOpenSessionSummary');
@@ -5540,12 +5576,12 @@ function wireDayNotesForm(y,m,d){
   document.getElementById('dnAdd').addEventListener('click', () => {
     const text = document.getElementById('dnText').value.trim();
     if (!text){ toast('Опишите повестку сессии', {tone:'warning'}); return; }
-    const timeFrom = document.getElementById('dnTimeFrom').value;
-    const timeTo = document.getElementById('dnTimeTo').value;
-    if (timeFrom && timeTo && timeTo <= timeFrom){ toast('Время окончания должно быть позже времени начала', {tone:'warning'}); return; }
+    const pad = n => String(n).padStart(2,'0');
+    const time = `${pad(dnHour)}:${pad(dnMin)}`;
+    const durationMin = parseInt(document.getElementById('dnDuration').value, 10) || 60;
     const key = dayKey(y,m,d);
     (state.dayNotes[key] = state.dayNotes[key]||[]).push({id:uid('note'), type:document.getElementById('dnType').value, text,
-      time: timeFrom||undefined, timeTo: timeTo||undefined, durationMin: timeRangeMinutes(timeFrom, timeTo),
+      time, durationMin,
       attendees: dnAttendeeSelection.slice(), author:sessionName(), createdAt:nowStr()});
     saveState();
     toast('Приглашение на сессию направлено', {body: dnAttendeeSelection.length ? 'Участники: '+dnAttendeeSelection.join(', ') : undefined});
@@ -5553,12 +5589,6 @@ function wireDayNotesForm(y,m,d){
     closeModal('chartModalOverlay');
     renderCalendar();
   });
-}
-function timeRangeMinutes(from, to){
-  if (!from || !to) return undefined;
-  const [h1,m1] = from.split(':').map(Number), [h2,m2] = to.split(':').map(Number);
-  const diff = (h2*60+m2) - (h1*60+m1);
-  return diff > 0 ? diff : undefined;
 }
 
 // Сводка риск-сессии дня — карточка по образцу референса «Sprint Planning»
