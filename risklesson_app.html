@@ -134,7 +134,7 @@
   /* Шаг 1 (выбор роли) — без белой карточки-контейнера: бренд и роли лежат
      прямо на фоне страницы. Заголовочный блок оформлен по образцу референса
      (крупный заголовок / акцентный подзаголовок / серая подсказка). */
-  .role-select-shell{width:100%; max-width:960px; display:flex; flex-direction:column; align-items:center; gap:22px;}
+  .role-select-shell{width:100%; max-width:820px; display:flex; flex-direction:column; align-items:center; gap:22px;}
   .role-select-header{display:flex; flex-direction:column; align-items:center; gap:8px;}
   .brand.brand--lg{display:flex; align-items:center; gap:14px; border-bottom:none; padding:0; margin:0;}
   .brand--lg .brand-mark{width:50px; height:28px;}
@@ -258,8 +258,8 @@
   /* Карточки ролей — белая заливка + видимый контур, подсвечивается на
      hover (акцентная рамка + лёгкий подъём) — по образцу референса. */
   .role-cards{display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; width:100%;}
-  .role-card{display:flex; flex-direction:row; align-items:center; text-align:left; gap:18px;
-    position:relative; border-radius:10px; padding:28px 24px; cursor:pointer; overflow:hidden;
+  .role-card{display:flex; flex-direction:row; align-items:center; text-align:left; gap:16px;
+    position:relative; border-radius:10px; padding:22px 18px; cursor:pointer; overflow:hidden;
     background:var(--paper-0); border:1.5px solid var(--line);
     transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease, background-color .2s ease;}
   .role-card::before{content:''; position:absolute; inset:0; opacity:0; transition:opacity .2s ease; pointer-events:none;}
@@ -830,6 +830,26 @@
   .mini-cal .cal-cell.selected{border-color:var(--accent-600); background:var(--accent-600);}
   .mini-cal .cal-cell.selected .dnum{background:transparent; color:#fff;}
   .mini-cal .cal-head h3{font-size:13px;}
+  /* DatePicker (@nlmk/ds-2.0 DatePicker type="time") — поле «Дата и время»:
+     триггер + раскрывающаяся панель (месячная сетка + прокручиваемые
+     колонки часов/минут), см. openAddToAgendaModal. */
+  .dt-picker{position:relative;}
+  .dt-picker-trigger{display:flex; align-items:center; justify-content:space-between; gap:8px;
+    border:1px solid var(--line); border-radius:var(--radius-field); padding:9px 12px; cursor:pointer; background:var(--paper-0); font-size:13.5px;}
+  .dt-picker-trigger:hover{border-color:var(--accent-600);}
+  .dt-picker-trigger svg{width:17px; height:17px; color:var(--accent-600); flex-shrink:0;}
+  /* Не position:absolute нарочно — внутри модалки плавающая панель наезжала
+     бы на поле «Длительность»/кнопку отправки под ней и перехватывала клики
+     по ним; в обычном потоке модалка просто «раздвигается» под панель. */
+  .dt-picker-panel{margin-top:6px; display:flex; gap:14px;
+    background:var(--paper-0); border:1px solid var(--line); border-radius:var(--radius-card); box-shadow:var(--shadow-pop); padding:14px;}
+  .dt-picker-cal{width:224px; flex-shrink:0;}
+  .dt-picker-time{display:flex; gap:4px; border-left:1px solid var(--line); padding-left:14px;}
+  .dt-picker-time-col{display:flex; flex-direction:column; align-items:center; gap:3px; max-height:216px; overflow-y:auto; width:38px;}
+  .dt-picker-time-col-head{font-size:10.5px; color:var(--ink-400); font-weight:700; margin-bottom:2px; position:sticky; top:0; background:var(--paper-0); width:100%; text-align:center;}
+  .dt-time-item{width:32px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12.5px; cursor:pointer; flex-shrink:0;}
+  .dt-time-item:hover{background:var(--accent-50);}
+  .dt-time-item.selected{background:var(--accent-600); color:#fff; font-weight:700;}
   .cal-ev{font-size:9.5px; padding:2px 5px; border-radius:4px; margin-bottom:2px; font-weight:700; line-height:1.3; cursor:pointer;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .cal-note-pill{font-size:9.5px; padding:2px 5px; border-radius:4px; margin-bottom:2px; font-weight:600; line-height:1.3;
@@ -1056,7 +1076,8 @@
 <div class="modal-overlay" id="sppModalOverlay">
   <div class="modal-card modal-card--entry" role="dialog" aria-modal="true">
    <div class="modal-card-scroll">
-    <div class="modal-head"><span>Вход в систему</span>
+    <div class="modal-head">
+      <span style="display:flex;align-items:center;gap:10px;"><span class="spp-role-icon" id="sppRoleIcon"></span><span>Вход в систему</span></span>
       <button type="button" class="modal-close" id="sppClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
     <form id="entryForm" onsubmit="return false;">
@@ -1092,7 +1113,6 @@
       </div>
     </form>
     <div class="btn-row">
-      <span class="spp-role-icon" id="sppRoleIcon"></span>
       <button type="button" class="btn btn-secondary" id="sppCancel">Назад</button>
       <button type="button" class="btn btn-primary" id="sppSubmit">Войти в систему</button>
     </div>
@@ -2081,14 +2101,10 @@ const firstNameInput = document.getElementById('firstName');
 const lastNameInput = document.getElementById('lastName');
 
 // Шаг 1 — клик по карточке роли сразу открывает шаг 2 (имя/фамилия + СПП).
-// Иконка и цвет кнопки «Войти в систему» на шаге 2 — те же SVG/градиент,
-// что и у карточки выбранной роли на шаге 1 (.role-card-icon), а не единые
-// для всех ролей.
-const ROLE_ICON_SVG = {
-  riskmanager: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L4 5v6c0 5.25 3.4 9.74 8 11 4.6-1.26 8-5.75 8-11V5l-8-3z"/></svg>',
-  riskowner: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8v1H4v-1z"/></svg>',
-  initiator: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="4.2" y="2" width="1.6" height="20" rx="0.8"/><path d="M5.8 3h13l-3.2 4.2 3.2 4.2h-13z"/></svg>',
-};
+// Значок «вход» у заголовка шага 2 — один и тот же глиф для всех ролей
+// (иконка входа, не иконка роли), но в цвете/градиенте выбранной роли —
+// том же, что и у карточки этой роли на шаге 1 (.role-card-icon).
+const LOGIN_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>';
 const ROLE_CSS_GRADIENT = {
   riskmanager: 'linear-gradient(135deg, var(--role-manager-1), var(--role-manager-2))',
   riskowner: 'linear-gradient(135deg, var(--role-owner-1), var(--role-owner-2))',
@@ -2098,7 +2114,7 @@ document.querySelectorAll('.role-card').forEach(card => {
   card.addEventListener('click', () => {
     selectedRole = card.dataset.value;
     const roleIcon = document.getElementById('sppRoleIcon');
-    roleIcon.innerHTML = ROLE_ICON_SVG[selectedRole] || '';
+    roleIcon.innerHTML = LOGIN_ICON_SVG;
     roleIcon.style.background = ROLE_CSS_GRADIENT[selectedRole] || '';
     const submitBtn = document.getElementById('sppSubmit');
     submitBtn.style.background = ROLE_CSS_GRADIENT[selectedRole] || '';
@@ -3308,11 +3324,12 @@ function isoDatePlus(days){
 // «Добавить в повестку риск-сессии» — связывает риск с календарём через
 // ту же модель дневных заметок (dayNotes, тип 'session'), что уже
 // используется для риск-сессий в календаре, плюс riskId для обратной ссылки.
-// Тот же .cal-grid/.cal-cell, что и на вкладке «Календарь» (компактная
-// версия .mini-cal), вместо нативного input[type=date] — плюс отдельное
-// поле времени, которого раньше не было (см. п.15 промта раунд 3).
-let agendaCalView = null;
-let agendaSelectedYMD = null;
+// Единый DatePicker «Дата и время» (@nlmk/ds-2.0 DatePicker type="time") —
+// триггер с текущим значением, по клику раскрывается панель: месячная сетка
+// слева (тот же .cal-grid/.cal-cell, что и на вкладке «Календарь», в
+// компактной версии .mini-cal) и прокручиваемые колонки часов/минут справа.
+let agendaDtValue = null; // Date — выбранные дата и время
+let agendaCalView = null; // Date (1-е число месяца) — какой месяц сейчас показан в сетке
 function agendaMiniCalGridHtml(){
   const y = agendaCalView.getFullYear(), m = agendaCalView.getMonth();
   const first = new Date(y,m,1), startDow = (first.getDay()+6)%7, daysInMonth = new Date(y,m+1,0).getDate();
@@ -3320,31 +3337,59 @@ function agendaMiniCalGridHtml(){
   for (let i=0;i<startDow;i++) grid += '<div class="cal-cell empty"></div>';
   for (let day=1; day<=daysInMonth; day++){
     const isToday = y===TODAY.getFullYear() && m===TODAY.getMonth() && day===TODAY.getDate();
-    const isSelected = agendaSelectedYMD && agendaSelectedYMD.y===y && agendaSelectedYMD.m===m && agendaSelectedYMD.d===day;
+    const isSelected = agendaDtValue.getFullYear()===y && agendaDtValue.getMonth()===m && agendaDtValue.getDate()===day;
     grid += `<div class="cal-cell${isToday?' today':''}${isSelected?' selected':''}" data-agenda-day="${day}"><div class="dnum">${day}</div></div>`;
   }
   return grid;
 }
-function renderAgendaMiniCal(){
-  document.getElementById('agendaCalTitle').textContent = `${CAL_MONTH_NAMES[agendaCalView.getMonth()]} ${agendaCalView.getFullYear()}`;
+function agendaDtFormatted(){
+  const pad = n => String(n).padStart(2,'0');
+  const d = agendaDtValue;
+  return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function renderAgendaDt(){
+  document.getElementById('agendaDtValueText').textContent = agendaDtFormatted();
+  document.getElementById('agendaCalTitle').textContent = `${CAL_MONTH_NAMES[agendaCalView.getMonth()]}, ${agendaCalView.getFullYear()}`;
   document.getElementById('agendaCalGrid').innerHTML = agendaMiniCalGridHtml();
   document.querySelectorAll('#agendaCalGrid [data-agenda-day]').forEach(c => c.addEventListener('click', () => {
-    agendaSelectedYMD = {y: agendaCalView.getFullYear(), m: agendaCalView.getMonth(), d: parseInt(c.dataset.agendaDay,10)};
-    renderAgendaMiniCal();
+    agendaDtValue = new Date(agendaCalView.getFullYear(), agendaCalView.getMonth(), parseInt(c.dataset.agendaDay,10), agendaDtValue.getHours(), agendaDtValue.getMinutes());
+    renderAgendaDt();
   }));
+  const hourCol = document.getElementById('agendaHourCol');
+  hourCol.innerHTML = '<div class="dt-picker-time-col-head">чч</div>' + Array.from({length:24},(_,h)=>`<div class="dt-time-item${h===agendaDtValue.getHours()?' selected':''}" data-hour="${h}">${String(h).padStart(2,'0')}</div>`).join('');
+  hourCol.querySelectorAll('[data-hour]').forEach(el => el.addEventListener('click', () => { agendaDtValue.setHours(parseInt(el.dataset.hour,10)); renderAgendaDt(); }));
+  const minCol = document.getElementById('agendaMinCol');
+  minCol.innerHTML = '<div class="dt-picker-time-col-head">мм</div>' + Array.from({length:60},(_,mn)=>`<div class="dt-time-item${mn===agendaDtValue.getMinutes()?' selected':''}" data-min="${mn}">${String(mn).padStart(2,'0')}</div>`).join('');
+  minCol.querySelectorAll('[data-min]').forEach(el => el.addEventListener('click', () => { agendaDtValue.setMinutes(parseInt(el.dataset.min,10)); renderAgendaDt(); }));
+  const selHour = hourCol.querySelector('.selected'); if (selHour) selHour.scrollIntoView({block:'center'});
+  const selMin = minCol.querySelector('.selected'); if (selMin) selMin.scrollIntoView({block:'center'});
 }
+function toggleAgendaDtPanel(show){
+  const panel = document.getElementById('agendaDtPanel');
+  if (!panel) return;
+  panel.hidden = !show;
+  if (show) renderAgendaDt();
+}
+document.addEventListener('click', (e) => { if (!e.target.closest('#agendaDtPicker')) toggleAgendaDtPanel(false); });
 function openAddToAgendaModal(r){
-  const [dy,dm,dd] = isoDatePlus(7).split('-').map(Number);
-  agendaCalView = new Date(dy, dm-1, 1);
-  agendaSelectedYMD = {y:dy, m:dm-1, d:dd};
+  agendaDtValue = new Date(isoDatePlus(7) + 'T10:00:00');
+  agendaCalView = new Date(agendaDtValue.getFullYear(), agendaDtValue.getMonth(), 1);
   const body = `
-    <div class="field"><label>Дата риск-сессии</label>
-      <div class="mini-cal">
-        <div class="cal-head" style="margin-bottom:8px;"><button type="button" id="agendaCalPrev" class="cal-nav-btn">‹</button><h3 id="agendaCalTitle" style="flex:1;text-align:center;"></h3><button type="button" id="agendaCalNext" class="cal-nav-btn">›</button></div>
-        <div class="cal-grid" id="agendaCalGrid"></div>
+    <div class="field"><label>Дата и время риск-сессии</label>
+      <div class="dt-picker" id="agendaDtPicker">
+        <div class="dt-picker-trigger" id="agendaDtTrigger"><span id="agendaDtValueText"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></div>
+        <div class="dt-picker-panel mini-cal" id="agendaDtPanel" hidden>
+          <div class="dt-picker-cal">
+            <div class="cal-head" style="margin-bottom:8px;"><button type="button" id="agendaCalPrev" class="cal-nav-btn">‹</button><h3 id="agendaCalTitle" style="flex:1;text-align:center;"></h3><button type="button" id="agendaCalNext" class="cal-nav-btn">›</button></div>
+            <div class="cal-grid" id="agendaCalGrid"></div>
+          </div>
+          <div class="dt-picker-time">
+            <div class="dt-picker-time-col" id="agendaHourCol"></div>
+            <div class="dt-picker-time-col" id="agendaMinCol"></div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="field" style="margin-top:10px;"><label>Время</label><input type="time" id="agendaTimeInput" value="10:00"></div>
     <div class="field" style="margin-top:10px;"><label>Длительность</label>
       <select id="agendaDurationInput">
         <option value="30">30 минут</option>
@@ -3355,14 +3400,16 @@ function openAddToAgendaModal(r){
     </div>
     <div class="btn-row" style="margin-top:10px;"><button type="button" class="btn btn-primary" id="agendaSubmitBtn" style="flex:1;">Добавить в повестку</button></div>`;
   openChartModal('Добавить в повестку риск-сессии', `Риск: «${r.title}»`, body);
-  renderAgendaMiniCal();
-  document.getElementById('agendaCalPrev').addEventListener('click', () => { agendaCalView.setMonth(agendaCalView.getMonth()-1); renderAgendaMiniCal(); });
-  document.getElementById('agendaCalNext').addEventListener('click', () => { agendaCalView.setMonth(agendaCalView.getMonth()+1); renderAgendaMiniCal(); });
+  document.getElementById('agendaDtValueText').textContent = agendaDtFormatted();
+  document.getElementById('agendaDtTrigger').addEventListener('click', (e) => { e.stopPropagation(); toggleAgendaDtPanel(document.getElementById('agendaDtPanel').hidden); });
+  document.getElementById('agendaDtPanel').addEventListener('click', (e) => e.stopPropagation());
+  document.getElementById('agendaCalPrev').addEventListener('click', (e) => { e.stopPropagation(); agendaCalView.setMonth(agendaCalView.getMonth()-1); renderAgendaDt(); });
+  document.getElementById('agendaCalNext').addEventListener('click', (e) => { e.stopPropagation(); agendaCalView.setMonth(agendaCalView.getMonth()+1); renderAgendaDt(); });
   enhanceSelectAsAutocomplete(document.getElementById('agendaDurationInput'));
   document.getElementById('agendaSubmitBtn').addEventListener('click', () => {
-    if (!agendaSelectedYMD){ toast('Выберите дату', {tone:'warning'}); return; }
-    const {y,m,d} = agendaSelectedYMD;
-    const time = document.getElementById('agendaTimeInput').value || '10:00';
+    const y = agendaDtValue.getFullYear(), m = agendaDtValue.getMonth(), d = agendaDtValue.getDate();
+    const pad = n => String(n).padStart(2,'0');
+    const time = `${pad(agendaDtValue.getHours())}:${pad(agendaDtValue.getMinutes())}`;
     const key = dayKey(y, m, d);
     const durationMin = parseInt(document.getElementById('agendaDurationInput').value, 10) || 60;
     (state.dayNotes[key] = state.dayNotes[key]||[]).push({id:uid('note'), type:'session',
