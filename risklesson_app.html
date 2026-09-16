@@ -599,9 +599,11 @@
   .trend-crit-nums{font-size:10.5px; color:var(--ink-400); font-family:var(--font-mono);}
   .trend-delta{font-size:10.5px; font-weight:700;}
   .kpi-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:22px;}
-  .kpi-card{display:flex; flex-direction:column; gap:8px; padding:15px; border-radius:var(--radius-field); background:var(--paper-0); border:1px solid var(--line); transition:background-color .15s ease;}
+  .kpi-card{display:flex; flex-direction:column; gap:8px; padding:15px; border-radius:var(--radius-field); background:var(--paper-0); border:1px solid var(--line);
+    box-shadow:0 1px 2px rgba(17,37,66,.05), 0 1px 4px rgba(17,37,66,.04);
+    transition:background-color .15s ease, box-shadow .18s ease, transform .18s ease;}
   .kpi-card.clickable{cursor:pointer;}
-  .kpi-card.clickable:hover{background:var(--canvas);}
+  .kpi-card.clickable:hover{background:var(--canvas); box-shadow:0 8px 20px -8px rgba(17,37,66,.22); transform:translateY(-2px);}
   .kpi-top-row{display:flex; align-items:center; justify-content:space-between;}
   .kpi-icon{width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
   .kpi-icon svg{width:17px; height:17px;}
@@ -4548,15 +4550,39 @@ function renderCalendarWeek(){
   const weekNotes = [];
   days.forEach(d => notesFor(d.getFullYear(), d.getMonth(), d.getDate()).forEach(n => weekNotes.push({...n, date:d})));
 
-  // KPI недели — только реальные данные (никаких выдуманных "sentiment %"/"tickets")
+  // KPI недели — только реальные данные (никаких выдуманных "sentiment %"/"tickets").
+  // Тренд — реальное сравнение с той же неделей ровно 7 дней назад (та же
+  // функция trendBadge, что и на Дэшборде), не выдуманный процент.
   const allWeekActions = scopedRisks().flatMap(r=>r.actions).filter(a => { const d=parseRuShortDate(a.plannedDate); return d && days.some(wd=>wd.toDateString()===d.toDateString()); });
   const doneCount = allWeekActions.filter(a=>a.status==='done').length;
   const overdueCount = weekEvents.filter(e=>e.overdue).length;
+  const donePct = allWeekActions.length ? Math.round(doneCount/allWeekActions.length*100) : 0;
+
+  const prevDays = days.map(d => { const p = new Date(d); p.setDate(p.getDate() - 7); return p; });
+  const prevEvents = Object.values(collectCalEvents()).flat().filter(e => prevDays.some(d => d.toDateString()===e.date.toDateString()));
+  const prevNotesCount = prevDays.reduce((n,d) => n + notesFor(d.getFullYear(), d.getMonth(), d.getDate()).length, 0);
+  const prevActions = scopedRisks().flatMap(r=>r.actions).filter(a => { const d=parseRuShortDate(a.plannedDate); return d && prevDays.some(wd=>wd.toDateString()===d.toDateString()); });
+  const prevDoneCount = prevActions.filter(a=>a.status==='done').length;
+  const prevDonePct = prevActions.length ? Math.round(prevDoneCount/prevActions.length*100) : 0;
+  const prevOverdueCount = prevEvents.filter(e=>e.overdue).length;
+
   const kpi = `<div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px;">
-    <div class="kpi-card"><span class="kpi-label">Мероприятий на неделе</span><span class="kpi-value">${weekEvents.length}</span><span class="kpi-sub">по плановым датам действий</span></div>
-    <div class="kpi-card"><span class="kpi-label">Выполнено на неделе</span><span class="kpi-value" style="color:var(--green-700)">${allWeekActions.length?Math.round(doneCount/allWeekActions.length*100):0}%</span><span class="kpi-sub">${doneCount} из ${allWeekActions.length}</span></div>
-    <div class="kpi-card"><span class="kpi-label">Заметок добавлено</span><span class="kpi-value">${weekNotes.length}</span><span class="kpi-sub">риск-сессии, семинары и др.</span></div>
-    <div class="kpi-card"><span class="kpi-label">Просрочено</span><span class="kpi-value" style="color:var(--red-700)">${overdueCount}</span><span class="kpi-sub">на конец недели</span></div>
+    <div class="kpi-card">
+      <div class="kpi-top-row"><span class="kpi-icon" style="background:var(--accent-50);color:var(--accent-600);">${KPI_ICONS.active}</span>${trendBadge(weekEvents.length, prevEvents.length, true)}</div>
+      <span class="kpi-value">${weekEvents.length}</span><span class="kpi-label">Мероприятий на неделе</span><span class="kpi-sub">по плановым датам действий</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top-row"><span class="kpi-icon" style="background:var(--green-50);color:var(--green-700);">${KPI_ICONS.done}</span>${trendBadge(donePct, prevDonePct, true)}</div>
+      <span class="kpi-value" style="color:var(--green-700)">${donePct}%</span><span class="kpi-label">Выполнено на неделе</span><span class="kpi-sub">${doneCount} из ${allWeekActions.length}</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top-row"><span class="kpi-icon" style="background:var(--purple-50);color:var(--purple-700);">${ICON_SD_DOC}</span>${trendBadge(weekNotes.length, prevNotesCount, true)}</div>
+      <span class="kpi-value">${weekNotes.length}</span><span class="kpi-label">Заметок добавлено</span><span class="kpi-sub">риск-сессии, семинары и др.</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top-row"><span class="kpi-icon" style="background:var(--red-50);color:var(--red-700);">${KPI_ICONS.overdue}</span>${trendBadge(overdueCount, prevOverdueCount, false)}</div>
+      <span class="kpi-value" style="color:var(--red-700)">${overdueCount}</span><span class="kpi-label">Просрочено</span><span class="kpi-sub">на конец недели</span>
+    </div>
   </div>`;
 
   const cols = days.map(d => {
