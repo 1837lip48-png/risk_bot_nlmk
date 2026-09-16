@@ -221,6 +221,10 @@
   .field .input-float input{padding:11px 14px 5px;}
   .field .input-float input::placeholder{opacity:0; font-style:italic; transition:opacity .18s ease;}
   .field .input-float input:focus::placeholder{opacity:1;}
+  /* Подсветка полей шага 2 входа (Имя/Фамилия/СПП/Email) при наведении —
+     не дожидаясь фокуса, курсор уже сигнализирует, что поле кликабельно. */
+  .field .input-float input:hover{border-color:var(--accent-500);}
+  .field .input-float:hover .field-icon{color:var(--accent-500);}
   .field .input-float label{
     position:absolute; left:15px; top:61%; transform:translateY(-50%);
     font-size:14.5px; font-weight:400; color:var(--ink-600); text-transform:none; letter-spacing:0;
@@ -283,10 +287,10 @@
   @media (max-width:760px){
     .role-cards{grid-template-columns:1fr;}
   }
-  .spp-role-icon{width:40px; height:40px; border-radius:8px; color:#fff; flex-shrink:0;
+  .spp-role-icon{width:27px; height:27px; border-radius:7px; color:#fff; flex-shrink:0;
     display:flex; align-items:center; justify-content:center;
-    box-shadow:0 6px 14px -6px rgba(17,37,66,.35), inset 0 0 0 1px rgba(255,255,255,.18);}
-  .spp-role-icon svg{width:22px; height:22px; display:block;}
+    box-shadow:0 4px 10px -5px rgba(17,37,66,.35), inset 0 0 0 1px rgba(255,255,255,.18);}
+  .spp-role-icon svg{width:15px; height:15px; display:block;}
   .spp-role-icon:empty{box-shadow:none;}
 
   .btn{display:inline-flex; align-items:center; justify-content:center; gap:6px; white-space:nowrap;
