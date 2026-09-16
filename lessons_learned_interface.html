@@ -5515,7 +5515,7 @@ function renderCalendarWeek(){
         // сессию сегодняшнего дня можно закрыть, не дожидаясь полуночи.
         const cardDone = isSession ? sessSd.isPast : isPastDay;
         metaParts.push(`<span>${cardDone?ICON_SD_CHECK_SM:ICON_SD_CLOCK}${cardDone?'проведено':'план'}</span>`);
-        return `<div class="calw-card calw-card--del" style="background:${t.bg};color:${t.color};border-color:${t.color}33;"${isSession?` data-open-session="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}"`:''}>
+        return `<div class="calw-card calw-card--del" style="background:${t.bg};color:${t.color};border-color:${t.color}33;"${isSession?` data-open-session="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}"`:` data-open-day="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}"`}>
         <button type="button" class="cal-note-del-x" data-del-cal-note="${n.id}" data-del-cal-date="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}" title="Удалить встречу" aria-label="Удалить встречу"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
         <div class="ct">${esc(t.label)}</div><div class="cn">${esc(n.text.slice(0,50))}</div>
         <div class="calw-card-meta">${metaParts.join('')}</div>
@@ -5529,6 +5529,16 @@ function renderCalendarWeek(){
   document.querySelectorAll('[data-open-session]').forEach(el => el.addEventListener('click', () => {
     const [yy,mm,dd] = el.dataset.openSession.split('-').map(Number);
     openSessionSummaryModal(yy,mm,dd);
+  }));
+  // Карточки не-риск-сессий (семинар, индивидуальная работа и т.п.) выглядели
+  // кликабельными (курсор/hover-подъём — те же стили .calw-card, что и у
+  // риск-сессии), но клик никуда не вёл — не было способа открыть/посмотреть
+  // заметку, кроме крестика удаления. Клик по карточке теперь открывает
+  // «Заметки дня», где заметка видна целиком (крестик — свой обработчик
+  // выше по коду, со stopPropagation).
+  document.querySelectorAll('.calw-card[data-open-day]').forEach(el => el.addEventListener('click', () => {
+    const [yy,mm,dd] = el.dataset.openDay.split('-').map(Number);
+    openDayNotesModal(yy,mm,dd);
   }));
   document.querySelectorAll('[data-add-note-day]').forEach(b => b.addEventListener('click', () => {
     const [yy,mm,dd] = b.dataset.addNoteDay.split('-').map(Number);
