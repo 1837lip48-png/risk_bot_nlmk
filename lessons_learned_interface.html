@@ -5,7 +5,7 @@
      до onload), иначе на медленной/заблокированной сети до шрифта каждая
      полная перезагрузка (в т.ч. выход из рабочего пространства) выглядит
      зависшей на пустом экране, хотя приложение уже готово. -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" media="print" onload="this.media='all'; if(typeof syncHeaderReserve==='function') syncHeaderReserve();">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" media="print" onload="this.media='all'; window.__fontsReady=true; if(typeof markFontsReady==='function') markFontsReady(); if(typeof syncHeaderReserve==='function') syncHeaderReserve();">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap"></noscript>
 <style>
   :root{
@@ -118,7 +118,16 @@
   /* Колокольчик и переключатель темы живут в одном фиксированном контейнере,
      а не порознь (один — position:fixed, другой — в потоке страницы), иначе
      при любой раскладке они оказываются на разных уровнях по высоте. */
-  .topbar-fixed{position:fixed; top:14px; right:14px; z-index:80; display:flex; align-items:center; gap:10px;}
+  /* Шрифт Golos Text грузится асинхронно (см. комментарий у <link> в <head>),
+     поэтому текст в этой области (имя/роль пользователя, аватар) первый раз
+     рисуется запасным шрифтом и слегка меняет метрики при подстановке
+     Golos Text — заметно как «скачок» размера иконок рядом с ним, особенно
+     при location.reload() (напр. «Выйти»). Плавно проявляем блок вместо
+     мгновенного показа не готовым шрифтом — glitch остаётся скрытым за
+     fade-in, а не виден как резкий скачок. */
+  .topbar-fixed{position:fixed; top:14px; right:14px; z-index:80; display:flex; align-items:center; gap:10px;
+    opacity:0; transition:opacity .15s ease;}
+  .topbar-fixed.fonts-ready{opacity:1;}
   .theme-toggle{width:38px; height:38px; border-radius:50%;
     border:1px solid var(--line); background:var(--paper-0); cursor:pointer; padding:0; position:relative;
     display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-pop);}
@@ -2476,6 +2485,21 @@ function syncHeaderReserve(){
   if (w > 0) document.documentElement.style.setProperty('--topbar-reserve', (w + 20) + 'px');
 }
 window.addEventListener('resize', syncHeaderReserve);
+// Иконки .topbar-fixed (тема/колокольчик/профиль) остаются скрытыми (см.
+// .topbar-fixed{opacity:0}), пока не подгрузится Golos Text — тогда они
+// появляются уже с финальными метриками шрифта, без заметного «скачка»
+// размера при подстановке шрифта поверх уже показанного текста. Вызывается
+// из onload шрифта в <head> (в т.ч. если тот успел сработать раньше, чем
+// распарсился этот <script>, — тогда флаг window.__fontsReady уже true).
+// Таймаут — подстраховка на случай, если шрифт вовсе не загрузится
+// (офлайн/заблокирован Google Fonts): иконки не должны остаться невидимыми
+// навсегда.
+function markFontsReady(){
+  const tb = document.querySelector('.topbar-fixed');
+  if (tb) tb.classList.add('fonts-ready');
+}
+if (window.__fontsReady) markFontsReady();
+setTimeout(markFontsReady, 2000);
 const PAGE_META = {
   dashboard:{title:'Дэшборд', desc:'Общая сводка по рискам.'},
   register:{title:'Реестр рисков', desc:'Полный список зарегистрированных рисков проекта.'},
