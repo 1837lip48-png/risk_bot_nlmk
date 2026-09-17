@@ -937,16 +937,15 @@ function activateFonts(link){
   .rcm-committee-banner .rcm-cb-text{display:flex; align-items:center; flex:1; min-width:0;}
   .rcm-committee-banner .rcm-cb-btn{flex-shrink:0; background:#fff; color:var(--red-700); border:1px solid var(--red-700);}
   .rcm-committee-banner .rcm-cb-btn:hover{background:var(--red-700); color:#fff;}
-  .pp-tl-banner{display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600; padding:9px 22px; margin:0 -22px 12px;}
-  .pp-cause-chain{margin-bottom:16px;}
-  .pp-cause-item{display:flex; gap:14px; position:relative; padding-bottom:18px;}
-  .pp-cause-item:last-child{padding-bottom:0;}
-  .pp-cause-item:not(:last-child)::before{content:''; position:absolute; left:13px; top:28px; bottom:0; width:0; border-left:1px dashed var(--line);}
-  .pp-cause-num{flex-shrink:0; width:26px; height:26px; border-radius:50%; background:var(--canvas); color:var(--ink-600);
-    font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; z-index:1;}
-  .pp-cause-body{flex:1; min-width:0; padding-top:3px;}
-  .pp-cause-body .k{font-size:11px; text-transform:uppercase; color:var(--ink-400); font-weight:600; margin-bottom:3px;}
-  .pp-cause-body .v{font-size:13px; color:var(--ink-900); line-height:1.45;}
+  .pp-narrative{margin-bottom:16px;}
+  .pp-narrative .n-step{display:flex; gap:12px; padding:10px 0;}
+  .pp-narrative .n-step + .n-step{border-top:1px dashed var(--line);}
+  .pp-narrative .n-dot{width:20px; height:20px; border-radius:50%; background:var(--canvas); color:var(--ink-600);
+    font-size:10.5px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;}
+  .pp-narrative .n-body .k{font-size:var(--fs-additional); text-transform:uppercase; letter-spacing:.2px; color:var(--ink-400); margin-bottom:3px;}
+  .pp-narrative .n-body .v{font-size:13px; line-height:1.45;}
+  .pp-narrative .n-body .v.main{font-weight:600;}
+  .pp-light-strip{display:flex; align-items:center; gap:8px; border-radius:var(--radius-field); padding:10px 12px; font-size:12.5px; font-weight:600; margin-bottom:14px;}
   .rcm-new-badge{background:var(--accent-50); color:var(--accent-600); font-size:10.5px; vertical-align:2px; margin-left:6px;}
   .rcm-actions-bar{display:flex; align-items:center; gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid var(--line);}
   .rcm-actions-label{font-size:11px; text-transform:uppercase; color:var(--ink-400); flex-shrink:0;}
@@ -2034,7 +2033,7 @@ const TL_BG = {
   'var(--green-700)':  'var(--green-50)',
   'var(--gold-700)':   'var(--gold-50)',
   'var(--accent-600)': 'var(--accent-50)',
-  'var(--ink-400)':    'var(--surface-2, #F7F8FA)',
+  'var(--ink-400)':    'var(--canvas)',
 };
 // Просрочен ли плановый пересмотр риска (reviewFrequencyDays от даты
 // последней оценки P/I) — возвращает число дней просрочки или null,
@@ -3342,7 +3341,7 @@ function renderNotifDrawer(){
       const unread = !notifReadIds.has(i.id);
       return `<div class="notif-card${unread?' unread':''}" data-notif-id="${esc(i.id)}" data-open-risk="${esc(i.riskId)}">
         <span class="notif-card-icon" style="background:${tn.bg};color:${tn.fg};">${tn.icon}</span>
-        ${unread?'<span class="notif-unread-dot"></span>':''}
+        <span class="notif-unread-dot"${unread?'':' style="background:transparent;"'}></span>
         <div class="nt-body">
           <span class="nt-t">${esc(i.title)}</span>
           ${i.body ? `<span class="nt-sep">·</span><span class="nt-d">${esc(i.body)}</span>` : ''}
@@ -4398,39 +4397,33 @@ function renderPassport(){
       </div>
 
       <h3 class="pp-h">ЧТО СЛУЧИЛОСЬ</h3>
-      <div class="pp-cause-chain">
-        <div class="pp-cause-item">
-          <span class="pp-cause-num">1</span>
-          <div class="pp-cause-body"><div class="k">Причина</div><div class="v">${esc(r.cause)||'<span class="muted">не заполнено — заполняется на оценке</span>'}</div></div>
+      <div class="pp-narrative">
+        <div class="n-step">
+          <div class="n-dot">1</div>
+          <div class="n-body"><div class="k">Причина</div><div class="v">${esc(r.cause)||'<span class="muted">не заполнено — заполняется на оценке</span>'}</div></div>
         </div>
-        <div class="pp-cause-item">
-          <span class="pp-cause-num">2</span>
-          <div class="pp-cause-body"><div class="k">Риск-событие</div><div class="v">${esc(r.event)}</div></div>
+        <div class="n-step">
+          <div class="n-dot">2</div>
+          <div class="n-body"><div class="k">Риск-событие</div><div class="v main">${esc(r.event)}</div></div>
         </div>
-        <div class="pp-cause-item">
-          <span class="pp-cause-num">3</span>
-          <div class="pp-cause-body"><div class="k">Прямое следствие</div><div class="v">${esc(r.consequence)}</div></div>
+        <div class="n-step">
+          <div class="n-dot">3</div>
+          <div class="n-body"><div class="k">Прямое следствие</div><div class="v">${esc(r.consequence)}</div></div>
         </div>
       </div>
 
       <h3 class="pp-h">УЧЁТНЫЕ ДАННЫЕ</h3>
       <div class="passport-grid">
-        <div class="passport-block">
-          <div class="k">ID / № паспорта</div><div class="v">${r.id}<br>№ ${r.displayNumber||'—'}</div>
-          <div class="k" style="margin-top:8px;">Категория</div><div class="v">${esc(r.category)}</div>
-        </div>
-        <div class="passport-block">
-          <div class="k">Фаза проекта</div><div class="v">${r.phase ? esc(r.phase) : '<span class="muted">не указана — задаётся при редактировании карточки</span>'}</div>
-          <div class="k" style="margin-top:8px;">Владелец(ы)</div><div class="v">${esc(r.ownerNames.join(', ')||'—')}</div>
-        </div>
-        <div class="passport-block">
-          <div class="k">Связанные риски</div><div class="v">${relatedRisksHtml(r.id)}</div>
-        </div>
+        <div class="passport-block"><div class="k">ID / № паспорта</div><div class="v">${r.id}<br>№ ${r.displayNumber||'—'}</div></div>
+        <div class="passport-block"><div class="k">Категория</div><div class="v">${esc(r.category)}</div></div>
+        <div class="passport-block"><div class="k">Фаза проекта</div><div class="v">${r.phase ? esc(r.phase) : '<span class="muted">не указана — задаётся при редактировании карточки</span>'}</div></div>
+        <div class="passport-block"><div class="k">Владелец(ы)</div><div class="v">${esc(r.ownerNames.join(', ')||'—')}</div></div>
+        <div class="passport-block" style="grid-column:span 2;"><div class="k">Связанные риски</div><div class="v">${relatedRisksHtml(r.id)}</div></div>
       </div>
     </div>
 
     <div class="pp-tab-panel${ppActive('pp-sec-severity')}" id="pp-sec-severity">
-      <h3 class="pp-h">ОЦЕНКА</h3>
+      <h3 class="pp-h">КРИТИЧНОСТЬ</h3>
       <div class="pp-assess-row">
         <div class="pp-assess-matrix" id="ppAssessMatrixCol">
           <div id="ppAssessMatrixMount">${migrationMatrixHtml(r.p, r.iLevel, null, null, 220)}</div>
@@ -4456,8 +4449,8 @@ function renderPassport(){
     </div>
 
     <div class="pp-tab-panel${ppActive('pp-sec-response')}" id="pp-sec-response">
-      <div class="pp-tl-banner" style="background:${TL_BG[tl.color]||'var(--canvas)'};color:${tl.color};">
-        <span class="status-dot" style="background:${tl.color}"></span>${tl.label}
+      <div class="pp-light-strip" style="background:${TL_BG[tl.color]||'var(--canvas)'};color:${tl.color};">
+        <span class="status-dot" style="background:${tl.color}"></span> ${tl.label}
       </div>
       <div class="pp-h-row"><h3 class="pp-h">МЕРОПРИЯТИЯ (${planActions.length})</h3>${editable && r.p && r.iLevel ? `<button type="button" class="btn btn-secondary btn-sm" id="pAddActionBtn">+ Добавить мероприятие</button>` : ''}</div>
       ${planActions.length ? `<div class="actions-table-wrap"><table class="data-table actions-table">
@@ -4469,7 +4462,7 @@ function renderPassport(){
       </tbody></table></div>` : (editable
         ? `<div class="risk-card-cta" id="pAddActionEmptyCta" style="min-height:72px;"><div class="risk-card-cta-inner" style="flex-direction:row;gap:8px;"><span class="risk-card-cta-icon" style="width:24px;height:24px;font-size:15px;">+</span><span class="risk-card-cta-lbl">Добавить мероприятие</span></div></div>`
         : `<div class="empty-state">Мероприятий пока нет — светофор красный, пока не появится хотя бы одно.</div>`)}
-      <h3 class="pp-h" style="margin-top:16px;">ПОХОЖИЙ УРОК В БАЗЕ ЗНАНИЙ</h3>
+      <h3 class="pp-h">ПОХОЖИЙ УРОК В БАЗЕ ЗНАНИЙ</h3>
       <div class="passport-block" style="margin-bottom:12px;">
         ${similarLesson ? `
           <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
