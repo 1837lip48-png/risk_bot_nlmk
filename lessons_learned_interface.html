@@ -4249,6 +4249,23 @@ function openResidualModal(r){
     saveState(); closeModal('chartModalOverlay'); toast('Остаточный риск зафиксирован'); renderPassport(); renderAll();
   });
 }
+// Матрица P×I в разделе «Оценка» — раньше фиксированного размера (220px),
+// из-за чего при более высокой правой колонке метрик (степ-бокс уровня
+// риска + тренд + примечание комитета + периодичность) под матрицей
+// оставалось пустое пространство. Подгоняем высоту матрицы под фактическую
+// высоту соседней колонки метрик, пересобирая её тем же generator'ом
+// (grid-ячейки сами адаптивны через fr-юниты, но позиции точек считаются
+// в px от size — поэтому именно пересборка, а не растягивание CSS).
+function syncAssessMatrixSize(r){
+  const metricsCol = document.getElementById('ppAssessMetricsCol');
+  const matrixMount = document.getElementById('ppAssessMatrixMount');
+  if (!metricsCol || !matrixMount) return;
+  const caption = document.getElementById('ppAssessMatrixCaption');
+  const foot = document.getElementById('ppAssessMatrixFoot') || document.getElementById('pAssessCtaBtn');
+  const reserved = (caption ? caption.offsetHeight + 6 : 0) + (foot ? foot.offsetHeight + 8 : 0);
+  const target = Math.round(Math.min(320, Math.max(220, metricsCol.offsetHeight - reserved)));
+  matrixMount.innerHTML = migrationMatrixHtml(r.p, r.iLevel, null, null, target);
+}
 function renderPassport(){
   const r = findRisk(currentPassportId);
   const mount = document.getElementById('passportMount');
@@ -4340,13 +4357,13 @@ function renderPassport(){
     <div class="pp-tab-panel${ppActive('pp-sec-assess')}" id="pp-sec-assess">
       <h3 class="pp-h">ОЦЕНКА</h3>
       <div class="pp-assess-row">
-        <div class="pp-assess-matrix">
-          ${migrationMatrixHtml(r.p, r.iLevel, null, null, 220)}
-          <div class="muted" style="font-size:10.5px;margin-top:6px;text-align:center;">P (вероятность, ось Y, снизу вверх) × I (влияние, ось X)</div>
+        <div class="pp-assess-matrix" id="ppAssessMatrixCol">
+          <div id="ppAssessMatrixMount">${migrationMatrixHtml(r.p, r.iLevel, null, null, 220)}</div>
+          <div class="muted" id="ppAssessMatrixCaption" style="font-size:10.5px;margin-top:6px;text-align:center;">P (вероятность, ось Y, снизу вверх) × I (влияние, ось X)</div>
           ${(!r.p || !r.iLevel) ? (editable ? `<button type="button" class="btn btn-primary btn-sm" id="pAssessCtaBtn" style="margin-top:8px;width:100%;">Оценить P/I</button>`
-            : `<div class="muted" style="font-size:11.5px;margin-top:8px;text-align:center;">Оценка P/I ещё не проведена</div>`) : ''}
+            : `<div class="muted" id="ppAssessMatrixFoot" style="font-size:11.5px;margin-top:8px;text-align:center;">Оценка P/I ещё не проведена</div>`) : ''}
         </div>
-        <div class="pp-assess-metrics">
+        <div class="pp-assess-metrics" id="ppAssessMetricsCol">
           <div class="severity-box" style="background:${sc.bg};color:${sc.fg};">
             <div style="font-size:11px;font-weight:700;text-transform:uppercase;">Уровень риска</div>
             <div class="lvl">${zone ? ZONE_LABEL[zone] : 'Не оценён'}</div>
@@ -4406,6 +4423,7 @@ function renderPassport(){
   if (assessBtn) assessBtn.addEventListener('click', () => openAssessModal(r));
   const assessCtaBtn = document.getElementById('pAssessCtaBtn');
   if (assessCtaBtn) assessCtaBtn.addEventListener('click', () => openAssessModal(r));
+  if (currentPassportTab === 'pp-sec-assess') syncAssessMatrixSize(r);
   const addActBtn = document.getElementById('pAddActionBtn');
   if (addActBtn) addActBtn.addEventListener('click', () => openActionModal(r, null));
   const addActEmptyCta = document.getElementById('pAddActionEmptyCta');
