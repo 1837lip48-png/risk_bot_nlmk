@@ -929,8 +929,11 @@ function activateFonts(link){
   /* Полноширинный баннер эскалации в комитет — переиспользуется везде,
      где недостаточно места на маленький бейдж рядом с ID/уровнем
      (напр. заголовок паспорта риска, renderPassport() → modal-head). */
-  .rcm-committee-banner{display:flex; align-items:center; gap:8px; background:var(--red-50); color:var(--red-700);
+  .rcm-committee-banner{display:flex; align-items:center; gap:10px; justify-content:space-between; background:var(--red-50); color:var(--red-700);
     font-size:12.5px; font-weight:600; padding:9px 22px;}
+  .rcm-committee-banner .rcm-cb-text{display:flex; align-items:center; flex:1; min-width:0;}
+  .rcm-committee-banner .rcm-cb-btn{flex-shrink:0; background:#fff; color:var(--red-700); border:1px solid var(--red-700);}
+  .rcm-committee-banner .rcm-cb-btn:hover{background:var(--red-700); color:#fff;}
   .pp-tl-banner{display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600; padding:9px 22px; margin:0 -22px 12px;}
   .pp-cause-chain{margin-bottom:16px;}
   .pp-cause-item{display:flex; gap:14px; position:relative; padding-bottom:18px;}
@@ -4345,11 +4348,14 @@ function renderPassport(){
   const ppActive = id => currentPassportTab === id ? ' active' : '';
   document.getElementById('passportNavMount').innerHTML = ppNavHtml(r);
   mount.innerHTML = `
-    ${r.committeeFlag && currentPassportTab !== 'pp-sec-response' ? `<div class="rcm-committee-banner" style="margin:0 -22px 12px;">${ICON_ATTENTION}Требует решения комитета${r.committeeDecision ? ` · решение: ${esc(r.committeeDecision)}` : ''}</div>` : ''}
+    ${r.committeeFlag && currentPassportTab !== 'pp-sec-response' ? `<div class="rcm-committee-banner" style="margin:0 -22px 12px;">
+      <span class="rcm-cb-text">${ICON_ATTENTION}Требует решения комитета${r.committeeDecision ? ` · решение: ${esc(r.committeeDecision)}` : ''}</span>
+      ${editable && !r.committeeDecision ? `<button type="button" class="btn btn-sm rcm-cb-btn" id="pAgendaBtnBanner">📅 В повестку риск-сессии</button>` : ''}
+    </div>` : ''}
 
     <div class="pp-tab-panel${ppActive('pp-sec-summary')}" id="pp-sec-summary">
       <div class="btn-row" style="margin-bottom:12px;">
-        <button type="button" class="btn btn-text btn-sm" id="pAgendaBtn">📅 Добавить в повестку риск-сессии</button>
+        ${!(r.committeeFlag && !r.committeeDecision && editable) ? `<button type="button" class="btn btn-text btn-sm" id="pAgendaBtn">📅 Добавить в повестку риск-сессии</button>` : ''}
         ${editable && !r.committeeFlag ? `<button class="btn btn-secondary btn-sm" id="pEscalateBtn">Эскалировать риск-менеджеру / комитету</button>` : ''}
         ${editable && r.ownerNames.length > 1 ? `<span class="badge-pill" style="background:var(--amber-50);color:var(--amber-700);">Кросс-функциональный риск — требуется согласование ${r.ownerNames.length} совладельцев</span>` : ''}
       </div>
@@ -4523,6 +4529,8 @@ function renderPassport(){
   mount.querySelectorAll('[data-related-risk]').forEach(el => el.addEventListener('click', () => openPassport(el.dataset.relatedRisk)));
   const agendaBtn = document.getElementById('pAgendaBtn');
   if (agendaBtn) agendaBtn.addEventListener('click', () => openAddToAgendaModal(r));
+  const agendaBtnBanner = document.getElementById('pAgendaBtnBanner');
+  if (agendaBtnBanner) agendaBtnBanner.addEventListener('click', () => openAddToAgendaModal(r));
   const openSimilarBtn = document.getElementById('pOpenSimilarLesson');
   if (openSimilarBtn) openSimilarBtn.addEventListener('click', () => openLessonModal(similarLesson.lesson.id));
   const trendBox = document.getElementById('pTrendBox');
