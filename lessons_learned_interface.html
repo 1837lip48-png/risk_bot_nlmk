@@ -887,12 +887,23 @@ function activateFonts(link){
   #registerList.owner-grid.single-col .empty-state{grid-column:1/-1;}
   /* Режим «Сетка 4×4» — плотнее, до 4 карточек в ряду. */
   #registerList.owner-grid.view-grid4{grid-template-columns:repeat(4,1fr);}
+  #registerList.owner-grid.view-grid4 .risk-card{min-width:0;}
   @media (max-width:1200px){#registerList.owner-grid.view-grid4{grid-template-columns:repeat(2,1fr);}}
   @media (max-width:860px){#registerList.owner-grid, #registerList.owner-grid.view-grid4{grid-template-columns:1fr;}}
-  /* Уроки — та же сетка 2 колонки, что и у карточек риска в реестре владельца. */
+  /* Уроки — та же сетка 2 колонки, что и у карточек риска в реестре владельца,
+     и тот же переключатель вида (2 колонки / сетка 4×4 / список). */
   #lessonsBody{display:grid; grid-template-columns:repeat(2,1fr); gap:14px; align-items:stretch;}
   #lessonsBody .risk-card{margin-bottom:0;}
-  @media (max-width:860px){#lessonsBody{grid-template-columns:1fr;}}
+  #lessonsBody.view-grid4{grid-template-columns:repeat(4,1fr);}
+  /* Грид-ячейки по умолчанию min-width:auto — не сжимаются меньше своего
+     содержимого (напр. rc-meta4), из-за чего 4 узкие карточки в ряд
+     раздвигали сетку за пределы экрана. Разрешаем сжатие. */
+  #lessonsBody.view-grid4 .risk-card{min-width:0;}
+  #lessonsBody.view-grid4 .rc-meta4 > div{min-width:0;}
+  #lessonsBody.single-col .risk-card,
+  #lessonsBody.single-col .empty-state{grid-column:1/-1;}
+  @media (max-width:1200px){#lessonsBody.view-grid4{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:860px){#lessonsBody, #lessonsBody.view-grid4{grid-template-columns:1fr;}}
   /* Компактная карточка риска — ID + бейдж уровня, название, владелец +
      статус срока. Полная детализация — в паспорте по клику. */
   .risk-card-mini{padding:14px 16px;}
@@ -969,6 +980,10 @@ function activateFonts(link){
   .icon-btn-del svg{width:15px; height:15px;}
   .rc-meta4{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:12px; padding:12px 14px; background:var(--canvas); border-radius:var(--radius-field);}
   @media (max-width:900px){.rc-meta4{grid-template-columns:1fr 1fr;}}
+  /* В режиме «Сетка 4×4» карточка урока сама узкая — 4 колонки метаданных
+     внутри неё переполняли бы карточку, сжимаем до 2 колонок независимо
+     от ширины окна. */
+  #lessonsBody.view-grid4 .rc-meta4{grid-template-columns:1fr 1fr;}
   .rc-icon-row{display:flex; flex-wrap:wrap; gap:16px; font-size:12px; color:var(--ink-600); margin-bottom:12px;}
   .rc-icon-row svg{color:var(--ink-400);}
   .lesson-id-pill{font-size:11px; font-weight:700; color:var(--ink-600); background:var(--canvas); border-radius:var(--radius-pill); padding:2px 8px; flex-shrink:0;}
@@ -5004,7 +5019,17 @@ function onTagFilterChange(){
   }
 }
 document.addEventListener('click', (e) => { if (!e.target.closest('#tagMs')) toggleTagMenu(false); });
-let lessonsPaging = {page:1, pageSize:5};
+let lessonsPaging = {page:1, pageSize:4};
+// Вид реестра уроков — тот же переключатель, что и в реестре рисков.
+let lessonsViewMode = 'grid2';
+function lessonsViewToggleHtml(){
+  const modes = [
+    {key:'grid2', title:'Сетка — 2 колонки', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="8" height="16" rx="1"/><rect x="13" y="4" width="8" height="16" rx="1"/></svg>'},
+    {key:'grid4', title:'Сетка 4×4', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>'},
+    {key:'list', title:'Список — урок под уроком', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>'},
+  ];
+  return `<div class="reg-view-toggle">${modes.map(m => `<button type="button" class="reg-view-btn${lessonsViewMode===m.key?' active':''}" data-les-view="${m.key}" title="${m.title}" aria-label="${m.title}">${m.icon}</button>`).join('')}</div>`;
+}
 function renderLessonsTable(){
   const q = (document.getElementById('lesSearch').value||'').toLowerCase();
   let list = state.lessons.slice();
@@ -5026,8 +5051,15 @@ function renderLessonsTable(){
   const pageCount = Math.max(1, Math.ceil(total / lessonsPaging.pageSize));
   lessonsPaging.page = Math.min(Math.max(1, lessonsPaging.page), pageCount);
   const pageList = list.slice((lessonsPaging.page-1)*lessonsPaging.pageSize, lessonsPaging.page*lessonsPaging.pageSize);
-  document.getElementById('lessonsBody').innerHTML = pageList.length ? pageList.map(lessonCardHtml).join('') : `<div class="empty-state">Ничего не найдено.</div>`;
-  renderPagination('lessonsPaginationWrap', lessonsPaging, total, renderLessonsTable, 'урок(ов)');
+  const lessonsBodyEl = document.getElementById('lessonsBody');
+  const lesSingleCol = lessonsPaging.pageSize === 1 || lessonsViewMode === 'list';
+  lessonsBodyEl.classList.toggle('single-col', lesSingleCol);
+  lessonsBodyEl.classList.toggle('view-grid4', !lesSingleCol && lessonsViewMode === 'grid4');
+  lessonsBodyEl.innerHTML = pageList.length ? pageList.map(lessonCardHtml).join('') : `<div class="empty-state">Ничего не найдено.</div>`;
+  renderPagination('lessonsPaginationWrap', lessonsPaging, total, renderLessonsTable, 'урок(ов)', [1, 4, 8, 20, 40], lessonsViewToggleHtml());
+  document.querySelectorAll('#lessonsPaginationWrapBar [data-les-view]').forEach(b => {
+    b.addEventListener('click', () => { lessonsViewMode = b.dataset.lesView; renderLessonsTable(); });
+  });
   document.querySelectorAll('#lessonsBody [data-open-lesson]').forEach(el => el.addEventListener('click', (e) => { e.stopPropagation(); openLessonModal(el.dataset.openLesson); }));
   document.querySelectorAll('#lessonsBody [data-create-risk]').forEach(b => b.addEventListener('click', (e) => {
     e.stopPropagation();
