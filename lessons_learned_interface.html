@@ -1366,8 +1366,8 @@ function activateFonts(link){
 
   /* ===== Паспорт риска: матрица P×I + метрик-блоки (раздел «ОЦЕНКА») ===== */
   .pp-assess-row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-start; margin-bottom:12px;}
-  .pp-assess-matrix{flex:0 1 42%; min-width:180px; max-width:300px;}
-  .pp-assess-metrics{flex:1 1 240px; min-width:220px; display:flex; flex-direction:column; gap:8px;}
+  .pp-assess-matrix{flex:0 1 32%; min-width:180px; max-width:280px;}
+  .pp-assess-metrics{flex:1 1 240px; min-width:280px; display:flex; flex-direction:column; gap:8px;}
   .pp-trend-box{display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:var(--radius-field); background:var(--canvas); cursor:pointer; transition:background-color .15s ease;}
   .pp-trend-box:hover{background:var(--accent-50);}
   .pp-trend-box .arrow{width:28px; height:28px; border-radius:7px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
@@ -2033,6 +2033,17 @@ const TL_BG = {
   'var(--accent-600)': 'var(--accent-50)',
   'var(--ink-400)':    'var(--surface-2, #F7F8FA)',
 };
+// Просрочен ли плановый пересмотр риска (reviewFrequencyDays от даты
+// последней оценки P/I) — возвращает число дней просрочки или null,
+// если пересмотр ещё не наступил или оценки не было вовсе.
+function reviewOverdueDays(r){
+  if (!r.lastAssessedAt) return null;
+  const last = new Date(r.lastAssessedAt);
+  if (isNaN(last)) return null;
+  const due = new Date(last.getTime() + (r.reviewFrequencyDays||30)*86400000);
+  const overdue = Math.floor((TODAY - due) / 86400000);
+  return overdue > 0 ? overdue : null;
+}
 
 // ===== простая AI-эвристика "похожести" текста (клиентская имитация обратного
 // поиска — реальный поиск в финальной системе делает Anthropic API на бэкенде,
@@ -2398,7 +2409,13 @@ const RAW_LESSONS = [
 ];
 
 function buildSeedRisks(){
-  return RAW_RISKS.map(r => ({
+  return RAW_RISKS.map((r, idx) => {
+    const reviewFrequencyDays = r.sev === 'low' ? 60 : 30;
+    // разброс дат последней оценки для демо: часть рисков специально
+    // «просрочена» по пересмотру, чтобы индикатор был виден сразу после сброса данных
+    const daysSinceAssessed = 5 + (idx * 11) % 50;
+    const lastAssessedAt = (r.p && r.i) ? new Date(TODAY.getTime() - daysSinceAssessed*86400000).toISOString() : null;
+    return {
     id: `12-1111-${r.id}-1Ri`,
     displayNumber: parseInt(r.id, 10),
     projectSpp: '12-1111',
@@ -2414,7 +2431,7 @@ function buildSeedRisks(){
     quantProbabilityPct: null, quantBudgetImpactMln: null, quantScheduleImpactMonths: null,
     residualRra: null, residualP: null, residualI: null,
     sourceLessonId: null, mergedIntoId: null,
-    reviewFrequencyDays: r.sev === 'low' ? 60 : 30, nextReviewDate: null,
+    reviewFrequencyDays, nextReviewDate: null, lastAssessedAt,
     createdAt: null,
     actions: r.actions.map(a => {
       const kind = a.kind === 'existing' ? 'existing_procedure' : a.kind;
@@ -2424,7 +2441,8 @@ function buildSeedRisks(){
         assignee: a.resp, cost: a.cost, plannedDate: a.planned, forecastActualDate: null, status: a.status,
       };
     }),
-  }));
+  };
+  });
 }
 function buildSeedLessons(){
   return RAW_LESSONS.map(l => ({
@@ -3999,7 +4017,7 @@ function submitNewRisk(){
     committeeDecision: null, committeeDecisionDate: null,
     quantProbabilityPct: null, quantBudgetImpactMln: null, quantScheduleImpactMonths: null, residualRra: null, residualP: null, residualI: null,
     sourceLessonId: riskCreatePrefill ? riskCreatePrefill.sourceLessonId||null : null,
-    mergedIntoId: null, reviewFrequencyDays: null, nextReviewDate: null, createdAt: nowStr(),
+    mergedIntoId: null, reviewFrequencyDays: null, nextReviewDate: null, lastAssessedAt: null, createdAt: nowStr(),
     // NEW-метка и сортировка вначале реестра — только для рисков, которые
     // риск-менеджеру ещё предстоит увидеть и разобрать: поданных
     // инициатором или предложенных владельцем риска. Риски, которые
@@ -4337,6 +4355,7 @@ function renderPassport(){
   const editable = canManage(r);
   const stepIdx = STATUSES.indexOf(r.status);
   const el = (r.expectedLoss = (r.quantProbabilityPct!=null && r.quantBudgetImpactMln!=null) ? (r.quantProbabilityPct/100*r.quantBudgetImpactMln) : null);
+  const overdueDays = reviewOverdueDays(r);
 
   // «Существующая процедура» (бывшая отдельная секция КОНТРОЛИ) — теперь
   // просто один из видов мероприятия в общем списке ниже, без дублирующей
@@ -4426,7 +4445,7 @@ function renderPassport(){
           ${trendBoxHtml(r)}
           ${r.committeeFlag ? `<div class="esc-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9L2.6 18a1.5 1.5 0 0 0 1.3 2.2h16.2a1.5 1.5 0 0 0 1.3-2.2L13.7 3.9a1.5 1.5 0 0 0-2.6 0z"/></svg><span>Требует решения комитета (I=3)${r.committeeDecision?'<br>Решение: '+esc(r.committeeDecision):''}</span></div>` : ''}
           <div style="display:flex; gap:8px; align-items:stretch;">
-            <div style="flex:1;"><div class="k">Периодичность пересмотра</div><div class="v">раз в ${r.reviewFrequencyDays||30} дн.</div></div>
+            <div style="flex:1;"><div class="k">Периодичность пересмотра</div><div class="v">раз в ${r.reviewFrequencyDays||30} дн.${overdueDays!=null ? `<br><span style="color:var(--red-700);font-weight:700;">${ICON_ATTENTION}Требует пересмотра (просрочен на ${overdueDays} ${pluralRu(overdueDays,['день','дня','дней'])})</span>` : ''}</div></div>
             ${el!=null ? `<div class="rra-preview" style="flex:1;"><span class="lbl">EL</span><span class="val">${el.toFixed(1)} млн ₽</span></div>` : ''}
           </div>
         </div>
@@ -4766,6 +4785,7 @@ document.getElementById('assessSubmit').addEventListener('click', () => {
   r.pChecklist = {q1: assessAnswers.q1==='yes', q2: assessAnswers.q2==='yes', q3: assessAnswers.q3==='yes'};
   r.p = p; r.iLevel = assessAnswers.i; r.iJustification = just;
   r.committeeFlag = assessAnswers.i === 3;
+  r.lastAssessedAt = new Date().toISOString();
   const prob = parseFloat(document.getElementById('aProb').value), budget = parseFloat(document.getElementById('aBudget').value), sched = parseFloat(document.getElementById('aSchedule').value);
   r.quantProbabilityPct = isNaN(prob) ? null : prob;
   r.quantBudgetImpactMln = isNaN(budget) ? null : budget;
@@ -5271,6 +5291,7 @@ function openLessonToRiskModal(l){
       quantProbabilityPct:null, quantBudgetImpactMln:null, quantScheduleImpactMonths:null,
       residualRra:null, residualP:null, residualI:null,
       sourceLessonId: l.id, mergedIntoId:null, reviewFrequencyDays:null, nextReviewDate:null,
+      lastAssessedAt: (p && iLevel) ? new Date().toISOString() : null,
       createdAt: nowStr(), actions:[], isNew:true, phase: phase || null,
       strategyRationale: strategy ? `Стратегия реагирования (по уроку ${l.id}): ${strategy}` : '',
     };
@@ -7211,6 +7232,7 @@ function openPremortemToRiskModal(session, scenario){
       quantProbabilityPct:null, quantBudgetImpactMln:null, quantScheduleImpactMonths:null,
       residualRra:null, residualP:null, residualI:null,
       sourceLessonId:null, mergedIntoId:null, reviewFrequencyDays:null, nextReviewDate:null,
+      lastAssessedAt: (p && iLevel) ? new Date().toISOString() : null,
       createdAt: nowStr(), actions:[], isNew:true, phase: phase || null,
       strategyRationale: strategy ? `Стратегия реагирования (по PreMortem-сценарию сессии от ${session.date}): ${strategy}` : '',
     };
