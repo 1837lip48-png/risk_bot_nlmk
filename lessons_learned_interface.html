@@ -748,19 +748,16 @@ function activateFonts(link){
   .notif-group-label{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; color:var(--ink-400);}
   .notif-mark-all{background:none; border:none; color:var(--accent-600); font-size:11.5px; font-weight:700; cursor:pointer; padding:0;}
   .notif-mark-all:hover{text-decoration:underline;}
-  .notif-card{display:flex; gap:10px; align-items:center; padding:10px 12px; border-radius:var(--radius-field);
+  .notif-card{display:flex; gap:10px; align-items:flex-start; padding:12px; border-radius:var(--radius-field);
     cursor:pointer; border:1px solid var(--line); margin-bottom:8px; background:var(--paper-0);
     transition:background-color .15s ease, border-color .15s ease;}
   .notif-card:hover{background:var(--canvas);}
   .notif-card.unread{background:var(--accent-50); border-color:var(--accent-100);}
   .notif-card.unread:hover{background:var(--accent-100);}
-  .notif-card .nt-body{flex:1; min-width:0; display:flex; align-items:baseline; gap:7px; white-space:nowrap;}
-  .notif-card .nt-t{flex:0 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-    font-family:var(--font-display); font-size:13px; font-weight:700; color:var(--ink-900);}
-  .notif-card .nt-sep{flex-shrink:0; color:var(--ink-400);}
-  .notif-card .nt-d{flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-    font-size:12px; color:var(--ink-600);}
-  .notif-card .nt-time{flex-shrink:0; font-size:11px; color:var(--ink-400); margin-left:auto; padding-left:6px;}
+  .notif-card .nt-body{flex:1; min-width:0;}
+  .notif-card .nt-t{display:flex; align-items:center; gap:6px; font-family:var(--font-display); font-size:13px; font-weight:700; color:var(--ink-900);}
+  .notif-card .nt-d{font-size:12px; line-height:1.4; color:var(--ink-600); margin-top:3px;}
+  .notif-card .nt-time{font-size:11px; color:var(--ink-400); margin-top:5px;}
   .notif-unread-dot{width:7px; height:7px; border-radius:50%; background:var(--accent-600); flex-shrink:0;}
 
   .profile-panel{position:absolute; top:46px; right:0; width:264px; background:var(--paper-0);
@@ -3341,11 +3338,10 @@ function renderNotifDrawer(){
       const unread = !notifReadIds.has(i.id);
       return `<div class="notif-card${unread?' unread':''}" data-notif-id="${esc(i.id)}" data-open-risk="${esc(i.riskId)}">
         <span class="notif-card-icon" style="background:${tn.bg};color:${tn.fg};">${tn.icon}</span>
-        <span class="notif-unread-dot"${unread?'':' style="background:transparent;"'}></span>
         <div class="nt-body">
-          <span class="nt-t">${esc(i.title)}</span>
-          ${i.body ? `<span class="nt-sep">·</span><span class="nt-d">${esc(i.body)}</span>` : ''}
-          ${i.timestamp ? `<span class="nt-time">${esc(i.timestamp)}</span>` : ''}
+          <div class="nt-t">${unread?'<span class="notif-unread-dot"></span>':''}${esc(i.title)}</div>
+          <div class="nt-d">${esc(i.body)}</div>
+          ${i.timestamp ? `<div class="nt-time">${esc(i.timestamp)}</div>` : ''}
         </div>
       </div>`;
     }).join('')}
