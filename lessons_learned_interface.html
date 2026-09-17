@@ -592,8 +592,8 @@ function activateFonts(link){
 
   /* Миграция риска (свойственный → остаточный) — мини-матрица 3×3 с двумя
      точками: полая — свойственный (до мер), заливка — остаточный (после). */
-  .migration-matrix{position:relative; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); gap:0; border-radius:6px; overflow:hidden; flex-shrink:0;}
-  .migration-matrix .mm-cell{border-radius:0;}
+  .migration-matrix{position:relative; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); gap:3px; border-radius:6px; overflow:hidden; flex-shrink:0;}
+  .migration-matrix .mm-cell{border-radius:2px;}
   .migration-dot{position:absolute; width:13px; height:13px; border-radius:50%; margin:-6.5px; box-shadow:0 0 0 2px #fff;}
   .migration-dot.inherent{background:#fff; border:2px solid var(--ink-700);}
   .migration-dot.residual{background:var(--accent-600); border:2px solid #fff;}
@@ -1365,7 +1365,7 @@ function activateFonts(link){
 
   /* ===== Паспорт риска: матрица P×I + метрик-блоки (раздел «ОЦЕНКА») ===== */
   .pp-assess-row{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-start; margin-bottom:12px;}
-  .pp-assess-matrix{flex:0 1 32%; min-width:220px; max-width:280px;}
+  .pp-assess-matrix{flex:0 1 32%; min-width:220px; max-width:280px; display:flex; flex-direction:column; align-items:center;}
   .pp-assess-metrics{flex:1 1 240px; min-width:280px; display:flex; flex-direction:column; gap:8px;}
   .pp-trend-box{display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:var(--radius-field); background:var(--canvas); cursor:pointer; transition:background-color .15s ease;}
   .pp-trend-box:hover{background:var(--accent-50);}
