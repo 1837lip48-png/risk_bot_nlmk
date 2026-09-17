@@ -5097,6 +5097,9 @@ function renderLessonsTable(){
     e.stopPropagation();
     openLessonToRiskModal(findLesson(b.dataset.createRisk));
   }));
+  document.querySelectorAll('#lessonsBody [data-del-lesson]').forEach(b => {
+    b.addEventListener('click', (e) => { e.stopPropagation(); deleteLesson(b.dataset.delLesson); });
+  });
 }
 // AI-подсказка «Помочь с риском» — демо-эвристика (не реальный вызов LLM):
 // собирает формулировку риска из РЕАЛЬНОГО текста урока (описание +
@@ -5205,6 +5208,16 @@ function truncate(text, max){
   if (!text) return '';
   return text.length > max ? text.slice(0, max).trim() + '…' : text;
 }
+function deleteLesson(id){
+  const l = findLesson(id);
+  if (!l) return;
+  openConfirmModal(`Удалить урок «${l.title}» (${l.id}) из реестра? Действие необратимо.`, () => {
+    state.lessons = state.lessons.filter(x => x.id !== id);
+    saveState();
+    toast('Урок удалён из реестра', {tone:'success'});
+    renderAll();
+  }, {title:'Удалить урок?'});
+}
 // Превью карточки (раунд 2, п.8в) — помимо метаданных, сразу показывает
 // СУТЬ урока (выученный урок + рекомендацию, обрезанные до превью-длины),
 // чтобы решение «читать/не читать» карточку целиком принималось без клика.
@@ -5224,6 +5237,7 @@ function lessonCardHtml(l){
       <div class="rc-head-actions">
         <span class="lesson-repeat-badge" title="${rr.matchTitle ? 'Похож на урок '+esc(rr.matchId)+': «'+esc(rr.matchTitle)+'»' : 'Похожих уроков по категории/тегам не найдено'}">Повтор. ${rr.pct}%</span>
         <button class="btn btn-sm" data-open-lesson="${l.id}">Детали</button>
+        <button type="button" class="icon-btn-del" data-del-lesson="${l.id}" title="Удалить урок из реестра" aria-label="Удалить урок из реестра"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
     </div>
     ${prob.text ? `<div class="lesson-problem-line" style="font-size:12.5px;color:var(--ink-700);margin:4px 0 10px;line-height:1.4;">${esc(prob.text)}</div>` : ''}
