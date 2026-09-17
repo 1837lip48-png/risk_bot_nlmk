@@ -2063,11 +2063,11 @@ function paginationBarHtml(pid, {page, pageCount, pageSize, pageSizes, itemsLabe
     </div>
   </div>`;
 }
-function renderPagination(wrapId, pagingState, total, onChange, itemsLabel){
+function renderPagination(wrapId, pagingState, total, onChange, itemsLabel, pageSizes){
   const wrap = document.getElementById(wrapId);
   if (!wrap) return;
   if (!total){ wrap.innerHTML = ''; return; }
-  const pageSizes = [5, 10, 20, 50];
+  pageSizes = pageSizes || [5, 10, 20, 50];
   const pageCount = Math.max(1, Math.ceil(total / pagingState.pageSize));
   pagingState.page = Math.min(Math.max(1, pagingState.page), pageCount);
   wrap.innerHTML = paginationBarHtml(wrapId+'Bar', {page:pagingState.page, pageCount, pageSize:pagingState.pageSize, pageSizes, itemsLabel:itemsLabel||'строк'});
@@ -3701,7 +3701,7 @@ function renderRegister(){
     // добавления риска и так есть в панели инструментов).
     const isLastPage = registerPaging.page === pageCount;
     registerListEl.innerHTML = cardsHtml + (pageList.length && isLastPage ? `<div class="risk-card-cta" data-open-template><div class="risk-card-cta-inner"><span class="risk-card-cta-icon">+</span><span class="risk-card-cta-lbl">${ownerLocked?'Предложить риск':'Добавить риск'}</span></div></div>` : '');
-    renderPagination('registerPaginationWrap', registerPaging, total, renderRegister, 'риск(ов)');
+    renderPagination('registerPaginationWrap', registerPaging, total, renderRegister, 'риск(ов)', [4, 8, 20, 40]);
     document.querySelectorAll('#registerList .risk-card, #registerList [data-open-risk]').forEach(c => {
       c.addEventListener('click', (e) => { e.stopPropagation(); openPassport(c.dataset.riskId || c.dataset.openRisk); });
     });
@@ -3714,7 +3714,7 @@ function renderRegister(){
   }
 
 }
-let registerPaging = {page:1, pageSize:5};
+let registerPaging = {page:1, pageSize:4};
 let registerAiQuery = '';
 document.getElementById('regAiAsk').addEventListener('keydown', e => { if (e.key === 'Enter') toast('Спросить AI', {body:'Демо-прототип: раздел недоступен в этой версии.', duration:4000}); });
 ['regSearch'].forEach(id => document.getElementById(id).addEventListener('input', () => { registerPaging.page = 1; renderRegister(); }));
