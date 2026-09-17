@@ -1883,7 +1883,7 @@ const ACTION_KIND_LABEL = {cause:'Причина', consequence:'Следстви
 const ACTION_STATUS_LABEL = {planned:'Планируется', in_progress:'В работе', done:'Выполнено', rejected:'Отклонено'};
 const ACTION_STATUS_COLOR = {planned:'var(--gold-700)', in_progress:'var(--accent-600)', done:'var(--green-700)', rejected:'var(--ink-400)'};
 const DEP_TYPES = ['усиливает','ведёт_к','зависит_от','дублирует'];
-const TODAY = new Date(2026, 8, 15); // условное «сегодня» для демо — держим синхронным с реальной текущей датой
+const TODAY = new Date(); TODAY.setHours(0,0,0,0); // фактическая текущая дата устройства, без времени
 
 function uid(prefix){ return prefix + '-' + Math.random().toString(36).slice(2,8); }
 
@@ -4205,7 +4205,7 @@ function renderPassport(){
   const ppActive = id => currentPassportTab === id ? ' active' : '';
   document.getElementById('passportNavMount').innerHTML = ppNavHtml(r);
   mount.innerHTML = `
-    ${r.committeeFlag ? `<div class="rcm-committee-banner" style="margin:-22px -22px 12px;">${ICON_ATTENTION}Требует решения комитета${r.committeeDecision ? ` · решение: ${esc(r.committeeDecision)}` : ''}</div>` : ''}
+    ${r.committeeFlag ? `<div class="rcm-committee-banner" style="margin:0 -22px 12px;">${ICON_ATTENTION}Требует решения комитета${r.committeeDecision ? ` · решение: ${esc(r.committeeDecision)}` : ''}</div>` : ''}
 
     <div class="pp-tab-panel${ppActive('pp-sec-ident')}" id="pp-sec-ident">
       <div class="btn-row" style="margin-bottom:12px;">
