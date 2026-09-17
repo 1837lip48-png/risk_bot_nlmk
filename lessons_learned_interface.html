@@ -477,6 +477,11 @@ function activateFonts(link){
   .session-badge.type{background:#e7dafb; color:#6d28d9;}
   .session-badge.status-done{background:var(--green-50); color:var(--green-700);}
   .session-badge.status-planned{background:var(--gold-50); color:var(--gold-700);}
+  .session-badge.status-cancelled{background:var(--red-50); color:var(--red-700);}
+  .session-badge.status-rescheduled{background:var(--amber-50); color:var(--amber-700);}
+  .session-status-select{border:1px solid var(--line); border-radius:var(--radius-field); padding:5px 26px 5px 10px; font-size:11.5px; font-weight:600;
+    background:var(--paper-0); color:var(--ink-900); cursor:pointer; appearance:none; background-repeat:no-repeat; background-position:right 8px center; background-size:12px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2399a2a9' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");}
   .session-modal-title{display:flex; align-items:flex-start; justify-content:space-between; gap:10px;}
   .session-modal-title h3{font-family:var(--font-display); font-size:var(--fs-sub2); line-height:var(--lh-sub2); font-weight:700; color:var(--ink-900); margin:0;}
   .session-modal-date{display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-600); margin-top:6px;}
@@ -503,7 +508,8 @@ function activateFonts(link){
   .session-action-row.done .session-action-check svg{width:10px; height:10px;}
   .session-action-row.done span{text-decoration:line-through; color:var(--ink-400);}
   .session-empty{font-size:12.5px; color:var(--ink-400);}
-  .session-modal-foot{display:flex; align-items:center; justify-content:space-between; padding:14px 22px; border-top:1px solid var(--line); flex-shrink:0;}
+  .session-modal-foot{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:14px 22px; border-top:1px solid var(--line); flex-shrink:0;}
+  .session-modal-foot > span{flex-wrap:wrap;}
 
   /* Страница «Детали встречи» (Блок 3b) — отдельная ws-page, не модалка;
      переиспользует .session-badge/.session-ai-box из попапа сводки. */
@@ -1130,7 +1136,12 @@ function activateFonts(link){
   #calBody{display:flex; flex-direction:column; min-height:0;}
   .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); grid-template-rows:auto; grid-auto-rows:1fr; gap:6px; flex:1; min-height:0;}
   .cal-dow{text-align:center; font-size:10.5px; color:var(--ink-400); font-weight:700; padding-bottom:4px;}
-  .cal-cell{min-height:0; background:var(--paper-0); border:1px solid var(--line); border-radius:8px; padding:6px; overflow:auto; cursor:pointer; transition:border-color .15s ease;}
+  .cal-cell{min-height:0; background:var(--paper-0); border:1px solid var(--line); border-radius:8px; padding:6px; overflow:auto; cursor:pointer; transition:border-color .15s ease;
+    scrollbar-width:thin; scrollbar-color:var(--line) transparent;}
+  .cal-cell::-webkit-scrollbar{width:4px;}
+  .cal-cell::-webkit-scrollbar-track{background:transparent;}
+  .cal-cell::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+  .cal-cell::-webkit-scrollbar-button{display:none; height:0; width:0;}
   .cal-cell:hover{border-color:var(--accent-600);}
   .cal-cell.empty{background:transparent; border:none; cursor:default;}
   .cal-cell.empty:hover{border-color:transparent;}
@@ -5542,7 +5553,7 @@ function renderCalendarMonth(){
       <div class="dnum">${d}</div>
       ${evs.map(e=>`<div class="cal-ev" style="background:${e.bg};color:${e.color}" data-risk="${e.riskId}" title="${esc(e.fullText)}"><span class="cal-pill-icon">${e.overdue?CAL_EV_OVERDUE_ICON:CAL_EV_ICON}</span><span>${esc(e.text)}</span></div>`).join('')}
       ${notes.map(n=>{const t=noteType(n.type); const isSession = n.type==='session' && n.riskId;
-        return `<div class="cal-note-pill" style="background:${t.bg};color:${t.color}" title="${esc(n.text)}"${isSession?` data-open-session="${y}-${m}-${d}"`:''}><span class="cal-pill-icon">${t.icon}</span><span>${esc(t.label)}</span><button type="button" class="cal-note-del-x" data-del-cal-note="${n.id}" data-del-cal-date="${y}-${m}-${d}" title="Удалить встречу" aria-label="Удалить встречу"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`;}).join('')}
+        return `<div class="cal-note-pill" style="background:${t.bg};color:${t.color}" title="${esc(n.text)}"${isSession?` data-open-session="${y}-${m}-${d}"`:` data-open-note="${n.id}" data-open-note-date="${y}-${m}-${d}"`}><span class="cal-pill-icon">${t.icon}</span><span>${esc(t.label)}</span><button type="button" class="cal-note-del-x" data-del-cal-note="${n.id}" data-del-cal-date="${y}-${m}-${d}" title="Удалить встречу" aria-label="Удалить встречу"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`;}).join('')}
     </div>`;
   }
   document.getElementById('calBody').innerHTML = `<div class="cal-grid">${grid}</div>`;
@@ -5551,6 +5562,11 @@ function renderCalendarMonth(){
     ev.stopPropagation();
     const [yy,mm,dd] = el.dataset.openSession.split('-').map(Number);
     openSessionSummaryModal(yy,mm,dd);
+  }));
+  document.querySelectorAll('.cal-note-pill[data-open-note]').forEach(el => el.addEventListener('click', ev => {
+    ev.stopPropagation();
+    const [yy,mm,dd] = el.dataset.openNoteDate.split('-').map(Number);
+    openNoteDetailModal(yy,mm,dd,el.dataset.openNote);
   }));
   document.querySelectorAll('[data-del-cal-note]').forEach(btn => btn.addEventListener('click', ev => {
     ev.stopPropagation();
@@ -5671,7 +5687,7 @@ function renderCalendarWeek(){
         // сессию сегодняшнего дня можно закрыть, не дожидаясь полуночи.
         const cardDone = isSession ? sessSd.isPast : isPastDay;
         metaParts.push(`<span>${cardDone?ICON_SD_CHECK_SM:ICON_SD_CLOCK}${cardDone?'проведено':'план'}</span>`);
-        return `<div class="calw-card calw-card--del" style="background:${t.bg};color:${t.color};border-color:${t.color}33;"${isSession?` data-open-session="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}"`:` data-open-day="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}"`}>
+        return `<div class="calw-card calw-card--del" style="background:${t.bg};color:${t.color};border-color:${t.color}33;"${isSession?` data-open-session="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}"`:` data-open-note="${n.id}" data-open-note-date="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}"`}>
         <button type="button" class="cal-note-del-x" data-del-cal-note="${n.id}" data-del-cal-date="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}" title="Удалить встречу" aria-label="Удалить встречу"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
         <div class="ct">${esc(t.label)}</div><div class="cn">${esc(n.text.slice(0,50))}</div>
         <div class="calw-card-meta">${metaParts.join('')}</div>
@@ -5686,15 +5702,13 @@ function renderCalendarWeek(){
     const [yy,mm,dd] = el.dataset.openSession.split('-').map(Number);
     openSessionSummaryModal(yy,mm,dd);
   }));
-  // Карточки не-риск-сессий (семинар, индивидуальная работа и т.п.) выглядели
-  // кликабельными (курсор/hover-подъём — те же стили .calw-card, что и у
-  // риск-сессии), но клик никуда не вёл — не было способа открыть/посмотреть
-  // заметку, кроме крестика удаления. Клик по карточке теперь открывает
-  // «Заметки дня», где заметка видна целиком (крестик — свой обработчик
-  // выше по коду, со stopPropagation).
-  document.querySelectorAll('.calw-card[data-open-day]').forEach(el => el.addEventListener('click', () => {
-    const [yy,mm,dd] = el.dataset.openDay.split('-').map(Number);
-    openDayNotesModal(yy,mm,dd);
+  // Карточки не-риск-сессий (семинар, индивидуальная работа и т.п.) —
+  // у каждой своя уникальная карточка-модалка (openNoteDetailModal),
+  // а не общий список заметок дня, где было видно чужие записи вперемешку
+  // (крестик удаления — свой обработчик выше по коду, со stopPropagation).
+  document.querySelectorAll('.calw-card[data-open-note]').forEach(el => el.addEventListener('click', () => {
+    const [yy,mm,dd] = el.dataset.openNoteDate.split('-').map(Number);
+    openNoteDetailModal(yy,mm,dd,el.dataset.openNote);
   }));
   document.querySelectorAll('[data-add-note-day]').forEach(b => b.addEventListener('click', () => {
     const [yy,mm,dd] = b.dataset.addNoteDay.split('-').map(Number);
@@ -5726,9 +5740,9 @@ function renderCalendarAgenda(){
     const [yy,mm,dd] = el.dataset.openSession.split('-').map(Number);
     openSessionSummaryModal(yy,mm,dd);
   }));
-  document.querySelectorAll('.agenda-row[data-open-day]').forEach(el => el.addEventListener('click', () => {
-    const [yy,mm,dd] = el.dataset.openDay.split('-').map(Number);
-    openDayNotesModal(yy,mm,dd);
+  document.querySelectorAll('.agenda-row[data-open-note]').forEach(el => el.addEventListener('click', () => {
+    const [yy,mm,dd] = el.dataset.openNoteDate.split('-').map(Number);
+    openNoteDetailModal(yy,mm,dd,el.dataset.openNote);
   }));
   document.querySelectorAll('[data-del-cal-note]').forEach(btn => btn.addEventListener('click', ev => {
     ev.stopPropagation();
@@ -5751,7 +5765,7 @@ function agendaRowHtml(n){
     ? `<div class="agenda-row-actions"><span class="n">${sessSd.actions.length} ${pluralRu(sessSd.actions.length,['действие','действия','действий'])}</span><span class="${sessSd.doneActions?'done':''}">${sessSd.doneActions} выполнено</span></div>`
     : '';
 
-  return `<div class="agenda-row" style="border-left-color:${t.color};"${isSession?` data-open-session="${y}-${m}-${d}"`:` data-open-day="${y}-${m}-${d}"`}>
+  return `<div class="agenda-row" style="border-left-color:${t.color};"${isSession?` data-open-session="${y}-${m}-${d}"`:` data-open-note="${n.id}" data-open-note-date="${y}-${m}-${d}"`}>
     <div class="agenda-row-body">
       <div class="agenda-row-badges">
         <span class="agenda-badge" style="background:${t.bg};color:${t.color};">${esc(t.label.toUpperCase())}</span>
@@ -5763,6 +5777,51 @@ function agendaRowHtml(n){
     ${actionsHtml}
     <button type="button" class="icon-btn-del" data-del-cal-note="${n.id}" data-del-cal-date="${y}-${m}-${d}" title="Удалить встречу" aria-label="Удалить встречу"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>`;
+}
+// Клик по конкретной карточке/пилюле мероприятия (не риск-сессии — у той
+// свой openSessionSummaryModal) раньше открывал ту же самую «Заметки дня» —
+// общий список ВСЕХ заметок этого дня плюс форму добавления, так что при
+// нескольких заметках в один день клик по любой из карточек показывал
+// одинаковую модалку с чужими данными вперемешку. Теперь у каждого такого
+// мероприятия — своя, уникальная модалка только с его собственными полями.
+function noteDetailBodyHtml(n){
+  const t = noteType(n.type);
+  return `
+    <div class="cal-note-type" style="color:${t.color};margin-bottom:6px;">${esc(t.label)}</div>
+    <div style="font-size:14px;font-weight:600;margin-bottom:10px;">${esc(n.text)}</div>
+    ${n.time ? `<div class="muted cal-note-time-row" style="font-size:12.5px;margin-bottom:8px;">${ICON_SD_CLOCK}${esc(n.time)}${n.timeTo?'–'+esc(n.timeTo):''}${n.durationMin?' · '+n.durationMin+' мин':''}</div>` : ''}
+    ${n.attendees && n.attendees.length ? `<div class="session-sec" style="margin-bottom:10px;">
+      <div class="session-sec-title">Участники (${n.attendees.length})</div>
+      <div class="session-attendees">${n.attendees.map(a => { const p = a.split(' '); return `<span class="session-attendee-chip">${avatarHtml({firstName:p[0]||'', lastName:p[1]||'', size:22})}${esc(a)}</span>`; }).join('')}</div>
+    </div>` : ''}
+    ${n.author ? `<div class="muted" style="font-size:12px;">Автор: ${esc(n.author)}</div>` : ''}
+    ${n.riskId ? `<a href="#" data-open-risk-from-note="${n.riskId}" style="display:inline-block;margin-top:10px;font-size:12.5px;font-weight:600;">Открыть риск →</a>` : ''}
+    <div class="btn-row" style="margin-top:16px;">
+      <button type="button" class="btn btn-text" id="ndCloseBtn">Закрыть</button>
+      <button type="button" class="btn btn-secondary" id="ndDeleteBtn" style="flex:1;">Удалить</button>
+    </div>`;
+}
+function openNoteDetailModal(y, m, d, noteId){
+  const key = dayKey(y, m, d);
+  const note = (state.dayNotes[key] || []).find(n => n.id === noteId);
+  if (!note) return;
+  const t = noteType(note.type);
+  const dateObj = new Date(y, m, d);
+  openChartModal(t.label, dateObj.toLocaleDateString('ru-RU', {weekday:'short', day:'numeric', month:'long'}), noteDetailBodyHtml(note), {maxWidth:'360px'});
+  document.getElementById('ndCloseBtn').addEventListener('click', () => closeModal('chartModalOverlay'));
+  document.querySelectorAll('#chartModalMount [data-open-risk-from-note]').forEach(a => a.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeModal('chartModalOverlay');
+    openPassport(a.dataset.openRiskFromNote);
+  }));
+  document.getElementById('ndDeleteBtn').addEventListener('click', () => {
+    openConfirmModal('Удалить эту заметку?', () => {
+      state.dayNotes[key] = (state.dayNotes[key] || []).filter(n => n.id !== noteId);
+      saveState();
+      closeModal('chartModalOverlay');
+      renderCalendar();
+    }, {title:'Удалить заметку?'});
+  });
 }
 function openDayNotesModal(y, m, d){
   const title = `${d} ${CAL_MONTH_NAMES[m].toLowerCase()} ${y}`;
@@ -6012,12 +6071,14 @@ function computeSessionData(y, m, d){
   if (!risks.length) return null;
 
   const dateObj = new Date(y, m, d);
-  // «Проведена» — либо дата уже прошла, либо риск-менеджер вручную отметил
-  // сессию как проведённую бегунком в модалке (напр. сессия сегодня,
-  // прошла раньше конца дня — ждать полуночи, чтобы увидеть AI-сводку,
-  // не нужно).
-  const manuallyCompleted = notes.some(n => n.completed);
-  const isPast = dateObj < TODAY || manuallyCompleted;
+  // Статус сессии — риск-менеджер может вручную проставить «Проведена» /
+  // «Перенесена» / «Отменена» (sessionStatus на заметке), а не только
+  // ждать, пока дата сама станет прошедшей. «Проведена» — либо дата уже
+  // прошла, либо явно отмечена (сессия сегодня, прошла раньше конца дня —
+  // ждать полуночи, чтобы увидеть AI-сводку, не нужно).
+  const sessionStatus = notes.find(n => n.sessionStatus)?.sessionStatus || null;
+  const manuallyCompleted = sessionStatus === 'completed';
+  const isPast = (dateObj < TODAY && sessionStatus !== 'rescheduled') || manuallyCompleted;
   const attendeeNames = [...new Set(risks.flatMap(r => r.ownerNames))];
   const actions = risks.flatMap(r => r.actions.map(a => ({...a, riskId:r.id, riskZone:zoneOf(rraOf(r.p, r.iLevel))})));
   const doneActions = actions.filter(a => a.status === 'done').length;
@@ -6026,7 +6087,14 @@ function computeSessionData(y, m, d){
   const highPct = risks.length ? Math.round(highCount / risks.length * 100) : 0;
   const overdueActions = actions.filter(a => { const dd = parseRuShortDate(a.plannedDate); return a.status!=='done' && a.status!=='rejected' && dd && dd < TODAY; });
   const durationMin = Math.max(60, ...notes.map(n => n.durationMin || 60));
-  return {y, m, d, notes, risks, dateObj, isPast, manuallyCompleted, attendeeNames, actions, doneActions, actionsPct, highCount, highPct, overdueActions, durationMin};
+  return {y, m, d, notes, risks, dateObj, isPast, sessionStatus, manuallyCompleted, attendeeNames, actions, doneActions, actionsPct, highCount, highPct, overdueActions, durationMin};
+}
+// Единая метка статуса сессии — переиспользуется попапом сводки и страницей
+// «Детали встречи», чтобы обе точки показа не расходились.
+function sessionStatusBadge(sd){
+  if (sd.sessionStatus === 'cancelled') return {cls:'status-cancelled', label:'Отменена'};
+  if (sd.sessionStatus === 'rescheduled') return {cls:'status-rescheduled', label:'Перенесена'};
+  return sd.isPast ? {cls:'status-done', label:'Проведена'} : {cls:'status-planned', label:'Запланирована'};
 }
 // Для прошедшей/завершённой встречи — полная карточка (участники, реальные
 // метрики выполнения вместо выдуманных sentiment/participation, AI-сводка,
@@ -6037,17 +6105,19 @@ function computeSessionData(y, m, d){
 function openSessionSummaryModal(y, m, d){
   const sd = computeSessionData(y, m, d);
   if (!sd) return;
-  const {risks, dateObj, isPast, manuallyCompleted, attendeeNames, actions, doneActions, actionsPct, highCount, highPct} = sd;
-  const canToggleCompleted = dateObj <= TODAY;
+  const {risks, dateObj, isPast, sessionStatus, attendeeNames, actions, doneActions, actionsPct, highCount, highPct} = sd;
+  const badge = sessionStatusBadge(sd);
 
   document.getElementById('sessionModalHead').innerHTML = `
     <div class="session-modal-badges">
       <span class="session-badge type">Риск-сессия</span>
-      <span class="session-badge ${isPast?'status-done':'status-planned'}">${isPast?'Проведена':'Запланирована'}</span>
-      ${canToggleCompleted ? `<label class="notif-switch" style="margin-left:auto;" title="Отметить сессию проведённой">
-        <input type="checkbox" id="sessionCompletedToggle" ${manuallyCompleted?'checked':''}>
-        <span class="notif-switch-track"><span class="notif-switch-thumb"></span></span>
-      </label><span style="font-size:11.5px;color:var(--ink-600);">Выполнено</span>` : ''}
+      <span class="session-badge ${badge.cls}">${badge.label}</span>
+      <select id="sessionStatusSelect" class="session-status-select" style="margin-left:auto;" title="Статус сессии">
+        <option value="" ${!sessionStatus?'selected':''}>По дате (авто)</option>
+        <option value="completed" ${sessionStatus==='completed'?'selected':''}>Отметить проведённой</option>
+        <option value="rescheduled" ${sessionStatus==='rescheduled'?'selected':''}>Перенесена</option>
+        <option value="cancelled" ${sessionStatus==='cancelled'?'selected':''}>Отменена</option>
+      </select>
     </div>
     <div class="session-modal-title">
       <h3>Риск-сессия — ${risks.length} ${pluralRu(risks.length,['риск','риска','рисков'])}</h3>
@@ -6063,7 +6133,13 @@ function openSessionSummaryModal(y, m, d){
       }).join('') : '<span class="session-empty">Владельцы не указаны</span>'}</div>
     </div>`;
 
-  document.getElementById('sessionModalMount').innerHTML = isPast ? `
+  document.getElementById('sessionModalMount').innerHTML = (sessionStatus === 'cancelled' || sessionStatus === 'rescheduled') ? `
+    ${attendeesHtml}
+    <div class="session-sec" style="margin-bottom:0;text-align:center;padding:20px 10px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30" style="color:${sessionStatus==='cancelled'?'var(--red-700)':'var(--amber-700)'};margin-bottom:8px;">${sessionStatus==='cancelled' ? '<path d="M6 6l12 12M18 6L6 18"/>' : '<path d="M12 7v5l3.5 2"/><circle cx="12" cy="12" r="9"/>'}</svg>
+      <div style="font-weight:700;color:var(--ink-700);margin-bottom:4px;">${sessionStatus==='cancelled' ? 'Сессия отменена' : 'Сессия перенесена'}</div>
+      <div class="session-empty">${sessionStatus==='cancelled' ? 'Мероприятие не состоится в этот день' : 'Новая дата будет назначена отдельно'}</div>
+    </div>` : isPast ? `
     ${attendeesHtml}
     <div class="session-sec">
       <div class="session-stat-grid">
@@ -6116,9 +6192,9 @@ function openSessionSummaryModal(y, m, d){
 
   document.getElementById('sessionModalCloseX').addEventListener('click', () => closeModal('sessionModalOverlay'));
   document.getElementById('sessionModalCloseBtn').addEventListener('click', () => closeModal('sessionModalOverlay'));
-  const completedToggle = document.getElementById('sessionCompletedToggle');
-  if (completedToggle) completedToggle.addEventListener('change', (e) => {
-    sd.notes.forEach(n => { n.completed = e.target.checked; });
+  document.getElementById('sessionStatusSelect').addEventListener('change', (e) => {
+    const val = e.target.value || null;
+    sd.notes.forEach(n => { n.sessionStatus = val; });
     saveState();
     openSessionSummaryModal(y, m, d);
     renderAll();
@@ -6215,7 +6291,7 @@ function renderSessionDetailPage(){
       <div>
         <div class="sd-badges">
           <span class="session-badge type">Риск-сессия</span>
-          <span class="session-badge ${isPast?'status-done':'status-planned'}">${isPast?'Проведена':'Запланирована'}</span>
+          <span class="session-badge ${sessionStatusBadge(sd).cls}">${sessionStatusBadge(sd).label}</span>
         </div>
         <div class="sd-title">Риск-сессия — ${risks.length} ${pluralRu(risks.length,['риск','риска','рисков'])}</div>
       </div>
