@@ -4022,11 +4022,11 @@ function deleteRisk(id){
 // ===================================================================
 let currentPassportId = null;
 let auditExpanded = false, commentsExpanded = false;
-let currentPassportTab = 'pp-sec-ident';
+let currentPassportTab = 'pp-sec-summary';
 function openPassport(riskId){
   currentPassportId = riskId;
   auditExpanded = false; commentsExpanded = false;
-  currentPassportTab = 'pp-sec-ident';
+  currentPassportTab = 'pp-sec-summary';
   const r = findRisk(riskId);
   if (r && r.isNew){ r.isNew = false; saveState(); }
   renderPassport();
@@ -4036,14 +4036,14 @@ function openPassport(riskId){
 // видна только одна за раз, счётчики (мероприятия/история) видны сразу
 // в пилюле, не нужно переключаться, чтобы узнать «сколько там записей».
 const PP_SECTIONS = [
-  {id:'pp-sec-ident',    label:'Идентификация'},
-  {id:'pp-sec-assess',   label:'Оценка'},
-  {id:'pp-sec-actions',  label:'Мероприятия'},
+  {id:'pp-sec-summary',  label:'Суть риска'},
+  {id:'pp-sec-severity', label:'Критичность'},
+  {id:'pp-sec-response', label:'Реагирование'},
   {id:'pp-sec-audit',    label:'История'},
 ];
 function ppNavHtml(r){
   const auditCount = state.audit.filter(a=>a.riskId===r.id).length;
-  const counts = {'pp-sec-actions': r.actions.length, 'pp-sec-audit': auditCount};
+  const counts = {'pp-sec-response': r.actions.length, 'pp-sec-audit': auditCount};
   return `<div class="pp-nav" id="ppNavBar">${PP_SECTIONS.map(s =>
     `<span class="pp-nav-pill${s.id===currentPassportTab?' active':''}" data-pp-goto="${s.id}">${s.label}${counts[s.id]?` <span class="pp-nav-count">${counts[s.id]}</span>`:''}</span>`
   ).join('')}</div>`;
@@ -4060,10 +4060,10 @@ function ppShowTab(id){
 // Соответствие стадии степпера и релевантной секции паспорта — клик по
 // шагу должен вести туда, где эта стадия на самом деле отражена в данных.
 const STAGE_TO_SECTION = {
-  'Идентификация':          'pp-sec-ident',
-  'Анализ и оценка':        'pp-sec-assess',
-  'Управление':             'pp-sec-actions',
-  'Мониторинг и Контроль':  'pp-sec-actions',
+  'Идентификация':          'pp-sec-summary',
+  'Анализ и оценка':        'pp-sec-severity',
+  'Управление':             'pp-sec-response',
+  'Мониторинг и Контроль':  'pp-sec-response',
   'Закрыт':                 'pp-sec-audit',
 };
 function severityColor(zone){ return zone==='high'?{bg:'var(--red-50)',fg:'var(--red-700)'}:zone==='medium'?{bg:'var(--amber-50)',fg:'var(--amber-700)'}:zone==='low'?{bg:'var(--green-50)',fg:'var(--green-700)'}:{bg:'var(--canvas)',fg:'var(--ink-400)'}; }
@@ -4323,7 +4323,7 @@ function renderPassport(){
   mount.innerHTML = `
     ${r.committeeFlag ? `<div class="rcm-committee-banner" style="margin:0 -22px 12px;">${ICON_ATTENTION}Требует решения комитета${r.committeeDecision ? ` · решение: ${esc(r.committeeDecision)}` : ''}</div>` : ''}
 
-    <div class="pp-tab-panel${ppActive('pp-sec-ident')}" id="pp-sec-ident">
+    <div class="pp-tab-panel${ppActive('pp-sec-summary')}" id="pp-sec-summary">
       <div class="btn-row" style="margin-bottom:12px;">
         <button type="button" class="btn btn-text btn-sm" id="pAgendaBtn">📅 Добавить в повестку риск-сессии</button>
         ${editable && !r.committeeFlag ? `<button class="btn btn-secondary btn-sm" id="pEscalateBtn">Эскалировать риск-менеджеру / комитету</button>` : ''}
@@ -4340,44 +4340,33 @@ function renderPassport(){
 
       <div class="btn-row" style="margin-bottom:16px;">
         ${editable ? `<button class="btn btn-secondary btn-sm" id="pEditBtn">Редактировать карточку</button>` : ''}
-        ${editable && (r.status==='Идентификация'||r.status==='Анализ и оценка') ? `<button class="btn btn-secondary btn-sm" id="pAssessBtn">Провести оценку (P/I)</button>` : ''}
         ${editable ? advanceButtonHtml(r) : ''}
         ${editable && r.status!=='Архивирован' ? `<button class="btn btn-text btn-sm" id="pMergeBtn">Объединить как дубль…</button>` : ''}
       </div>
 
-      <h3 class="pp-h">ИДЕНТИФИКАЦИЯ</h3>
-      <div class="passport-grid passport-grid-2">
+      <h3 class="pp-h">СУТЬ РИСКА</h3>
+      <div class="passport-block" style="margin-bottom:12px;">
+        <div class="k">Причина</div><div class="v">${esc(r.cause)||'<span class="muted">не заполнено — заполняется на оценке</span>'}</div>
+        <div class="k" style="margin-top:10px;">Риск-событие</div><div class="v">${esc(r.event)}</div>
+        <div class="k" style="margin-top:10px;">Прямое следствие</div><div class="v">${esc(r.consequence)}</div>
+      </div>
+
+      <div class="passport-grid">
         <div class="passport-block">
           <div class="k">ID / № паспорта</div><div class="v">${r.id}<br>№ ${r.displayNumber||'—'}</div>
           <div class="k" style="margin-top:8px;">Категория</div><div class="v">${esc(r.category)}</div>
-          <div class="k" style="margin-top:8px;">Фаза проекта</div><div class="v">${r.phase ? esc(r.phase) : '<span class="muted">не указана — задаётся при редактировании карточки</span>'}</div>
-          <div class="k" style="margin-top:8px;">Владелец(ы)</div><div class="v">${esc(r.ownerNames.join(', ')||'—')}</div>
-          <div class="k" style="margin-top:8px;">Светофор</div><div class="v"><span class="status-dot" style="background:${tl.color}"></span> ${tl.label}</div>
-          <div class="k" style="margin-top:8px;">Связанные риски</div><div class="v">${relatedRisksHtml(r.id)}</div>
         </div>
         <div class="passport-block">
-          <div class="k">Причина</div><div class="v">${esc(r.cause)||'<span class="muted">не заполнено — заполняется на оценке</span>'}</div>
-          <div class="k" style="margin-top:8px;">Риск-событие</div><div class="v">${esc(r.event)}</div>
-          <div class="k" style="margin-top:8px;">Прямое следствие</div><div class="v">${esc(r.consequence)}</div>
+          <div class="k">Фаза проекта</div><div class="v">${r.phase ? esc(r.phase) : '<span class="muted">не указана — задаётся при редактировании карточки</span>'}</div>
+          <div class="k" style="margin-top:8px;">Владелец(ы)</div><div class="v">${esc(r.ownerNames.join(', ')||'—')}</div>
         </div>
-      </div>
-
-      <h3 class="pp-h">ПОХОЖИЙ УРОК В БАЗЕ ЗНАНИЙ</h3>
-      <div class="passport-block" style="margin-bottom:12px;">
-        ${similarLesson ? `
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
-            <div style="flex:1; min-width:200px;">
-              <div class="v" style="font-weight:600;">${esc(similarLesson.lesson.title)}</div>
-              <div class="muted" style="font-size:12px; margin-top:2px;">${esc(similarLesson.lesson.id)} · ${esc(similarLesson.lesson.category)}</div>
-            </div>
-            <span class="badge-pill" style="background:var(--ai-50); color:var(--ai-700); flex-shrink:0;">${Math.round(similarLesson.score*100)}% схожести</span>
-            <button type="button" class="btn btn-sm" id="pOpenSimilarLesson">Открыть урок</button>
-          </div>
-        ` : `<div class="muted" style="font-size:12.5px;">Похожих уроков в базе знаний не найдено.</div>`}
+        <div class="passport-block">
+          <div class="k">Связанные риски</div><div class="v">${relatedRisksHtml(r.id)}</div>
+        </div>
       </div>
     </div>
 
-    <div class="pp-tab-panel${ppActive('pp-sec-assess')}" id="pp-sec-assess">
+    <div class="pp-tab-panel${ppActive('pp-sec-severity')}" id="pp-sec-severity">
       <h3 class="pp-h">ОЦЕНКА</h3>
       <div class="pp-assess-row">
         <div class="pp-assess-matrix" id="ppAssessMatrixCol">
@@ -4404,7 +4393,10 @@ function renderPassport(){
       </div>
     </div>
 
-    <div class="pp-tab-panel${ppActive('pp-sec-actions')}" id="pp-sec-actions">
+    <div class="pp-tab-panel${ppActive('pp-sec-response')}" id="pp-sec-response">
+      <div class="passport-block" style="margin-bottom:12px;">
+        <div class="k">Светофор</div><div class="v"><span class="status-dot" style="background:${tl.color}"></span> ${tl.label}</div>
+      </div>
       <div class="pp-h-row"><h3 class="pp-h">МЕРОПРИЯТИЯ (${planActions.length})</h3>${editable && r.p && r.iLevel ? `<button type="button" class="btn btn-secondary btn-sm" id="pAddActionBtn">+ Добавить мероприятие</button>` : ''}</div>
       ${planActions.length ? `<div class="actions-table-wrap"><table class="data-table"><thead><tr><th>Стратегия</th><th>Мероприятие</th><th>Вид</th><th>Ответственный</th><th>План</th><th>Прогноз/факт</th><th>Стоимость</th><th>Статус</th></tr></thead><tbody>
         ${planActions.map(a => `<tr${editable?` data-action-row="${a.id}" style="cursor:pointer;"`:''}><td>${esc(a.strategy)}</td><td>${esc(a.title)}${a.triggerCondition?`<div class="muted" style="font-size:11px;margin-top:2px;">Запасной план: ${esc(a.triggerCondition)}</div>`:''}</td><td>${ACTION_KIND_LABEL[a.kind]}</td><td>${assigneeCellHtml(a, editable)}</td>
@@ -4413,6 +4405,19 @@ function renderPassport(){
       </tbody></table></div>` : (editable
         ? `<div class="risk-card-cta" id="pAddActionEmptyCta" style="min-height:72px;"><div class="risk-card-cta-inner" style="flex-direction:row;gap:8px;"><span class="risk-card-cta-icon" style="width:24px;height:24px;font-size:15px;">+</span><span class="risk-card-cta-lbl">Добавить мероприятие</span></div></div>`
         : `<div class="empty-state">Мероприятий пока нет — светофор красный, пока не появится хотя бы одно.</div>`)}
+      <h3 class="pp-h" style="margin-top:16px;">ПОХОЖИЙ УРОК В БАЗЕ ЗНАНИЙ</h3>
+      <div class="passport-block" style="margin-bottom:12px;">
+        ${similarLesson ? `
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+            <div style="flex:1; min-width:200px;">
+              <div class="v" style="font-weight:600;">${esc(similarLesson.lesson.title)}</div>
+              <div class="muted" style="font-size:12px; margin-top:2px;">${esc(similarLesson.lesson.id)} · ${esc(similarLesson.lesson.category)}</div>
+            </div>
+            <span class="badge-pill" style="background:var(--ai-50); color:var(--ai-700); flex-shrink:0;">${Math.round(similarLesson.score*100)}% схожести</span>
+            <button type="button" class="btn btn-sm" id="pOpenSimilarLesson">Открыть урок</button>
+          </div>
+        ` : `<div class="muted" style="font-size:12.5px;">Похожих уроков в базе знаний не найдено.</div>`}
+      </div>
     </div>
 
     <div class="pp-tab-panel${ppActive('pp-sec-audit')}" id="pp-sec-audit">
@@ -4444,13 +4449,11 @@ function renderPassport(){
   if (commentExpandBtn) commentExpandBtn.addEventListener('click', () => { commentsExpanded = true; renderPassport(); });
   const editBtn = document.getElementById('pEditBtn');
   if (editBtn) editBtn.addEventListener('click', () => openRiskEditModal(r));
-  const assessBtn = document.getElementById('pAssessBtn');
-  if (assessBtn) assessBtn.addEventListener('click', () => openAssessModal(r));
   const assessCtaBtn = document.getElementById('pAssessCtaBtn');
   if (assessCtaBtn) assessCtaBtn.addEventListener('click', () => openAssessModal(r));
   const assessChangeBtn = document.getElementById('pAssessChangeBtn');
   if (assessChangeBtn) assessChangeBtn.addEventListener('click', () => openAssessModal(r));
-  if (currentPassportTab === 'pp-sec-assess') syncAssessMatrixSize(r);
+  if (currentPassportTab === 'pp-sec-severity') syncAssessMatrixSize(r);
   const addActBtn = document.getElementById('pAddActionBtn');
   if (addActBtn) addActBtn.addEventListener('click', () => openActionModal(r, null));
   const addActEmptyCta = document.getElementById('pAddActionEmptyCta');
