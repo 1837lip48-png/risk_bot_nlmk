@@ -479,9 +479,8 @@ function activateFonts(link){
   .session-badge.status-planned{background:var(--gold-50); color:var(--gold-700);}
   .session-badge.status-cancelled{background:var(--red-50); color:var(--red-700);}
   .session-badge.status-rescheduled{background:var(--amber-50); color:var(--amber-700);}
-  .session-status-select{border:1px solid var(--line); border-radius:var(--radius-field); padding:5px 26px 5px 10px; font-size:11.5px; font-weight:600;
-    background:var(--paper-0); color:var(--ink-900); cursor:pointer; appearance:none; background-repeat:no-repeat; background-position:right 8px center; background-size:12px;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2399a2a9' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");}
+  .session-modal-badges .ds-ac{margin-left:auto; width:170px; flex-shrink:0;}
+  .session-modal-badges .ds-ac-input{font-size:11.5px; font-weight:600; padding:5px 26px 5px 10px;}
   .session-modal-title{display:flex; align-items:flex-start; justify-content:space-between; gap:10px;}
   .session-modal-title h3{font-family:var(--font-display); font-size:var(--fs-sub2); line-height:var(--lh-sub2); font-weight:700; color:var(--ink-900); margin:0;}
   .session-modal-date{display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-600); margin-top:6px;}
@@ -6123,8 +6122,8 @@ function openSessionSummaryModal(y, m, d){
     <div class="session-modal-badges">
       <span class="session-badge type">Риск-сессия</span>
       <span class="session-badge ${badge.cls}">${badge.label}</span>
-      <select id="sessionStatusSelect" class="session-status-select" style="margin-left:auto;" title="Статус сессии">
-        <option value="" ${!sessionStatus?'selected':''}>По дате (авто)</option>
+      <select id="sessionStatusSelect" class="session-status-select" title="Статус сессии">
+        <option value="" ${!sessionStatus?'selected':''}>Статус</option>
         <option value="completed" ${sessionStatus==='completed'?'selected':''}>Отметить проведённой</option>
         <option value="rescheduled" ${sessionStatus==='rescheduled'?'selected':''}>Перенесена</option>
         <option value="cancelled" ${sessionStatus==='cancelled'?'selected':''}>Отменена</option>
@@ -6210,6 +6209,10 @@ function openSessionSummaryModal(y, m, d){
     openSessionSummaryModal(y, m, d);
     renderAll();
   });
+  // Тот же автокомплит-виджет (@nlmk/ds-2.0), что и у остальных селектов
+  // приложения — иначе нативный <select> подсвечивался при наведении/фокусе
+  // штатным чёрным браузерным выделением, а не акцентным, как везде.
+  enhanceSelectAsAutocomplete(document.getElementById('sessionStatusSelect'));
   // Клик по дню с риск-сессией всегда открывает сводку этой сессии (а не
   // «Заметки дня»), поэтому без этой кнопки на такой день нельзя было
   // добавить вторую активность (семинар, индивидуальную работу и т.п.) —
