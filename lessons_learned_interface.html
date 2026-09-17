@@ -5552,7 +5552,7 @@ function renderCalendarMonth(){
     grid += `<div class="cal-cell${isToday?' today':''}${isPastDay?' is-past':''}" data-day="${d}">
       <div class="dnum">${d}</div>
       ${evs.map(e=>`<div class="cal-ev" style="background:${e.bg};color:${e.color}" data-risk="${e.riskId}" title="${esc(e.fullText)}"><span class="cal-pill-icon">${e.overdue?CAL_EV_OVERDUE_ICON:CAL_EV_ICON}</span><span>${esc(e.text)}</span></div>`).join('')}
-      ${notes.map(n=>{const t=noteType(n.type); const isSession = n.type==='session' && n.riskId;
+      ${notes.map(n=>{const t=noteType(n.type); const isSession = n.type==='session';
         return `<div class="cal-note-pill" style="background:${t.bg};color:${t.color}" title="${esc(n.text)}"${isSession?` data-open-session="${y}-${m}-${d}"`:` data-open-note="${n.id}" data-open-note-date="${y}-${m}-${d}"`}><span class="cal-pill-icon">${t.icon}</span><span>${esc(t.label)}</span><button type="button" class="cal-note-del-x" data-del-cal-note="${n.id}" data-del-cal-date="${y}-${m}-${d}" title="Удалить встречу" aria-label="Удалить встречу"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`;}).join('')}
     </div>`;
   }
@@ -5676,7 +5676,7 @@ function renderCalendarWeek(){
       ${evs.map(e => `<div class="calw-card" style="background:${e.bg};color:${e.color};border-color:${e.color}33;" data-risk="${e.riskId}">
         <div class="ct">${e.overdue?'Просрочено':'Мероприятие'}</div><div class="cn">${esc(e.fullText.slice(0,50))}</div>
         <div class="calw-card-meta"><span>${e.overdue?ICON_SD_WARN:ICON_SD_CLOCK}${e.overdue?'просрочено':'план'}</span></div></div>`).join('')}
-      ${notes.map(n => { const t=noteType(n.type); const isSession = n.type==='session' && n.riskId;
+      ${notes.map(n => { const t=noteType(n.type); const isSession = n.type==='session';
         const sessSd = isSession ? computeSessionData(d.getFullYear(), d.getMonth(), d.getDate()) : null;
         const attendeeCount = sessSd ? sessSd.attendeeNames.length : (n.attendees ? n.attendees.length : null);
         const metaParts = [];
@@ -5753,7 +5753,7 @@ function renderCalendarAgenda(){
 function agendaRowHtml(n){
   const t = noteType(n.type);
   const y = n.date.getFullYear(), m = n.date.getMonth(), d = n.date.getDate();
-  const isSession = n.type === 'session' && n.riskId;
+  const isSession = n.type === 'session';
   const sessSd = isSession ? computeSessionData(y, m, d) : null;
   const attendeeCount = sessSd ? sessSd.attendeeNames.length : (n.attendees ? n.attendees.length : 0);
   const isPastDay = n.date < TODAY && n.date.toDateString() !== TODAY.toDateString();
@@ -6043,6 +6043,7 @@ function pluralRu(n, forms){
   return forms[2];
 }
 function sessionAiSummaryText(risks, actions, doneActions, highCount){
+  if (!risks.length) return 'К сессии пока не привязан ни один риск — сводка появится, как только риск будет добавлен.';
   const zoneWords = highCount ? `, из них ${highCount} ${pluralRu(highCount,['в зоне High','в зоне High','в зоне High'])}` : '';
   const actionsWords = actions.length ? ` Из ${actions.length} ${pluralRu(actions.length,['мероприятия','мероприятий','мероприятий'])} выполнено ${doneActions}.` : ' Мероприятия по обсуждённым рискам пока не заведены.';
   return `На сессии рассмотрено ${risks.length} ${pluralRu(risks.length,['риск','риска','рисков'])}${zoneWords}.${actionsWords}`;
@@ -6051,8 +6052,11 @@ function sessionAiSummaryText(risks, actions, doneActions, highCount){
 // один источник данных, чтобы обе точки показа не расходились.
 function computeSessionData(y, m, d){
   const notes = notesFor(y, m, d).filter(n => n.type === 'session');
+  if (!notes.length) return null;
+  // Риск необязателен (см. wireDayNotesForm) — сессия без привязанного
+  // риска не теряет AI-сводку/решения/мероприятия целиком, просто эти
+  // разделы честно пустые, пока риск не добавлен.
   const risks = notes.map(n => n.riskId ? findRisk(n.riskId) : null).filter(Boolean);
-  if (!risks.length) return null;
 
   const dateObj = new Date(y, m, d);
   // Статус сессии — риск-менеджер может вручную проставить «Проведена» /
@@ -6063,7 +6067,10 @@ function computeSessionData(y, m, d){
   const sessionStatus = notes.find(n => n.sessionStatus)?.sessionStatus || null;
   const manuallyCompleted = sessionStatus === 'completed';
   const isPast = (dateObj < TODAY && sessionStatus !== 'rescheduled') || manuallyCompleted;
-  const attendeeNames = [...new Set(risks.flatMap(r => r.ownerNames))];
+  // Участники — владельцы обсуждаемых рисков плюс явно выбранные в форме
+  // приглашённые (dnAttendeeSelection на заметке): без риска первых нет,
+  // но вторые всё равно должны быть видны.
+  const attendeeNames = [...new Set([...risks.flatMap(r => r.ownerNames), ...notes.flatMap(n => n.attendees || [])])];
   const actions = risks.flatMap(r => r.actions.map(a => ({...a, riskId:r.id, riskZone:zoneOf(rraOf(r.p, r.iLevel))})));
   const doneActions = actions.filter(a => a.status === 'done').length;
   const actionsPct = actions.length ? Math.round(doneActions / actions.length * 100) : 0;
@@ -6143,10 +6150,10 @@ function openSessionSummaryModal(y, m, d){
     </div>
     <div class="session-sec">
       <div class="session-sec-title">Ключевые решения</div>
-      ${risks.map(r => {
+      ${risks.length ? risks.map(r => {
         const decision = r.committeeDecision ? `решение комитета: «${esc(r.committeeDecision)}»` : `статус переведён в «${esc(r.status)}»`;
         return `<div class="session-decision-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l2.5 2.5L16 9"/></svg><span><b>${esc(r.id)}</b> — ${esc(r.title)}: ${decision}</span></div>`;
-      }).join('')}
+      }).join('') : '<span class="session-empty">Риски пока не привязаны к сессии.</span>'}
     </div>
     <div class="session-sec">
       <div class="session-sec-title">Мероприятия (${doneActions}/${actions.length} выполнено)</div>
@@ -6317,10 +6324,10 @@ function renderSessionDetailLayout(sd){
         </div>
         <div class="sd-card">
           <div class="sd-card-title">${ICON_SD_CHECK}Key Decisions</div>
-          ${risks.map((r,i) => {
+          ${risks.length ? risks.map((r,i) => {
             const decision = r.committeeDecision ? `решение комитета: «${esc(r.committeeDecision)}»` : `статус переведён в «${esc(r.status)}»`;
             return `<div class="sd-decision-pill"><span class="sd-decision-num">${i+1}</span><span><b>${esc(r.id)}</b> — ${esc(r.title)}: ${decision}</span></div>`;
-          }).join('')}
+          }).join('') : '<p class="session-empty" style="margin:0;">Риски пока не привязаны к сессии.</p>'}
         </div>
         <div class="sd-card" style="margin-bottom:0;">
           <div class="sd-card-title">${ICON_SD_WARN}Impediments &amp; Risks</div>
