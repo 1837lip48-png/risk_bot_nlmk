@@ -5262,10 +5262,7 @@ function lessonCardHtml(l){
           <code class="mono lesson-id-pill">${esc(l.id)}</code>
           <span class="risk-card-title">${esc(l.title)}</span>
         </div>
-        ${(l.isDraft || l.strategy) ? `<div class="risk-card-badges">
-          ${l.isDraft ? `<span class="badge-pill badge-status-ident">черновик</span>` : ''}
-          ${l.strategy ? `<span class="badge-pill badge-strategy">${esc(l.strategy)}</span>` : ''}
-        </div>` : ''}
+        ${l.isDraft ? `<div class="risk-card-badges"><span class="badge-pill badge-status-ident">черновик</span></div>` : ''}
       </div>
       <div class="rc-head-actions">
         <span class="lesson-repeat-badge" title="${rr.matchTitle ? 'Похож на урок '+esc(rr.matchId)+': «'+esc(rr.matchTitle)+'»' : 'Похожих уроков по категории/тегам не найдено'}">Повтор. ${rr.pct}%</span>
