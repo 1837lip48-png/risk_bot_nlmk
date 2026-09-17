@@ -1247,9 +1247,8 @@ function activateFonts(link){
   .agenda-row-body{flex:1; min-width:0;}
   .agenda-row-badges{display:flex; gap:6px; margin-bottom:5px;}
   .agenda-badge{font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.2px; padding:2px 7px; border-radius:var(--radius-pill);}
-  .agenda-badge-status{background:var(--canvas); color:var(--ink-600);}
-  .agenda-badge-status.done{background:var(--green-50); color:var(--green-700);}
-  .agenda-badge-status.planned{background:var(--accent-50); color:var(--accent-600);}
+  .agenda-badge-status{display:inline-flex; align-items:center;}
+  .agenda-badge-status svg{width:10px; height:10px; flex-shrink:0; vertical-align:-1px; margin-right:3px;}
   .agenda-row-title{font-weight:700; font-size:13.5px; color:var(--ink-900); margin-bottom:3px;}
   .agenda-row-meta{display:flex; gap:14px; font-size:11.5px; color:var(--ink-600); flex-wrap:wrap;}
   .agenda-row-meta svg{width:12px; height:12px; flex-shrink:0; vertical-align:-2px; margin-right:3px; color:var(--ink-400);}
@@ -5038,6 +5037,11 @@ function renderLessons(){
   document.getElementById('btnTagPicker').addEventListener('click', (e) => { e.stopPropagation(); toggleTagMenu(document.getElementById('tagMsMenu').hidden); });
   document.getElementById('lesPhaseFilter').value = lessonPhaseFilter;
   document.getElementById('lesPhaseFilter').addEventListener('change', (e) => { lessonPhaseFilter = e.target.value; lessonsPaging.page = 1; renderLessonsTable(); });
+  // Тот же автокомплит-виджет (@nlmk/ds-2.0), что и у остальных полей
+  // тулбара — иначе нативный <select> подсвечивался при наведении/фокусе
+  // штатным браузерным выделением, отличным от кастомного accent-стиля
+  // поля поиска рядом.
+  enhanceSelectAsAutocomplete(document.getElementById('lesPhaseFilter'));
   document.getElementById('tagMsSearch').addEventListener('input', (e) => { lessonTagSearch = e.target.value; renderTagMenuList(); });
   document.getElementById('lesFilterReset').addEventListener('click', () => {
     document.getElementById('lesSearch').value = '';
@@ -5047,6 +5051,7 @@ function renderLessons(){
     lessonTagSearch = '';
     lessonPhaseFilter = '';
     document.getElementById('lesPhaseFilter').value = '';
+    syncAc('lesPhaseFilter');
     toggleTagMenu(false);
     const btn = document.getElementById('btnTagPicker');
     if (btn) { btn.textContent = 'Поиск по тегам'; btn.classList.remove('active'); }
@@ -5682,11 +5687,11 @@ function renderCalendarWeek(){
         const metaParts = [];
         if (n.time || n.durationMin) metaParts.push(`<span>${ICON_SD_CLOCK}${n.time?esc(n.time)+(n.timeTo?'–'+esc(n.timeTo):''):''}${(n.durationMin && !n.timeTo)?' · '+n.durationMin+' мин':''}</span>`);
         if (attendeeCount != null) metaParts.push(`<span>${ICON_SD_PEOPLE}${attendeeCount}</span>`);
-        // Для риск-сессии «проведено» учитывает не только прошедшую дату,
-        // но и ручную отметку бегунком в модалке сводки (sessSd.isPast) —
-        // сессию сегодняшнего дня можно закрыть, не дожидаясь полуночи.
-        const cardDone = isSession ? sessSd.isPast : isPastDay;
-        metaParts.push(`<span>${cardDone?ICON_SD_CHECK_SM:ICON_SD_CLOCK}${cardDone?'проведено':'план'}</span>`);
+        // Статус риск-сессии — трёхзначный (проведена/перенесена/отменена,
+        // с ручной отметкой в попапе сводки, а не только по прошедшей дате);
+        // цвет значка — те же статус-цвета, что и в попапе сводки.
+        const statusMeta = calCardStatusMeta(isSession, sessSd, isPastDay);
+        metaParts.push(`<span style="color:${statusMeta.color};">${statusMeta.icon}${statusMeta.label}</span>`);
         return `<div class="calw-card calw-card--del" style="background:${t.bg};color:${t.color};border-color:${t.color}33;"${isSession?` data-open-session="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}"`:` data-open-note="${n.id}" data-open-note-date="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}"`}>
         <button type="button" class="cal-note-del-x" data-del-cal-note="${n.id}" data-del-cal-date="${d.getFullYear()}-${d.getMonth()}-${d.getDate()}" title="Удалить встречу" aria-label="Удалить встречу"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
         <div class="ct">${esc(t.label)}</div><div class="cn">${esc(n.text.slice(0,50))}</div>
@@ -5758,18 +5763,19 @@ function agendaRowHtml(n){
   const attendeeCount = sessSd ? sessSd.attendeeNames.length : (n.attendees ? n.attendees.length : 0);
   const isPastDay = n.date < TODAY && n.date.toDateString() !== TODAY.toDateString();
 
-  const metaParts = [`<span>${ICON_SD_CLOCK}${n.date.toLocaleDateString('ru-RU',{weekday:'short', day:'numeric', month:'short'})}${n.time?', '+esc(n.time)+(n.timeTo?'–'+esc(n.timeTo):''):''}</span>`];
+  const metaParts = [`<span>${ICON_SD_CLOCK}${n.date.toLocaleDateString('ru-RU',{weekday:'short', day:'numeric', month:'short'})}${n.time?', '+esc(n.time)+(n.timeTo?'–'+esc(n.timeTo):''):''}${(n.durationMin && !n.timeTo)?' · '+n.durationMin+' мин':''}</span>`];
   if (attendeeCount) metaParts.push(`<span>${ICON_SD_PEOPLE}${attendeeCount} ${pluralRu(attendeeCount,['участник','участника','участников'])}</span>`);
 
   const actionsHtml = sessSd && sessSd.actions.length
     ? `<div class="agenda-row-actions"><span class="n">${sessSd.actions.length} ${pluralRu(sessSd.actions.length,['действие','действия','действий'])}</span><span class="${sessSd.doneActions?'done':''}">${sessSd.doneActions} выполнено</span></div>`
     : '';
 
+  const statusMeta = calCardStatusMeta(isSession, sessSd, isPastDay);
   return `<div class="agenda-row" style="border-left-color:${t.color};"${isSession?` data-open-session="${y}-${m}-${d}"`:` data-open-note="${n.id}" data-open-note-date="${y}-${m}-${d}"`}>
     <div class="agenda-row-body">
       <div class="agenda-row-badges">
         <span class="agenda-badge" style="background:${t.bg};color:${t.color};">${esc(t.label.toUpperCase())}</span>
-        <span class="agenda-badge agenda-badge-status ${isPastDay?'done':'planned'}">${isPastDay?'проведено':'план'}</span>
+        <span class="agenda-badge agenda-badge-status" style="background:${statusMeta.bg};color:${statusMeta.color};">${statusMeta.icon}${statusMeta.label}</span>
       </div>
       <div class="agenda-row-title">${esc(n.text)}</div>
       <div class="agenda-row-meta">${metaParts.join('')}</div>
@@ -6087,6 +6093,20 @@ function sessionStatusBadge(sd){
   if (sd.sessionStatus === 'rescheduled') return {cls:'status-rescheduled', label:'Перенесена'};
   return sd.isPast ? {cls:'status-done', label:'Проведена'} : {cls:'status-planned', label:'Запланирована'};
 }
+// Значок + подпись статуса для компактных карточек (неделя/повестка) — для
+// риск-сессии статус трёхзначный (проведена/перенесена/отменена), для
+// остальных типов заметок — просто прошёл день или нет. Цвет значка — те
+// же статус-цвета, что и у .session-badge.status-* в попапе сводки, а не
+// унаследованный чёрный/приглушённый цвет карточки.
+function calCardStatusMeta(isSession, sessSd, isPastDay){
+  if (isSession && sessSd){
+    if (sessSd.sessionStatus === 'cancelled') return {icon:ICON_SD_CANCEL_SM, label:'отменена', color:'var(--red-700)', bg:'var(--red-50)'};
+    if (sessSd.sessionStatus === 'rescheduled') return {icon:ICON_SD_CLOCK, label:'перенесена', color:'var(--amber-700)', bg:'var(--amber-50)'};
+    if (sessSd.isPast) return {icon:ICON_SD_CHECK_SM, label:'проведена', color:'var(--green-700)', bg:'var(--green-50)'};
+    return {icon:ICON_SD_CLOCK, label:'план', color:'var(--ink-600)', bg:'var(--canvas)'};
+  }
+  return isPastDay ? {icon:ICON_SD_CHECK_SM, label:'проведено', color:'var(--green-700)', bg:'var(--green-50)'} : {icon:ICON_SD_CLOCK, label:'план', color:'var(--ink-600)', bg:'var(--canvas)'};
+}
 // Для прошедшей/завершённой встречи — полная карточка (участники, реальные
 // метрики выполнения вместо выдуманных sentiment/participation, AI-сводка,
 // решения, чек-лист мероприятий, Recording/Transcript/Discussion). Для ещё
@@ -6236,6 +6256,7 @@ const ICON_SD_PEOPLE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColo
 const ICON_SD_DOC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6z"/><path d="M15 3v3h3"/><path d="M9 12h6M9 16h6"/></svg>';
 const ICON_SD_PERSON_SM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>';
 const ICON_SD_CHECK_SM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>';
+const ICON_SD_CANCEL_SM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 const ICON_SD_TICKET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/></svg>';
 const ICON_SD_CHAT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4z"/></svg>';
 
