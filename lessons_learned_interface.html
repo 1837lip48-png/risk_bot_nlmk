@@ -592,8 +592,8 @@ function activateFonts(link){
 
   /* Миграция риска (свойственный → остаточный) — мини-матрица 3×3 с двумя
      точками: полая — свойственный (до мер), заливка — остаточный (после). */
-  .migration-matrix{position:relative; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); gap:3px; border-radius:6px; overflow:hidden; flex-shrink:0;}
-  .migration-matrix .mm-cell{border-radius:2px;}
+  .migration-matrix{position:relative; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); gap:0; border-radius:6px; overflow:hidden; flex-shrink:0;}
+  .migration-matrix .mm-cell{border-radius:0;}
   .migration-dot{position:absolute; width:13px; height:13px; border-radius:50%; margin:-6.5px; box-shadow:0 0 0 2px #fff;}
   .migration-dot.inherent{background:#fff; border:2px solid var(--ink-700);}
   .migration-dot.residual{background:var(--accent-600); border:2px solid #fff;}
@@ -4419,15 +4419,15 @@ function renderPassport(){
     </div>
 
     <div class="pp-tab-panel${ppActive('pp-sec-severity')}" id="pp-sec-severity">
-      <h3 class="pp-h">КРИТИЧНОСТЬ</h3>
+      <h3 class="pp-h">ОЦЕНКА</h3>
       <div class="pp-assess-row">
         <div class="pp-assess-matrix" id="ppAssessMatrixCol">
           <div id="ppAssessMatrixMount">${migrationMatrixHtml(r.p, r.iLevel, null, null, 220)}</div>
-          <div class="muted" id="ppAssessMatrixCaption" style="font-size:10.5px;margin-top:6px;text-align:center;">P (вероятность, ось Y, снизу вверх) × I (влияние, ось X)</div>
+          <div class="muted" id="ppAssessMatrixCaption" style="font-size:10.5px;margin-top:6px;text-align:center;">P (вероятность, ось Y) × I (влияние, ось X)</div>
           ${(!r.p || !r.iLevel)
-            ? (editable ? `<button type="button" class="btn btn-primary btn-sm" id="pAssessCtaBtn" style="margin-top:8px;width:100%;">Оценить P/I</button>`
+            ? (editable ? `<button type="button" class="btn btn-primary btn-sm" id="pAssessCtaBtn" style="margin-top:8px;width:100%;background:var(--accent-600);border-color:var(--accent-600);color:#fff;">Оценить P/I</button>`
               : `<div class="muted" id="ppAssessMatrixFoot" style="font-size:11.5px;margin-top:8px;text-align:center;">Оценка P/I ещё не проведена</div>`)
-            : (editable ? `<button type="button" class="btn btn-secondary btn-sm" id="pAssessChangeBtn" style="margin-top:8px;width:100%;">Изменить оценку</button>` : '')}
+            : (editable ? `<button type="button" class="btn btn-primary btn-sm" id="pAssessChangeBtn" style="margin-top:8px;width:100%;background:var(--accent-600);border-color:var(--accent-600);color:#fff;">Изменить оценку</button>` : '')}
         </div>
         <div class="pp-assess-metrics" id="ppAssessMetricsCol">
           <div class="severity-box" style="background:${sc.bg};color:${sc.fg};">
