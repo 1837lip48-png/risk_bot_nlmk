@@ -991,6 +991,11 @@ function activateFonts(link){
     cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; padding:0;}
   .icon-btn-del:hover{background:var(--red-50); color:var(--red-700);}
   .icon-btn-del svg{width:15px; height:15px;}
+  /* Удаление урока — фиксированным значком в правом верхнем углу карточки,
+     а не в общем ряду с «Повтор/Детали»: так оно не зависит от того,
+     переносится ли этот ряд на отдельную строку в узкой сетке. */
+  .rc-del-corner{position:absolute; top:14px; right:14px; z-index:1;}
+  #lessonsBody .risk-card .rc-head{padding-right:34px;}
   .rc-meta4{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:12px; padding:12px 14px; background:var(--canvas); border-radius:var(--radius-field);}
   @media (max-width:900px){.rc-meta4{grid-template-columns:1fr 1fr;}}
   /* В режиме «Сетка 4×4» карточка урока сама узкая — 4 колонки метаданных
@@ -5255,7 +5260,8 @@ function deleteLesson(id){
 function lessonCardHtml(l){
   const rr = lessonRepeatRate(l);
   const prob = lessonProblemText(l);
-  return `<div class="risk-card" data-lesson-id="${l.id}" style="cursor:pointer;" data-open-lesson="${l.id}">
+  return `<div class="risk-card" data-lesson-id="${l.id}" style="cursor:pointer;position:relative;" data-open-lesson="${l.id}">
+    <button type="button" class="icon-btn-del rc-del-corner" data-del-lesson="${l.id}" title="Удалить урок из реестра" aria-label="Удалить урок из реестра"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div class="rc-head">
       <div class="rc-head-left">
         <div class="risk-card-top">
@@ -5267,7 +5273,6 @@ function lessonCardHtml(l){
       <div class="rc-head-actions">
         <span class="lesson-repeat-badge" title="${rr.matchTitle ? 'Похож на урок '+esc(rr.matchId)+': «'+esc(rr.matchTitle)+'»' : 'Похожих уроков по категории/тегам не найдено'}">Повтор. ${rr.pct}%</span>
         <button class="btn btn-sm" data-open-lesson="${l.id}">Детали</button>
-        <button type="button" class="icon-btn-del" data-del-lesson="${l.id}" title="Удалить урок из реестра" aria-label="Удалить урок из реестра"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
     </div>
     ${prob.text ? `<div class="lesson-problem-line" style="font-size:12.5px;color:var(--ink-700);margin:4px 0 10px;line-height:1.4;">${esc(prob.text)}</div>` : ''}
