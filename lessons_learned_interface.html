@@ -978,8 +978,13 @@ function activateFonts(link){
   .risk-card-grid .k, .rc-meta4 .k, .rc-mitigation .k{font-size:var(--fs-additional); color:var(--ink-400); text-transform:uppercase; letter-spacing:.2px;}
   .risk-card-grid .v, .rc-meta4 .v, .rc-mitigation .v{font-size:12.5px; font-weight:500; margin-top:2px; line-height:1.35;}
   .risk-card-foot{display:flex; align-items:center; gap:10px; font-size:11.5px; color:var(--ink-600);}
-  .rc-head{display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:12px;}
-  .rc-head-left{flex:1; min-width:0;}
+  /* flex-wrap — в узкой карточке (сетка 4×4) заголовку и действиям
+     (Повтор/Детали/удалить) не хватает места в один ряд: .rc-head-left
+     с min-width:0 просто сжимался почти до нуля, а заголовок переносился
+     «по слову». Разрешаем действиям уйти на отдельную строку — тогда
+     заголовок всегда получает полную ширину карточки. */
+  .rc-head{display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:6px 14px; margin-bottom:12px;}
+  .rc-head-left{flex:1; min-width:200px;}
   .rc-desc{font-size:12.5px; color:var(--ink-600); line-height:1.4;}
   .rc-head-actions{display:flex; align-items:center; gap:8px; flex-shrink:0;}
   .icon-btn-del{border:none; background:none; width:26px; height:26px; border-radius:50%; color:var(--ink-400);
