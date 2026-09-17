@@ -885,7 +885,10 @@ function activateFonts(link){
   #registerList.owner-grid.single-col .risk-card,
   #registerList.owner-grid.single-col .risk-card-cta,
   #registerList.owner-grid.single-col .empty-state{grid-column:1/-1;}
-  @media (max-width:860px){#registerList.owner-grid{grid-template-columns:1fr;}}
+  /* Режим «Сетка 4×4» — плотнее, до 4 карточек в ряду. */
+  #registerList.owner-grid.view-grid4{grid-template-columns:repeat(4,1fr);}
+  @media (max-width:1200px){#registerList.owner-grid.view-grid4{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:860px){#registerList.owner-grid, #registerList.owner-grid.view-grid4{grid-template-columns:1fr;}}
   /* Уроки — та же сетка 2 колонки, что и у карточек риска в реестре владельца. */
   #lessonsBody{display:grid; grid-template-columns:repeat(2,1fr); gap:14px; align-items:stretch;}
   #lessonsBody .risk-card{margin-bottom:0;}
@@ -1065,6 +1068,13 @@ function activateFonts(link){
   .ds-pagination-pages button.active{background:var(--navy-900); color:#fff;}
   .ds-pagination-pages button:disabled{opacity:.35; cursor:not-allowed; background:none;}
   .ds-pagination-pages .ds-pg-ellipsis{padding:0 4px; color:var(--ink-400);}
+  /* Переключатель вида реестра рисков — рядом с «Показывать по». */
+  .reg-view-toggle{display:flex; align-items:center; gap:2px; margin-left:10px; border:1px solid var(--line); border-radius:var(--radius-field); padding:2px;}
+  .reg-view-btn{width:26px; height:26px; border-radius:calc(var(--radius-field) - 2px); border:none; background:none;
+    color:var(--ink-500); cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; flex-shrink:0;}
+  .reg-view-btn svg{width:14px; height:14px; display:block;}
+  .reg-view-btn:hover{background:var(--canvas); color:var(--ink-900);}
+  .reg-view-btn.active{background:var(--accent-50); color:var(--accent-600);}
 
   /* ===== Avatar @nlmk/ds-2.0 — единый компонент для всех точек показа пользователя ===== */
   .ds-avatar{border-radius:50%; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;
@@ -2054,13 +2064,14 @@ function pageButtonsList(page, count){
   arr.forEach(n => { if (prev && n-prev > 1) out.push('…'); out.push(n); prev = n; });
   return out;
 }
-function paginationBarHtml(pid, {page, pageCount, pageSize, pageSizes, itemsLabel}){
+function paginationBarHtml(pid, {page, pageCount, pageSize, pageSizes, itemsLabel, extraHtml}){
   const pages = pageButtonsList(page, pageCount);
   return `<div class="ds-pagination" id="${pid}">
     <div class="ds-pagination-size">
       <span>Показывать по</span>
       <select data-pg-size>${pageSizes.map(s => `<option value="${s}" ${s===pageSize?'selected':''}>${s}</option>`).join('')}</select>
       <span>${esc(itemsLabel)}</span>
+      ${extraHtml||''}
     </div>
     <div class="ds-pagination-pages">
       <button type="button" data-pg-prev ${page<=1?'disabled':''} aria-label="Предыдущая страница">‹</button>
@@ -2069,14 +2080,14 @@ function paginationBarHtml(pid, {page, pageCount, pageSize, pageSizes, itemsLabe
     </div>
   </div>`;
 }
-function renderPagination(wrapId, pagingState, total, onChange, itemsLabel, pageSizes){
+function renderPagination(wrapId, pagingState, total, onChange, itemsLabel, pageSizes, extraHtml){
   const wrap = document.getElementById(wrapId);
   if (!wrap) return;
   if (!total){ wrap.innerHTML = ''; return; }
   pageSizes = pageSizes || [5, 10, 20, 50];
   const pageCount = Math.max(1, Math.ceil(total / pagingState.pageSize));
   pagingState.page = Math.min(Math.max(1, pagingState.page), pageCount);
-  wrap.innerHTML = paginationBarHtml(wrapId+'Bar', {page:pagingState.page, pageCount, pageSize:pagingState.pageSize, pageSizes, itemsLabel:itemsLabel||'строк'});
+  wrap.innerHTML = paginationBarHtml(wrapId+'Bar', {page:pagingState.page, pageCount, pageSize:pagingState.pageSize, pageSizes, itemsLabel:itemsLabel||'строк', extraHtml});
   const bar = document.getElementById(wrapId+'Bar');
   const sizeSel = bar.querySelector('[data-pg-size]');
   if (sizeSel) sizeSel.addEventListener('change', () => { pagingState.pageSize = parseInt(sizeSel.value,10); pagingState.page = 1; onChange(); });
@@ -3687,9 +3698,13 @@ function renderRegister(){
 
   const registerListEl = document.getElementById('registerList');
   // Сетка карточек 2 колонки (адаптивно) — единый формат и у риск-менеджера,
-  // и у владельца риска, не только у «Мои риски».
+  // и у владельца риска, не только у «Мои риски». Переключатель вида (рядом
+  // с «Показывать по») даёт ещё два режима — плотная сетка 4×4 и список
+  // «риск под риском» в одну колонку.
+  const isSingleCol = registerPaging.pageSize === 1 || registerViewMode === 'list';
   registerListEl.classList.add('owner-grid');
-  registerListEl.classList.toggle('single-col', registerPaging.pageSize === 1);
+  registerListEl.classList.toggle('single-col', isSingleCol);
+  registerListEl.classList.toggle('view-grid4', !isSingleCol && registerViewMode === 'grid4');
 
   if (ownerHasNoRisks){
     registerListEl.innerHTML = ownerTemplateCardHtml();
@@ -3708,7 +3723,10 @@ function renderRegister(){
     // добавления риска и так есть в панели инструментов).
     const isLastPage = registerPaging.page === pageCount;
     registerListEl.innerHTML = cardsHtml + (pageList.length && isLastPage ? `<div class="risk-card-cta" data-open-template><div class="risk-card-cta-inner"><span class="risk-card-cta-icon">+</span><span class="risk-card-cta-lbl">${ownerLocked?'Предложить риск':'Добавить риск'}</span></div></div>` : '');
-    renderPagination('registerPaginationWrap', registerPaging, total, renderRegister, 'риск(ов)', [1, 4, 8, 20, 40]);
+    renderPagination('registerPaginationWrap', registerPaging, total, renderRegister, 'риск(ов)', [1, 4, 8, 20, 40], registerViewToggleHtml());
+    document.querySelectorAll('#registerPaginationWrapBar [data-reg-view]').forEach(b => {
+      b.addEventListener('click', () => { registerViewMode = b.dataset.regView; renderRegister(); });
+    });
     document.querySelectorAll('#registerList .risk-card, #registerList [data-open-risk]').forEach(c => {
       c.addEventListener('click', (e) => { e.stopPropagation(); openPassport(c.dataset.riskId || c.dataset.openRisk); });
     });
@@ -3722,6 +3740,17 @@ function renderRegister(){
 
 }
 let registerPaging = {page:1, pageSize:4};
+// Вид реестра рисков: 'grid2' — сетка 2 колонки (по умолчанию), 'grid4' —
+// плотная сетка 4 колонки, 'list' — список, риск под риском в одну колонку.
+let registerViewMode = 'grid2';
+function registerViewToggleHtml(){
+  const modes = [
+    {key:'grid2', title:'Сетка — 2 колонки', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="8" height="16" rx="1"/><rect x="13" y="4" width="8" height="16" rx="1"/></svg>'},
+    {key:'grid4', title:'Сетка 4×4', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>'},
+    {key:'list', title:'Список — риск под риском', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>'},
+  ];
+  return `<div class="reg-view-toggle">${modes.map(m => `<button type="button" class="reg-view-btn${registerViewMode===m.key?' active':''}" data-reg-view="${m.key}" title="${m.title}" aria-label="${m.title}">${m.icon}</button>`).join('')}</div>`;
+}
 let registerAiQuery = '';
 document.getElementById('regAiAsk').addEventListener('keydown', e => { if (e.key === 'Enter') toast('Спросить AI', {body:'Демо-прототип: раздел недоступен в этой версии.', duration:4000}); });
 ['regSearch'].forEach(id => document.getElementById(id).addEventListener('input', () => { registerPaging.page = 1; renderRegister(); }));
