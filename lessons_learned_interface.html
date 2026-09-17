@@ -374,7 +374,7 @@ function activateFonts(link){
      фильтр по тегам реально не выбран (в отличие от .btn-secondary,
      который всегда с акцентным фоном); .active включается в JS, когда
      lessonTagFilter.size > 0. */
-  #btnTagPicker{border-color:var(--line); color:var(--ink-700); background:var(--paper-0);}
+  #btnTagPicker{border-color:var(--line); color:var(--ink-700); background:var(--paper-0); font-weight:400;}
   #btnTagPicker.active{background:var(--accent-50); border-color:var(--accent-50); color:var(--accent-600);}
   #btnTagPicker.active:hover{background:var(--accent-100); border-color:var(--accent-100);}
   .btn-danger{background:var(--red-700); border-color:var(--red-700); color:#fff;}
@@ -929,6 +929,13 @@ function activateFonts(link){
   .badge-low{background:var(--green-50); color:var(--green-700);}
   .badge-medium{background:var(--amber-50); color:var(--amber-700);}
   .badge-high{background:var(--red-50); color:var(--red-700);}
+  /* Реестр рисков — уровень P×I на карточке нейтрально-серый (не дублирует
+     цветовую легенду, которая была непонятна без подписи и убрана);
+     значок-предупреждение рядом с высоким уровнем несёт смысл вместо цвета. */
+  .rcm-zone-badge-neutral{background:var(--canvas); color:var(--ink-700);}
+  .rcm-attention-icon{display:inline-flex; color:var(--red-700); cursor:help; flex-shrink:0;}
+  .rcm-attention-icon svg{width:15px; height:15px; display:block; margin:0;}
+  .rcm-initiator{color:var(--ink-500);}
   .badge-status-ident{background:var(--gold-50); color:var(--gold-700);}
   .badge-status-progress{background:var(--accent-50); color:var(--accent-600);}
   .badge-status-closed{background:var(--green-50); color:var(--green-700);}
@@ -1520,11 +1527,11 @@ function activateFonts(link){
         <button type="button" class="filter-reset-btn" id="regFilterReset" title="Сбросить все фильтры" aria-label="Сбросить все фильтры">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
         </button>
+        <button type="button" class="btn btn-primary" id="regAddRiskBtn" style="margin-left:auto;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M12 5v14M5 12h14"/></svg><span id="regAddRiskBtnLbl">Добавить риск</span></button>
       </div>
       <div id="regQuickChip"></div>
       <div id="regAiChip"></div>
       <div id="registerList"></div>
-      <div id="regLevelLegend"></div>
       <div id="registerPaginationWrap"></div>
     </div>
 
@@ -3512,12 +3519,14 @@ function riskCardHtml(r){
       <span class="rcm-id mono">${esc(r.id)}</span>
       <span class="rcm-top-right">
         ${r.committeeFlag ? `<span class="badge-pill rcm-committee-badge">Комитет</span>` : ''}
-        ${zone ? `<span class="badge-pill ${ZONE_BADGE[zone]}">${ZONE_LABEL[zone]} · RRA ${rraOf(r.p,r.iLevel)}</span>` : `<span class="rcm-unrated">Не оценён</span>`}
+        ${zone === 'high' ? `<span class="rcm-attention-icon" title="Требует внимания" aria-label="Требует внимания">${ICON_ATTENTION_LG}</span>` : ''}
+        ${zone ? `<span class="badge-pill rcm-zone-badge-neutral">${ZONE_LABEL[zone]} · RRA ${rraOf(r.p,r.iLevel)}</span>` : `<span class="rcm-unrated">Не оценён</span>`}
         ${editable ? `<button type="button" class="icon-btn-del" data-del-risk="${r.id}" title="Удалить риск из реестра" aria-label="Удалить риск из реестра"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>` : ''}
       </span>
     </div>
     <div class="rcm-title">${esc(r.title)}${r.isNew ? `<span class="badge-pill rcm-new-badge">NEW</span>` : ''}</div>
     <div class="rcm-meta">
+      ${r.authorName ? `<span class="rcm-initiator">${ICON_INITIATOR}Инициатор: ${esc(r.authorName)}</span>` : ''}
       <span>${ICON_OWNER}${esc(r.ownerNames.join(', ')||'не назначен')}</span>
       <span class="rcm-due rcm-due-${due.cls}">${due.icon}${due.text}</span>
     </div>
@@ -3529,7 +3538,11 @@ const PLEVEL_LABEL = {1:'Низкая',2:'Средняя',3:'Высокая'};
 // чтобы значок не мог отрисоваться «голым» на весь экран независимо от
 // того, в какой разметке он окажется (см. баг с ICON_SD_CLOCK без размера).
 const ICON_ATTENTION = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:3px;flex-shrink:0;"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>';
+// Тот же значок «внимание», но без отступа/выравнивания под инлайн-текст —
+// используется отдельно стоящим (карточка риска в реестре).
+const ICON_ATTENTION_LG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>';
 const ICON_OWNER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" style="vertical-align:-2px;margin-right:4px;"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>';
+const ICON_INITIATOR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" style="vertical-align:-2px;margin-right:4px;"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>';
 const ICON_CALENDAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" style="vertical-align:-2px;margin-right:4px;"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>';
 // Быстрый фильтр из виджетов Дэшборда/Матрицы (например, клик по KPI
 // «Просрочено мероприятий») — накладывается поверх обычных фильтров реестра
@@ -3591,6 +3604,7 @@ function renderRegister(){
   const ownerLocked = state.session.role === 'riskowner';
 
   document.getElementById('regAiAskWrap').hidden = !ownerLocked;
+  document.getElementById('regAddRiskBtnLbl').textContent = ownerLocked ? 'Предложить риск' : 'Добавить риск';
 
   let list = state.risks.filter(r => r.status !== 'Архивирован');
   if (ownerLocked) list = list.filter(isMineOrInitiated);
@@ -3669,12 +3683,10 @@ function renderRegister(){
   // Сетка карточек 2 колонки (адаптивно) — единый формат и у риск-менеджера,
   // и у владельца риска, не только у «Мои риски».
   registerListEl.classList.add('owner-grid');
-  const legendMount = document.getElementById('regLevelLegend');
 
   if (ownerHasNoRisks){
     registerListEl.innerHTML = ownerTemplateCardHtml();
     document.getElementById('registerPaginationWrap').innerHTML = '';
-    if (legendMount) legendMount.innerHTML = '';
     document.querySelectorAll('#registerList [data-open-template]').forEach(b => {
       b.addEventListener('click', (e) => { e.stopPropagation(); openRiskCreateModal(); });
     });
@@ -3684,8 +3696,11 @@ function renderRegister(){
     registerPaging.page = Math.min(Math.max(1, registerPaging.page), pageCount);
     const pageList = list.slice((registerPaging.page-1)*registerPaging.pageSize, registerPaging.page*registerPaging.pageSize);
     const cardsHtml = pageList.length ? pageList.map(riskCardHtml).join('') : `<div class="empty-state">Ничего не найдено по заданным фильтрам.</div>`;
-    // CTA-карточка «+ Добавить риск» последним элементом сетки.
-    registerListEl.innerHTML = cardsHtml + (pageList.length ? `<div class="risk-card-cta" data-open-template><div class="risk-card-cta-inner"><span class="risk-card-cta-icon">+</span><span class="risk-card-cta-lbl">${ownerLocked?'Предложить риск':'Добавить риск'}</span></div></div>` : '');
+    // CTA-карточка «+ Добавить риск» — последним элементом сетки, но только
+    // на последней странице пагинации (на промежуточных страницах кнопка
+    // добавления риска и так есть в панели инструментов).
+    const isLastPage = registerPaging.page === pageCount;
+    registerListEl.innerHTML = cardsHtml + (pageList.length && isLastPage ? `<div class="risk-card-cta" data-open-template><div class="risk-card-cta-inner"><span class="risk-card-cta-icon">+</span><span class="risk-card-cta-lbl">${ownerLocked?'Предложить риск':'Добавить риск'}</span></div></div>` : '');
     renderPagination('registerPaginationWrap', registerPaging, total, renderRegister, 'риск(ов)');
     document.querySelectorAll('#registerList .risk-card, #registerList [data-open-risk]').forEach(c => {
       c.addEventListener('click', (e) => { e.stopPropagation(); openPassport(c.dataset.riskId || c.dataset.openRisk); });
@@ -3696,18 +3711,6 @@ function renderRegister(){
     document.querySelectorAll('#registerList [data-open-template]').forEach(b => {
       b.addEventListener('click', (e) => { e.stopPropagation(); openRiskCreateModal(); });
     });
-    // Легенда — сводка по всему отфильтрованному списку (list), не только
-    // по текущей странице.
-    if (legendMount){
-      const counts = {high:0, medium:0, low:0, unrated:0};
-      list.forEach(r => { const z = zoneOf(rraOf(r.p, r.iLevel)); counts[z||'unrated']++; });
-      legendMount.innerHTML = `<div class="risk-level-legend">
-        <span><i style="background:var(--red-700)"></i>Высокий — ${counts.high}</span>
-        <span><i style="background:var(--amber-700)"></i>Средний — ${counts.medium}</span>
-        <span><i style="background:var(--green-700)"></i>Низкий — ${counts.low}</span>
-        <span><i style="background:var(--ink-400)"></i>Не оценён — ${counts.unrated}</span>
-      </div>`;
-    }
   }
 
 }
@@ -3728,6 +3731,7 @@ document.getElementById('regFilterReset').addEventListener('click', () => {
   registerPaging.page = 1;
   renderRegister();
 });
+document.getElementById('regAddRiskBtn').addEventListener('click', () => openRiskCreateModal());
 // ===================================================================
 // СОЗДАНИЕ РИСКА (компактная форма — Категория/Наименование/Событие/
 // Следствие/Владелец, одинаковая для Инициатора и для «+Добавить риск»)
