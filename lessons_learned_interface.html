@@ -863,13 +863,14 @@ function activateFonts(link){
   .risk-card{background:var(--paper-0); border:1px solid var(--line); border-left-width:4px; border-radius:var(--radius-field); padding:16px 18px; margin-bottom:10px;
     transition:opacity .15s ease, border-color .15s ease, box-shadow .15s ease, transform .15s ease;}
   .risk-card:hover{box-shadow:0 6px 16px -8px rgba(17,37,66,.25); transform:translateY(-1px);}
-  /* Цветная левая граница = уровень критичности — быстрый скан списком,
-     та же семантика (зелёный/жёлтый/красный/серый), что и в степпере,
-     матрице P×I и легенде ниже (правило 5). */
-  .risk-card[data-zone="high"]{border-left-color:var(--red-700);}
-  .risk-card[data-zone="medium"]{border-left-color:var(--amber-700);}
-  .risk-card[data-zone="low"]{border-left-color:var(--green-700);}
-  .risk-card[data-zone="unrated"]{border-left-color:var(--ink-400); opacity:.75;}
+  /* Левая граница карточки риска — нейтрально-серая для всех уровней
+     (реестр рисков больше не кодирует критичность цветом — вместо этого
+     значок-предупреждение на самой карточке, см. riskCardHtml). */
+  .risk-card[data-zone="high"],
+  .risk-card[data-zone="medium"],
+  .risk-card[data-zone="low"],
+  .risk-card[data-zone="unrated"]{border-left-color:var(--ink-400);}
+  .risk-card[data-zone="unrated"]{opacity:.75;}
   .risk-card[data-zone="unrated"]:hover{opacity:1;}
   /* Сетка карточек 2 колонки (адаптивно) — единый формат реестра рисков
      и у риск-менеджера, и у владельца риска. */
@@ -879,6 +880,11 @@ function activateFonts(link){
      соседняя карточка риска в строке — растягиваем под высоту грид-ряда
      (align-items:stretch) вместо фиксированного min-height. */
   #registerList.owner-grid .risk-card-cta{min-height:0; height:100%; box-sizing:border-box;}
+  /* Режим «Показывать по 1» — карточка растягивается на всю ширину сетки,
+     а не занимает только левую половину строки. */
+  #registerList.owner-grid.single-col .risk-card,
+  #registerList.owner-grid.single-col .risk-card-cta,
+  #registerList.owner-grid.single-col .empty-state{grid-column:1/-1;}
   @media (max-width:860px){#registerList.owner-grid{grid-template-columns:1fr;}}
   /* Уроки — та же сетка 2 колонки, что и у карточек риска в реестре владельца. */
   #lessonsBody{display:grid; grid-template-columns:repeat(2,1fr); gap:14px; align-items:stretch;}
@@ -3683,6 +3689,7 @@ function renderRegister(){
   // Сетка карточек 2 колонки (адаптивно) — единый формат и у риск-менеджера,
   // и у владельца риска, не только у «Мои риски».
   registerListEl.classList.add('owner-grid');
+  registerListEl.classList.toggle('single-col', registerPaging.pageSize === 1);
 
   if (ownerHasNoRisks){
     registerListEl.innerHTML = ownerTemplateCardHtml();
@@ -3701,7 +3708,7 @@ function renderRegister(){
     // добавления риска и так есть в панели инструментов).
     const isLastPage = registerPaging.page === pageCount;
     registerListEl.innerHTML = cardsHtml + (pageList.length && isLastPage ? `<div class="risk-card-cta" data-open-template><div class="risk-card-cta-inner"><span class="risk-card-cta-icon">+</span><span class="risk-card-cta-lbl">${ownerLocked?'Предложить риск':'Добавить риск'}</span></div></div>` : '');
-    renderPagination('registerPaginationWrap', registerPaging, total, renderRegister, 'риск(ов)', [4, 8, 20, 40]);
+    renderPagination('registerPaginationWrap', registerPaging, total, renderRegister, 'риск(ов)', [1, 4, 8, 20, 40]);
     document.querySelectorAll('#registerList .risk-card, #registerList [data-open-risk]').forEach(c => {
       c.addEventListener('click', (e) => { e.stopPropagation(); openPassport(c.dataset.riskId || c.dataset.openRisk); });
     });
