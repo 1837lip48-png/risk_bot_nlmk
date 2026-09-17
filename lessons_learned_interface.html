@@ -863,6 +863,10 @@ function activateFonts(link){
   .risk-card{background:var(--paper-0); border:1px solid var(--line); border-left-width:4px; border-radius:var(--radius-field); padding:16px 18px; margin-bottom:10px;
     transition:opacity .15s ease, border-color .15s ease, box-shadow .15s ease, transform .15s ease;}
   .risk-card:hover{box-shadow:0 6px 16px -8px rgba(17,37,66,.25); transform:translateY(-1px);}
+  /* Во время прокрутки курсор остаётся на месте экрана, а карточки под ним
+     сменяют hover — приподнимание/тень анимируются на каждой карточке и
+     ощущаются как «прыжки» экрана. Пока идёт скролл, гасим сам hover-эффект. */
+  .ws-content.is-scrolling .risk-card:hover{box-shadow:none; transform:none;}
   /* Левая граница карточки риска — нейтрально-серая для всех уровней
      (реестр рисков больше не кодирует критичность цветом — вместо этого
      значок-предупреждение на самой карточке, см. riskCardHtml). */
@@ -1046,6 +1050,18 @@ function activateFonts(link){
     border-left:2px solid var(--accent-600); border-radius:4px; padding:6px 10px; margin-bottom:8px;}
   .lesson-preview-quote .k{font-size:var(--fs-additional); color:var(--ink-400); text-transform:uppercase; letter-spacing:.2px;
     font-weight:700; margin-right:5px;}
+  /* Аккордеон «Подробности» в карточке урока (@nlmk/ds-2.0 Accordion,
+     startIcon="arrow") — каждое поле сворачивается/разворачивается
+     независимо, а не одним общим блоком. */
+  .ds-accordion{display:flex; flex-direction:column; gap:6px; margin-bottom:14px;}
+  .ds-accordion-item{border:1px solid var(--line); border-radius:var(--radius-field); overflow:hidden; background:var(--paper-0);}
+  .ds-accordion-header{display:flex; align-items:center; gap:8px; padding:10px 14px; cursor:pointer;
+    font-size:12.5px; font-weight:600; color:var(--ink-900); user-select:none;}
+  .ds-accordion-header:hover{background:var(--canvas);}
+  .ds-accordion-icon{display:flex; flex-shrink:0; color:var(--ink-500); transition:transform .15s ease;}
+  .ds-accordion-icon svg{width:15px; height:15px; display:block;}
+  .ds-accordion-item.open .ds-accordion-icon{transform:rotate(180deg);}
+  .ds-accordion-body{padding:0 14px 12px 37px; font-size:12.5px; color:var(--ink-700); line-height:1.45;}
 
   /* ===== Календарь ===== */
   .cal-toolbar-row{display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:14px; flex-wrap:wrap;}
@@ -2903,6 +2919,22 @@ function syncHeaderReserve(){
   if (w > 0) document.documentElement.style.setProperty('--topbar-reserve', (w + 20) + 'px');
 }
 window.addEventListener('resize', syncHeaderReserve);
+// Пока пользователь крутит колесо мыши, курсор физически стоит на месте
+// экрана — карточки реестра/уроков проезжают под ним, и hover-подсветка
+// (приподнимание + тень) переключается с карточки на карточку, что
+// ощущается как «прыжки» на экране. Гасим hover-эффект во время скролла
+// (см. .ws-content.is-scrolling .risk-card:hover) и возвращаем его сразу
+// после остановки.
+(() => {
+  const wsContent = document.querySelector('.ws-content');
+  if (!wsContent) return;
+  let scrollTimer = null;
+  wsContent.addEventListener('scroll', () => {
+    wsContent.classList.add('is-scrolling');
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => wsContent.classList.remove('is-scrolling'), 120);
+  }, {passive:true});
+})();
 // Иконки .topbar-fixed (тема/колокольчик/профиль) остаются скрытыми (см.
 // .topbar-fixed{opacity:0}), пока не подгрузится Golos Text — тогда они
 // появляются уже с финальными метриками шрифта, без заметного «скачка»
@@ -5215,8 +5247,17 @@ function lessonCardHtml(l){
 // присутствующих в этом описании — новые факты/цифры не добавлялись.
 // Заглушка ниже остаётся на случай пользовательского урока (lessonFormHtml),
 // где эти поля необязательны и реально могут быть не заполнены.
-function lessonFieldBlock(label, value){
-  return `<div class="passport-block" style="margin-bottom:10px;"><div class="k">${esc(label)}</div><div class="v">${value ? esc(value) : '<span class="muted">не зафиксировано в исходном реестре</span>'}</div></div>`;
+// Аккордеон @nlmk/ds-2.0 (startIcon="arrow") — каждое поле «Подробностей»
+// сворачивается/разворачивается независимо от остальных.
+const ACCORDION_CHEVRON_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+function lessonAccordionItemHtml(id, label, value){
+  return `<div class="ds-accordion-item" data-acc-item="${id}">
+    <div class="ds-accordion-header" data-acc-toggle="${id}">
+      <span class="ds-accordion-icon">${ACCORDION_CHEVRON_ICON}</span>
+      <span>${esc(label)}</span>
+    </div>
+    <div class="ds-accordion-body" id="accBody-${id}" hidden>${value ? esc(value) : '<span class="muted">не зафиксировано в исходном реестре</span>'}</div>
+  </div>`;
 }
 // Проблема/риск-событие урока — главное поле для решения «заводить риск или
 // нет», но в части записей (напр. L-06) не заполнено при том, что суть
@@ -5279,17 +5320,13 @@ function openLessonModal(id, createNew){
       <div class="rra-preview" style="flex:1;"><span class="lbl">Повтор</span><span class="val">${rr.pct}%</span></div>
       ${l.strategy ? `<div class="rra-preview" style="flex:1;"><span class="lbl">Стратегия</span><span class="val" style="font-size:13px;">${esc(l.strategy)}</span></div>` : ''}
     </div>
-    <div class="lesson-details-toggle" id="lessonDetailsToggle" style="display:flex; align-items:center; justify-content:space-between; cursor:pointer; padding-top:10px; border-top:1px solid var(--line); margin-bottom:10px;">
-      <span style="font-size:12.5px; color:var(--accent-600); font-weight:600;">Подробности: категория, причина, триггер, рекомендация, выученный урок</span>
-      <span class="chevron">▾</span>
-    </div>
-    <div id="lessonDetailsBody" hidden>
-      ${lessonFieldBlock('Категория', l.category)}
-      ${lessonFieldBlock('Описание', l.description)}
-      ${lessonFieldBlock('Корневая причина', l.rootCause)}
-      ${lessonFieldBlock('Триггер / Индикатор', l.triggerIndicator)}
-      ${lessonFieldBlock('Выученный урок', l.lessonLearned)}
-      ${lessonFieldBlock('Рекомендация / Действие', l.recommendation)}
+    <div class="ds-accordion" id="lessonDetailsAccordion">
+      ${lessonAccordionItemHtml('category', 'Категория', l.category)}
+      ${lessonAccordionItemHtml('description', 'Описание', l.description)}
+      ${lessonAccordionItemHtml('rootCause', 'Корневая причина', l.rootCause)}
+      ${lessonAccordionItemHtml('trigger', 'Триггер / Индикатор', l.triggerIndicator)}
+      ${lessonAccordionItemHtml('learned', 'Выученный урок', l.lessonLearned)}
+      ${lessonAccordionItemHtml('recommendation', 'Рекомендация / Действие', l.recommendation)}
     </div>
     <div style="margin-bottom:14px;">${l.hashtags.map(t=>`<span class="lesson-tag-pill">${esc(tagLabel(t))}</span>`).join('') || '<span class="muted" style="font-size:12.5px;">Тегов нет</span>'}</div>
     ${l.sourceRiskId?`<div class="field-hint" style="margin-bottom:10px;">Источник: риск <code class="mono">${l.sourceRiskId}</code></div>`:''}
@@ -5297,10 +5334,13 @@ function openLessonModal(id, createNew){
       <button class="btn btn-primary" id="createRiskFromLesson" style="flex:1;">Создать риск на основе урока</button>
     </div>`;
   openModal('lessonModalOverlay');
-  document.getElementById('lessonDetailsToggle').addEventListener('click', () => {
-    const body = document.getElementById('lessonDetailsBody');
-    body.hidden = !body.hidden;
-    document.querySelector('#lessonDetailsToggle .chevron').textContent = body.hidden ? '▾' : '▴';
+  document.querySelectorAll('#lessonDetailsAccordion [data-acc-toggle]').forEach(header => {
+    header.addEventListener('click', () => {
+      const item = header.closest('.ds-accordion-item');
+      const body = item.querySelector('.ds-accordion-body');
+      body.hidden = !body.hidden;
+      item.classList.toggle('open', !body.hidden);
+    });
   });
   document.getElementById('createRiskFromLesson').addEventListener('click', () => {
     closeModal('lessonModalOverlay');
