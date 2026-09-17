@@ -5831,17 +5831,15 @@ function openDayNotesModal(y, m, d){
   openChartModal('Заметки дня — ' + title, '', dayNotesBodyHtml(y,m,d), {maxWidth:'380px'});
   wireDayNotesForm(y,m,d);
 }
-// «Что запланировано на день» — список без max-height/overflow: при
-// добавлении заметок блок растёт вниз вместе с модалкой (она и так
-// скроллится целиком на маленьких экранах), ширина модалки не меняется.
+// «Заметки дня» — теперь чистая форма добавления новой записи, без списка
+// уже существующих заметок этого дня: у каждой заметки/сессии своя
+// отдельная модалка (openNoteDetailModal/openSessionSummaryModal),
+// открывается прямым кликом по её карточке/пилюле в сетке календаря —
+// дублировать их здесь смысла нет, только путало (казалось, что «+заметка»
+// открывает чужую, уже существующую запись, а не создаёт новую).
 function dayNotesBodyHtml(y,m,d){
-  const notes = notesFor(y,m,d);
-  const sessionRiskCount = notes.filter(n => n.type === 'session' && n.riskId).length;
-  return `${sessionRiskCount ? `<button type="button" class="btn btn-secondary btn-sm" id="dnOpenSessionSummary" style="width:100%;margin-bottom:10px;">Открыть сводку риск-сессии (${sessionRiskCount})</button>` : ''}
-    <div id="dayNotesList">${notes.map(n => { const t=noteType(n.type); return `
-    <div class="cal-note-row"><div style="flex:1;"><div class="cal-note-type" style="color:${t.color}">${esc(t.label)}</div><div style="font-size:13px;margin-top:2px;">${esc(n.text)}</div>${n.time?`<div class="muted cal-note-time-row" style="font-size:11px;margin-top:2px;">${ICON_SD_CLOCK}${esc(n.time)}${n.timeTo?'–'+esc(n.timeTo):''}</div>`:''}${n.attendees && n.attendees.length ? `<div class="muted" style="font-size:11px;margin-top:2px;">Участники: ${esc(n.attendees.join(', '))}</div>` : ''}${n.author?`<div class="muted" style="font-size:11px;margin-top:2px;">${esc(n.author)}</div>`:''}${n.riskId?`<a href="#" data-open-risk-from-note="${n.riskId}" style="font-size:11px;font-weight:600;">Открыть риск →</a>`:''}</div>
-      <button type="button" class="cal-note-del" data-del-note="${n.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`; }).join('')}</div>
-    <div class="field" style="margin:12px 0 8px;"><label>Участники</label>
+  return `
+    <div class="field" style="margin-bottom:8px;"><label>Участники</label>
       <div class="ds-ms-chips" id="dnAttendeeChips" style="margin-bottom:8px;"></div>
       <button type="button" class="ds-ms-addbtn" id="dnAttendeeAddBtn" style="width:100%;">+ Выбрать участников…</button>
     </div>
@@ -6005,20 +6003,6 @@ function wireDayNotesForm(y,m,d){
   const syncDnRisksVisibility = () => { document.getElementById('dnRisksField').hidden = dnTypeSel.value !== 'session'; };
   syncDnRisksVisibility();
   dnTypeSel.addEventListener('change', syncDnRisksVisibility);
-  const summaryBtn = document.getElementById('dnOpenSessionSummary');
-  if (summaryBtn) summaryBtn.addEventListener('click', () => openSessionSummaryModal(y,m,d));
-  document.querySelectorAll('[data-open-risk-from-note]').forEach(a => a.addEventListener('click', (e) => {
-    e.preventDefault();
-    closeModal('chartModalOverlay');
-    openPassport(a.dataset.openRiskFromNote);
-  }));
-  document.querySelectorAll('[data-del-note]').forEach(b => b.addEventListener('click', () => {
-    openConfirmModal('Удалить эту заметку?', () => {
-      const key = dayKey(y,m,d);
-      state.dayNotes[key] = (state.dayNotes[key]||[]).filter(n=>n.id!==b.dataset.delNote);
-      saveState(); document.getElementById('chartModalMount').innerHTML = dayNotesBodyHtml(y,m,d); wireDayNotesForm(y,m,d); renderCalendar();
-    }, {title:'Удалить заметку?'});
-  }));
   document.getElementById('dnAdd').addEventListener('click', () => {
     const text = document.getElementById('dnText').value.trim();
     if (!text){ toast('Опишите повестку сессии', {tone:'warning'}); return; }
