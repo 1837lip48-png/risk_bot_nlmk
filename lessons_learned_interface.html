@@ -5261,17 +5261,11 @@ function lessonCardHtml(l){
 // присутствующих в этом описании — новые факты/цифры не добавлялись.
 // Заглушка ниже остаётся на случай пользовательского урока (lessonFormHtml),
 // где эти поля необязательны и реально могут быть не заполнены.
-// Аккордеон @nlmk/ds-2.0 (startIcon="arrow") — каждое поле «Подробностей»
-// сворачивается/разворачивается независимо от остальных.
+// Аккордеон @nlmk/ds-2.0 (startIcon="arrow") — один пункт «Подробности»,
+// под ним единым блоком все детальные поля урока.
 const ACCORDION_CHEVRON_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
-function lessonAccordionItemHtml(id, label, value){
-  return `<div class="ds-accordion-item" data-acc-item="${id}">
-    <div class="ds-accordion-header" data-acc-toggle="${id}">
-      <span class="ds-accordion-icon">${ACCORDION_CHEVRON_ICON}</span>
-      <span>${esc(label)}</span>
-    </div>
-    <div class="ds-accordion-body" id="accBody-${id}" hidden>${value ? esc(value) : '<span class="muted">не зафиксировано в исходном реестре</span>'}</div>
-  </div>`;
+function lessonDetailRowHtml(label, value){
+  return `<div style="margin-bottom:10px;"><div class="k" style="font-size:var(--fs-additional);color:var(--ink-400);text-transform:uppercase;letter-spacing:.2px;">${esc(label)}</div><div class="v" style="font-size:12.5px;color:var(--ink-900);margin-top:2px;line-height:1.4;">${value ? esc(value) : '<span class="muted">не зафиксировано в исходном реестре</span>'}</div></div>`;
 }
 // Проблема/риск-событие урока — главное поле для решения «заводить риск или
 // нет», но в части записей (напр. L-06) не заполнено при том, что суть
@@ -5335,12 +5329,20 @@ function openLessonModal(id, createNew){
       ${l.strategy ? `<div class="rra-preview" style="flex:1;"><span class="lbl">Стратегия</span><span class="val" style="font-size:13px;">${esc(l.strategy)}</span></div>` : ''}
     </div>
     <div class="ds-accordion" id="lessonDetailsAccordion">
-      ${lessonAccordionItemHtml('category', 'Категория', l.category)}
-      ${lessonAccordionItemHtml('description', 'Описание', l.description)}
-      ${lessonAccordionItemHtml('rootCause', 'Корневая причина', l.rootCause)}
-      ${lessonAccordionItemHtml('trigger', 'Триггер / Индикатор', l.triggerIndicator)}
-      ${lessonAccordionItemHtml('learned', 'Выученный урок', l.lessonLearned)}
-      ${lessonAccordionItemHtml('recommendation', 'Рекомендация / Действие', l.recommendation)}
+      <div class="ds-accordion-item" data-acc-item="details">
+        <div class="ds-accordion-header" data-acc-toggle="details">
+          <span class="ds-accordion-icon">${ACCORDION_CHEVRON_ICON}</span>
+          <span>Подробности: категория, причина, триггер, рекомендация, выученный урок</span>
+        </div>
+        <div class="ds-accordion-body" id="accBody-details" hidden>
+          ${lessonDetailRowHtml('Категория', l.category)}
+          ${lessonDetailRowHtml('Описание', l.description)}
+          ${lessonDetailRowHtml('Корневая причина', l.rootCause)}
+          ${lessonDetailRowHtml('Триггер / Индикатор', l.triggerIndicator)}
+          ${lessonDetailRowHtml('Выученный урок', l.lessonLearned)}
+          ${lessonDetailRowHtml('Рекомендация / Действие', l.recommendation)}
+        </div>
+      </div>
     </div>
     <div style="margin-bottom:14px;">${l.hashtags.map(t=>`<span class="lesson-tag-pill">${esc(tagLabel(t))}</span>`).join('') || '<span class="muted" style="font-size:12.5px;">Тегов нет</span>'}</div>
     ${l.sourceRiskId?`<div class="field-hint" style="margin-bottom:10px;">Источник: риск <code class="mono">${l.sourceRiskId}</code></div>`:''}
