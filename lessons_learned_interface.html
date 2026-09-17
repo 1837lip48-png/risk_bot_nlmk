@@ -374,7 +374,7 @@ function activateFonts(link){
      фильтр по тегам реально не выбран (в отличие от .btn-secondary,
      который всегда с акцентным фоном); .active включается в JS, когда
      lessonTagFilter.size > 0. */
-  #btnTagPicker{border-color:var(--line); color:var(--ink-700);}
+  #btnTagPicker{border-color:var(--line); color:var(--ink-700); background:var(--paper-0);}
   #btnTagPicker.active{background:var(--accent-50); border-color:var(--accent-50); color:var(--accent-600);}
   #btnTagPicker.active:hover{background:var(--accent-100); border-color:var(--accent-100);}
   .btn-danger{background:var(--red-700); border-color:var(--red-700); color:#fff;}
@@ -768,8 +768,6 @@ function activateFonts(link){
   .profile-item.danger{color:var(--red-700);}
   .profile-item.danger svg{color:var(--red-700);}
 
-  .dash-freshness{display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-600);}
-  .dash-freshness svg{width:14px; height:14px; color:var(--ink-400);}
   .trend-crit-row{display:flex; gap:28px; align-items:flex-end; padding-top:10px; flex-wrap:wrap;}
   .trend-crit-col{display:flex; flex-direction:column; align-items:center; gap:4px;}
   .trend-crit-bars{display:flex; align-items:flex-end; gap:4px; height:110px;}
@@ -3297,9 +3295,7 @@ function renderDashboard(){
 
   renderNotifBell();
 
-  document.getElementById('wsHeaderExtra').innerHTML = `
-    <span class="dash-freshness"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Данные актуальны на: <b>${TODAY.toLocaleDateString('ru-RU')}</b></span>
-    <button type="button" class="btn btn-secondary btn-sm" id="btnExportPpt"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M3 17v2a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/></svg>Экспорт в PPT</button>`;
+  document.getElementById('wsHeaderExtra').innerHTML = '';
   const el = document.getElementById('dashMount');
   el.innerHTML = `
     <div class="kpi-grid">
@@ -3431,7 +3427,6 @@ function renderDashboard(){
   document.getElementById('btnResetDemo').addEventListener('click', () => {
     openConfirmModal('Сбросить все изменения и вернуться к исходным seed-данным?', resetDemoData, {title:'Сбросить демо-данные?', okLabel:'Сбросить'});
   });
-  document.getElementById('btnExportPpt').addEventListener('click', () => toast('Экспорт в PPT', {body:'Демо-прототип: формирование презентации недоступно в этой версии.', duration:4000}));
 }
 
 function maybeAdvanceOnActionChange(r){
@@ -3871,7 +3866,12 @@ function submitNewRisk(){
     quantProbabilityPct: null, quantBudgetImpactMln: null, quantScheduleImpactMonths: null, residualRra: null, residualP: null, residualI: null,
     sourceLessonId: riskCreatePrefill ? riskCreatePrefill.sourceLessonId||null : null,
     mergedIntoId: null, reviewFrequencyDays: null, nextReviewDate: null, createdAt: nowStr(),
-    actions: [], isNew: true,
+    // NEW-метка и сортировка вначале реестра — только для рисков, которые
+    // риск-менеджеру ещё предстоит увидеть и разобрать: поданных
+    // инициатором или предложенных владельцем риска. Риски, которые
+    // риск-менеджер заводит сам («+Добавить риск»), в этой пометке не
+    // нуждаются — он и так уже о них знает.
+    actions: [], isNew: state.session.role !== 'riskmanager',
   };
   state.risks.push(risk);
   pushAudit(risk.id, null, 'Идентификация', 'Риск подан' + (risk.sourceLessonId ? ` на основе урока ${risk.sourceLessonId}` : ''));
@@ -5222,8 +5222,7 @@ function openLessonModal(id, createNew){
     <div style="margin-bottom:14px;">${l.hashtags.map(t=>`<span class="lesson-tag-pill">${esc(tagLabel(t))}</span>`).join('') || '<span class="muted" style="font-size:12.5px;">Тегов нет</span>'}</div>
     ${l.sourceRiskId?`<div class="field-hint" style="margin-bottom:10px;">Источник: риск <code class="mono">${l.sourceRiskId}</code></div>`:''}
     <div class="btn-row">
-      <button class="btn btn-secondary" id="addLessonToRisksBtn" style="flex:1;" title="Быстро добавить черновик риска в реестр без заполнения формы">Добавить урок в риски</button>
-      <button class="btn btn-primary" id="createRiskFromLesson" style="flex:2;">Создать риск на основе урока</button>
+      <button class="btn btn-primary" id="createRiskFromLesson" style="flex:1;">Создать риск на основе урока</button>
     </div>`;
   openModal('lessonModalOverlay');
   document.getElementById('lessonDetailsToggle').addEventListener('click', () => {
@@ -5235,32 +5234,6 @@ function openLessonModal(id, createNew){
     closeModal('lessonModalOverlay');
     openRiskCreateModal({title:'На основе урока: '+l.title, event: l.problemOrRiskEvent||l.description, consequence: l.impact||l.description,
       category: mapLessonCategory(l.category), sourceLessonId:l.id, sourceQuote:l.description});
-  });
-  // «Добавить урок в риски» (раунд 2, п.8г) — быстрое однокликовое добавление,
-  // в отличие от «Создать риск на основе урока» не открывает форму: создаёт
-  // черновик риска сразу из реальных полей урока (описание/причина/влияние),
-  // владелец и P/I риск-менеджер заполнит при верификации черновика.
-  document.getElementById('addLessonToRisksBtn').addEventListener('click', () => {
-    const num = Math.max(0, ...state.risks.map(x=>x.displayNumber||0)) + 1;
-    const risk = {
-      id: uid('12-1111-new'), displayNumber:num, projectSpp: state.session.spp,
-      category: mapLessonCategory(l.category),
-      title: 'На основе урока: ' + l.title, status:'Идентификация', authorName: sessionName(),
-      ownerNames: [], cause: l.rootCause || '', event: l.problemOrRiskEvent || l.description, consequence: l.impact || '',
-      pChecklist:null, p:null, iLevel:null, iJustification:null, committeeFlag:false,
-      committeeDecision:null, committeeDecisionDate:null,
-      quantProbabilityPct:null, quantBudgetImpactMln:null, quantScheduleImpactMonths:null,
-      residualRra:null, residualP:null, residualI:null,
-      sourceLessonId: l.id, mergedIntoId:null, reviewFrequencyDays:null, nextReviewDate:null,
-      createdAt: nowStr(), actions:[], isNew:true, phase: l.phase || null,
-      strategyRationale: l.strategy ? `Стратегия реагирования (по уроку ${l.id}): ${l.strategy}` : '',
-    };
-    state.risks.push(risk);
-    pushAudit(risk.id, null, 'Идентификация', 'Риск создан на основе урока ' + l.id);
-    saveState();
-    closeModal('lessonModalOverlay');
-    toast('Урок добавлен в риски', {tone:'success'});
-    renderAll();
   });
 }
 function lessonFormHtml(){
